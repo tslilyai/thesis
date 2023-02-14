@@ -1,3 +1,29 @@
+\section{Introduction}
+The question of who controls personal data, and how it is used, has increasingly
+surfaced in the web ecosystem. 
+%
+Recent legal developments such as the GDPR and CCPA, as well as growing public
+demand and news coverage of \eg data breaches, have increased the need for
+better user data handling in web applications. 
+%
+%Users today give up control of their data to web services in order to use these
+%services, which can put user data at risk of data breaches and expose it to
+%third parties in ways unwelcome or unknown to the user.
+%developers increasingly need to implement better user controls in
+%their web applications.
+%However, doing so is challenging: the data that users want to protect is often
+%important for the service's function.
+%
+This thesis identifies key challenges that web developers face today in
+implementing better user data controls, and contributes practical systems that
+can help to give control of user data in web services back to the user.
+%
+In particular, this thesis introduces a novel system design that allows
+applications to implement a variety of user data controls while still remaining
+functional.
+%tackles the gray space where users’ need for data protection and
+%application functionality requirements overlap. 
+
 \section{Motivation}
 \label{sec:intro:motivation}
 Users today have little to no control over the data they give to web
@@ -30,50 +56,7 @@ visible but disconnected from the ``real'' account. This burdens users with
 managing multiple accounts and requires planning ahead, since moving posts into
 a throwaway account or reclaiming them is impossible.
 
-\section{Approach}
-\label{sec:intro:approach}
-This thesis investigates novel systems to let web application developers provide
-users with means to manage their data in the gray space where users' need for
-data protection and application functionality requirements overlap.  
-
-We start by building Edna, a library that integrates with web applications and
-provides abstractions that let developers specify not just wholesale removal of
-data, but also flexible redaction or decorrelation of data. Edna then changes
-the database contents in well-defined ways that avoid breaking the application.
-Developers and users both benefit from Edna: applications can expose and
-advertise new privacy-protection features and reduce their exposure in the event
-of a data breach, while users gain more control over their sealed data,
-including the convenience of returning to the application as if their data had
-been there all along.
-
-We then propose Hydra, a library that enables web applications to provide their
-users inbuilt for splintering and merging their web identities within the
-application. With Hydra, applications can let users decorrelate data to
-context-specific identities (\eg for work or for family), easily
-move their data between identities, spin off new identities when necessary, and
-merge identities if desired. Importantly, only the user can determine which
-web application identities are linked to themselves.
-%
-Hydra explores the result of taking application-supported data
-decorrelation to the extreme, while preserving application functionality and
-protecting correlations between data and users. Applications both retain
-(decorrelated) data for \eg analytical or advertising purposes, while users gain
-security and control over what data is linked to which of their web application
-identities.
-%implements decorrelation of data, similar 
-
-\begin{comment}
-\section{Related Work}
-\label{sec:intro:related}
-
-\section{Approach}
-\label{sec:intro:approach}
-
-
-\section{Contributions}
-\label{sec:intro:contributions}
-
-
-\section{Reading Guide}
-\label{sec:intro:reading-guide}
-\end{comment}
+These problems call for research into systems that let web application
+developers provide users with means to manage their data in the gray space where
+users' need for data protection and application functionality requirements
+overlap. 

@@ -1,9 +1,30 @@
-\begin{comment}
-- Papers included in thesis
-- Content of papers (objectives/methods/Preliminary results)
-\end{comment}
+\section{Approach}
+\label{sec:intro:approach}
+We start by building Edna, a library that integrates with web applications and
+provides abstractions that let developers specify not just wholesale removal of
+data, but also flexible redaction or decorrelation of data. Edna then changes
+the database contents in well-defined ways that avoid breaking the application.
+Developers and users both benefit from Edna: applications can expose and
+advertise new privacy-protection features and reduce their exposure in the event
+of a data breach, while users gain more control over their sealed data,
+including the convenience of returning to the application as if their data had
+been there all along.
 
-\section{Edna}
+We then propose Hydra, a library that enables web applications to provide their
+users inbuilt for splintering and merging their web identities within the
+application. With Hydra, applications can let users decorrelate data to
+context-specific identities (\eg for work or for family), easily
+move their data between identities, spin off new identities when necessary, and
+merge identities if desired. Importantly, only the user can determine which
+web application identities are linked to themselves.
+%
+Hydra explores the result of taking application-supported data
+decorrelation to the extreme, while preserving application functionality and
+protecting correlations between data and users. Applications both retain
+(decorrelated) data for \eg analytical or advertising purposes, while users gain
+security and control over what data is linked to which of their web application
+identities.
+%implements decorrelation of data, similar 
 
 Users today give web applications their data but have little control over how
 these applications store and protect this data.  Giving users control is
@@ -112,4 +133,4 @@ identities.
 %browse the web.
 
 
-\section{Funhouse}
+%\section{Funhouse}

@@ -1,5 +1,205 @@
-\subsection{Encrypted Data Storage}
-CryptDB, Mylar
+\section{Background and Related Work}
+\let\rwhighlight\relax
 
-\subsection{Policy-Enforcing Systems}
-Qapla
+\begin{comment}
+\begin{figure}[t]
+    \centering
+    \small
+    \begin{tabular}{m{0.23\linewidth}|m{0.19\linewidth}|m{0.19\linewidth}|>{\RaggedRight\arraybackslash}m{0.19\linewidth}} %|m{0.08\linewidth}}
+        \multirow{2}{*}{\centering\textbf{System}} &
+            \multicolumn{3}{c}{\textbf{User $u$'s data is protected against...}}\\
+        \cline{2-4}
+            & \emph{SQL injection}
+            & \emph{Compromised user $\neq u$}
+            & \emph{Server compromise} \\
+%            & \emph{Compromise of $u$} \\
+        \hline
+        Qapla~\cite{qapla} & \hfil \checkmark & & \\
+        \hline
+        CryptDB~\cite{cryptdb} & \hfil \checkmark & & \hfil \checkmark \\
+%        \hline
+%        \sys & \hfil \checkmark & \hfil \checkmark & \\
+%        \hline
+%        \syscrypt & \hfil \checkmark & \hfil \checkmark & \hfil \checkmark \\
+    \end{tabular}
+    \caption{Threats protected against by different classes of systems.}
+    %\sys
+    %also keeps the application functional if it relies on data
+    %that users want to protect.}
+    \label{tab:related_threats}
+\end{figure}
+\end{comment}
+
+%
+%\sys gives developers tools to remove and redact user data from a web
+%application without breaking the application.
+%
+Existing systems for data protection aim to support data deletion, prevent
+unauthorized data access, or protect against database server compromise.
+%
+However, none of these systems are explicitly designed to flexibly handle user
+data (via fine-grained removals or redactions), and to do so without breaking
+the application. Instead, many of these systems provide orthogonal or partial
+solutions.
+
+Laws and regulations such as the EU's General Data Protection Regulation
+(GDPR)~\cite{eu:gdpr}, the California Consumer Privacy Act (CCPA)~\cite{ccpa},
+and others~\cite{va:privacy-act, china:gdpr-like} give users the right to
+request deletion of their data from web applications.
+%
+\textbf{Data deletion tools} developed at large organizations, such as DELF at
+Meta~\cite{delf}, help to correctly delete data in response to such requests.
+%
+DELF helps developers specify correct deletion policies via annotations on
+social graph edges and object types, and ensures correct cascading data
+deletion.
+%
+However, data deletion systems support only simple deletion, and do not address
+the entire range of possible user data controls (\eg temporarily removing old data of
+inactive users). 
+%
+%Like data deletion systems, \sys supports GDPR account deletion.
+%However, \sys also supports use cases beyond simple deletion.
+%
+%\sys can seal data in a GDPR-compliant manner and allow the user to return,
+%seal old data for inactive users, or seal some but not all data,
+%allowing the user to continue using the application.
+%
+%Finally, \sys emphasizes maintaining application functionality, which
+%involves storing placeholder data and fake users in the database.
+%
+
+%
+\textbf{Policy enforcement systems} such as Qapla~\cite{qapla} aim to prevent
+unauthorized access to data and protect against leakage via compromised,
+unauthorized accounts or SQL injections.
+%
+They enforce developer-specified visibility and access control policies via
+information flow control~\cite{static, jeeves, jif, hails, ifdb}, authorized
+views~\cite{oracle} or per-user views~\cite{multiverse}, or blocking or
+rewriting database queries~\cite{blockaid, qapla, sieve}.
+%
+%These systems restrict access to user data by restricting a client's queries
+%depending on the access policy of the client's application role.
+%
+%Users can only successfully query data if authorized by their application
+%role's policy.% to view certain data can successfully query it.
+%
+%This addresses the threat of a compromised \emph{unauthorized} user account, as
+%well as arbitrary SQL queries via SQL injections: in either case, the exposed
+%data is restricted to what the policy allows.
+%
+%However, if a compromised user (\eg an admin) has a legitimate reason to view
+%data and their policy authorizes broad access, policy enforcement will fail
+%to contain the damage.
+%
+
+\textbf{Encrypted storage systems} such as CryptDB~\cite{cryptdb} and
+Mylar~\cite{mylar} aim to protect against database server compromise (with some
+limitations~\cite{grubbs}), as well as SQL injection attacks.
+%
+These systems encrypt data in the database, and ensure that only
+users with legitimate reasons to view the data (\ie the owner or an
+admin) can decrypt the data.
+%
+Applications handle keys, and send queries either through
+trusted proxies that decrypt data~\cite{cryptdb}, or move application
+functionality client-side~\cite{mylar}.
+%
+%However, they fail to prevent \emph{authorized} accesses from a compromised
+%account that (for legitimate purposes) holds the key material to decrypt the
+%data.
+
+Policy-enforcing and encrypted storage systems do not help users redact data,
+nor maintain application functionality in the face of partially or fully
+redacted data. 
+%
+Their goal is orthogonal: to protect unauthorized data access via access control
+mechanisms (encryption or policy checks).
+%
+These systems also keep data available in the database, thus leaving user data
+vulnerable to attacks by compromised accounts with authorized access (\eg an
+admin).
+%However, these mechanisms can 
+
+%
+%, which is \sys's explicit goal.
+%
+%Unlike these systems, \sys changes the database contents so sensitive data is no
+%longer available in the database.
+%
+%\sys encrypts users' sealed data, and ensures that the key material is
+%unavailable to the application and any privileged account.
+%
+%\sys can leverage policy-enforcement or encrypted storage to
+%strengthen its protections for unsealed data; we explore this with \syscrypt.
+%
+%Figure~\ref{tab:related_threats} shows the threats that policy-enforcement
+%systems (\eg Qapla~\cite{qapla}) and encrypted databases (\eg
+%CryptDB~\cite{cryptdb}) defend against.
+%, and \sys defend against.
+%
+
+% Adding an encrypted database to \sys also protects unsealed data against full
+% database server compromise.
+% %(via encrypted storage).
+% %
+% This necessarily comes with the overheads associated with encrypted databases.
+% %
+% \S\ref{s:design-cryptdb} describes \syscrypt, an extension to \sys that
+% leverages CryptDB-like encrypted storage; \S\ref{s:eval-cryptdb} evaluates the
+% resulting costs.
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Other Related Work.}
+%
+Some systems modify the data layout~\cite{usershards} or use fine-grained
+information flow tracking~\cite{schengendb} to track the ownership and
+provenance of database rows.
+%
+This tracks how information propagates and provides information to support
+wholesale user data deletion.
+%
+However, these solve orthogonal problems than the one of practical user data
+controls, and do not support more nuanced redactions such as partial
+anonymization of shared data.
+%\sys requires more developer input, but supports nuanced transformations like
+%decorrelation or partial anonymization of shared data.
+%
+
+%
+Sypse~\cite{sypse} pseudonymizes user data and partitions personally-identifying
+information (PII) from other data.
+%
+%Instead of partitioning data, \sys actually modifies the application database
+%and stores sealed data encryptedly.
+%
+However, Sypse does not securely store (\eg with encryption) PII, nor modify the
+actual data stored by the application
+%, and thus tackles a different threat model.
+
+%
+Decentralized platforms such as Solid~\cite{solid}, BSTORE~\cite{bstore},
+Databox~\cite{databox}, and others~\cite{diy, amber, oort, w5, blockstack} put
+data fully and directly under user control, since users store their own data.
+%
+But this burdens users with maintaining infrastructure, and decentralized platforms
+lack the capacity for server-side compute and break today's ad-based
+business model.
+%
+%By contrast, \sys leaves the data and business models unchanged,
+%storing all data, including sealed data, on the application's servers.
+%
+
+%
+Some platforms can prove that server-side processing respects
+\rwhighlight{user-defined data policies} via cryptographic means~\cite{zeph} or
+systems security mechanisms~\cite{riverbed}.
+%
+This may restrict feasible application functionality (\eg to additively
+homomorphic functions), or restrict combining data with different policies.
+%
+%\sys only protects user data after sealing, but in exchange allows unrestricted
+%application functionality before sealing.
+%
