@@ -32,9 +32,9 @@ a throwaway account or reclaiming them is impossible.
 
 \section{Approach}
 \label{sec:intro:approach}
-This thesis investigates novel systems to let web application developers provide users with
-means to manage their data in the gray space where users' need for data
-protection and application functionality requirements overlap.  
+This thesis investigates novel systems to let web application developers provide
+users with means to manage their data in the gray space where users' need for
+data protection and application functionality requirements overlap.  
 
 We start by building Edna, a library that integrates with web applications and
 provides abstractions that let developers specify not just wholesale removal of
@@ -46,26 +46,21 @@ of a data breach, while users gain more control over their sealed data,
 including the convenience of returning to the application as if their data had
 been there all along.
 
-Edna introduces \emph{sealing}, which removes or redacts some or all of a user's
-data, and \emph{revealing}, which restores the sealed data at a user's request.
-Sealed data remains on the server, but is encrypted and inaccessible to the web
-application. Sealing changes the database contents and replaces the data to seal
-with placeholder values where necessary (\eg comments require an associated
-post). 
-
-We designed Edna's seal and reveal abstractions to flexibly meet applications'
-diverse needs while still protecting sensitive user data. Edna provides
-developers with three well-defined primitives for anonymizing data: remove,
-modify, and decorrelate. Developers compose these to create \emph{seal
-specifications}, which describe the data to seal and which primitives to apply.
-When invoked with a seal specification, Edna changes the database contents as
-specified: ``remove'' drops rows, ``modify'' changes the contents of specific
-cells, and ``decorrelate'' introduces \emph{pseudoprincipals}, anonymous
-placeholder users. These pseudoprincipals help maintain referential integrity,
-but also can act as built-in ``throwaway accounts.'' Rather than users having to
-create and maintain throwaways themselves, Edna's pseudoprincipals enable the
-user to later reassociate with their throwaway's data via revealing, or create
-throwaways to disown posts after-the-fact.
+We then propose Hydra, a library that enables web applications to provide their
+users inbuilt for splintering and merging their web identities within the
+application. With Hydra, applications can let users decorrelate data to
+context-specific identities (\eg an identity for work or for family), easily
+move their data between identities, spin off new identities when necessary, and
+merge identities if desired. Importantly, only the user can determine which
+web application identities are linked to themselves.
+%
+Hydra explores the result of taking application-supported data
+decorrelation to the extreme, while preserving application functionality and
+protecting correlations between data and users. Applications both retain
+(decorrelated) data for \eg analytical or advertising purposes, while users gain
+security and control over what data is linked to which of their web application
+identities.
+%implements decorrelation of data, similar 
 
 \begin{comment}
 \section{Related Work}

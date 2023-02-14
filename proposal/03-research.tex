@@ -12,11 +12,32 @@ very same data that users want to protect.
 
 Edna is a library that lets web application developers give users flexible and
 correct control over their data’s exposure without breaking the application.
-Edna minimizes application changes and developer effort, and enables
-applications to securely hide user data and users to later restore it.  Edna
-introduces abstractions for \emph{sealing}, which selectively renders user data
-inaccessible via encryption, and \emph{revealing}, which enables the owning
-user to restore their data to the application.
+%Edna minimizes application changes and developer effort, and enables
+%applications to securely hide user data and users to later restore it.  Edna
+%introduces abstractions for \emph{sealing}, which selectively renders user data
+%inaccessible via encryption, and \emph{revealing}, which enables the owning
+%user to restore their data to the application.
+%
+Edna introduces \emph{sealing}, which removes or redacts some or all of a user's
+data, and \emph{revealing}, which restores the sealed data at a user's request.
+Sealed data remains on the server, but is encrypted and inaccessible to the web
+application. Sealing changes the database contents and replaces the data to seal
+with placeholder values where necessary (\eg comments require an associated
+post). 
+
+We designed Edna's seal and reveal abstractions to flexibly meet applications'
+diverse needs while still protecting sensitive user data. Edna provides
+developers with three well-defined primitives for anonymizing data: remove,
+modify, and decorrelate. Developers compose these to create \emph{seal
+specifications}, which describe the data to seal and which primitives to apply.
+When invoked with a seal specification, Edna changes the database contents as
+specified: ``remove'' drops rows, ``modify'' changes the contents of specific
+cells, and ``decorrelate'' introduces \emph{pseudoprincipals}, anonymous
+placeholder users. These pseudoprincipals help maintain referential integrity,
+but also can act as built-in ``throwaway accounts.'' Rather than users having to
+create and maintain throwaways themselves, Edna's pseudoprincipals enable the
+user to later reassociate with their throwaway's data via revealing, or create
+throwaways to disown posts after-the-fact.
 
 We implemented a prototype of Edna, and evaluated it with three real-world web
 applications: Lobsters, a discussion forum; HotCRP, a conference review system;
