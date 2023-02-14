@@ -1,0 +1,84 @@
+\section{Motivation}
+\label{sec:intro:motivation}
+Users today have little to no control over the data they give to web
+applications.  They must either avoid using an application, or leave their data
+susceptible to leaks, \eg via SQL injections or compromise of other users'
+accounts.  Incentivized by growing public demand and laws such as the GDPR and
+CCPA~\cite{eu:gdpr, ccpa}, developers increasingly need to implement mechanisms
+to give users control over their data’s exposure.
+
+Central to this conversation are two needs: users want to protect their data,
+and applications require data to be available in order to function. Problems
+arise when application functionality requires the same data users want to
+protect: for example, deleting a post may orphan other users' comments on it,
+crashing the application when it expects comments to have an associated post.
+Handling this correctly is difficult for developers---naively removing user data
+can break the application or reduce its functionality. Removal is also usually
+permanent, hurting both users and applications: once a user deletes their data,
+there is no coming back.
+
+Large companies have built systems to help developers get data deletion
+right~\cite{delf}, but the problem goes beyond data deletion. Users may want to
+take a break from using an application, but rest easy that their data is
+protected while they’re inactive; or users may want more fine-grained
+control—\ie have their data exist in a state where it is both visible and
+protected. For example, a user might want to disassociate content with a
+specific hashtag from a social media account. Because applications today lack
+support for this, users resort to ad-hoc alternatives like throwaway accounts
+and ``finstas''~\cite{reddit:throwaway, nytimes:finsta} to post content that is
+visible but disconnected from the ``real'' account. This burdens users with
+managing multiple accounts and requires planning ahead, since moving posts into
+a throwaway account or reclaiming them is impossible.
+
+\section{Approach}
+\label{sec:intro:approach}
+This thesis investigates novel systems to let web application developers provide users with
+means to manage their data in the gray space where users' need for data
+protection and application functionality requirements overlap.  
+
+We start by building Edna, a library that integrates with web applications and
+provides abstractions that let developers specify not just wholesale removal of
+data, but also flexible redaction or decorrelation of data. Edna then changes
+the database contents in well-defined ways that avoid breaking the application.
+Developers and users both benefit from Edna: applications can expose and
+advertise new privacy-protection features and reduce their exposure in the event
+of a data breach, while users gain more control over their sealed data,
+including the convenience of returning to the application as if their data had
+been there all along.
+
+Edna introduces \emph{sealing}, which removes or redacts some or all of a user's
+data, and \emph{revealing}, which restores the sealed data at a user's request.
+Sealed data remains on the server, but is encrypted and inaccessible to the web
+application. Sealing changes the database contents and replaces the data to seal
+with placeholder values where necessary (\eg comments require an associated
+post). 
+
+We designed Edna's seal and reveal abstractions to flexibly meet applications'
+diverse needs while still protecting sensitive user data. Edna provides
+developers with three well-defined primitives for anonymizing data: remove,
+modify, and decorrelate. Developers compose these to create \emph{seal
+specifications}, which describe the data to seal and which primitives to apply.
+When invoked with a seal specification, Edna changes the database contents as
+specified: ``remove'' drops rows, ``modify'' changes the contents of specific
+cells, and ``decorrelate'' introduces \emph{pseudoprincipals}, anonymous
+placeholder users. These pseudoprincipals help maintain referential integrity,
+but also can act as built-in ``throwaway accounts.'' Rather than users having to
+create and maintain throwaways themselves, Edna's pseudoprincipals enable the
+user to later reassociate with their throwaway's data via revealing, or create
+throwaways to disown posts after-the-fact.
+
+\begin{comment}
+\section{Related Work}
+\label{sec:intro:related}
+
+\section{Approach}
+\label{sec:intro:approach}
+
+
+\section{Contributions}
+\label{sec:intro:contributions}
+
+
+\section{Reading Guide}
+\label{sec:intro:reading-guide}
+\end{comment}

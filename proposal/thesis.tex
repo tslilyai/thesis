@@ -1,0 +1,66 @@
+\documentclass[11pt,twoside,final]{mitthesis}
+
+\input{preamble}
+
+\begin{document}
+
+%\frontmatter
+
+% always arabic page numbering (default is roman in \frontmatter)
+\pagenumbering{arabic}
+
+\input{frontmatter/title}
+\maketitle
+
+\begin{abstractpage}
+\input{frontmatter/abstract}
+\end{abstractpage}
+\cleardoublepage
+
+%\section*{Acknowledgments}
+%\begin{spacing}{1}
+  %\input{00-acknowledgments.tex}
+%\end{spacing}
+%\cleardoublepage
+
+%\section*{Prior Publication}
+%Parts of this thesis were previously published in two conference
+%papers~\cite{chajed:gojournal, chajed:daisy-nfs}.
+%\cleardoublepage
+
+\tableofcontents
+\clearpage
+\listoffigures
+\clearpage
+
+% TODO list while writing
+%\listoftodos
+
+%\mainmatter
+
+\chapter{Introduction}%
+\label{ch:introduction}
+\input{01-introduction.tex}
+
+\chapter{Related Work}%
+\label{ch:related}
+\input{02-related-work.tex}
+
+\chapter{Research}%
+\label{ch:research}
+\input{03-research.tex}
+
+\chapter{Execution Plan}%
+\label{ch:timeline}
+\input{99-timeline.tex}
+
+%\backmatter
+
+% single spacing for bibliography
+\begin{spacing}{1}
+\bibliography{n-str,paper,n,n-conf}{}
+% also consider alpha (more informative citation keys)
+\bibliographystyle{plainnat}
+\end{spacing}
+
+\end{document}

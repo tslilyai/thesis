@@ -1,0 +1,186 @@
+\usepackage{inconsolata}
+\usepackage[T1]{fontenc}
+
+% font setup from Cody Cutler's thesis
+\usepackage{amssymb}
+%\usepackage[defaultsans]{lato}
+%\usepackage[lf,footnotefigures]{MinionPro} % After amssymb
+\usepackage[toc,bib]{tabfigures}
+
+% No Minion Pro?  Uncomment the next line to use Times
+%\usepackage{times,mathptmx}
+%\usepackage{crimson}
+\usepackage[bitstream-charter]{mathdesign}
+\usepackage{mathrsfs}
+
+% adapted from https://github.com/jonhoo/thesis/
+
+% for 1.5 line spacing
+\usepackage{setspace}
+\onehalfspacing
+
+% set up nicer headers/footers (in particular, no capitalization and put page
+% number in footer)
+\makeatletter
+\def\ps@headings{\let\@mkboth\markboth
+    \def\@oddfoot{\hfil \rm\thepage \hfil}
+    \def\@evenfoot{\hfil \rm\thepage \hfil}
+    \def\@evenhead{\hfil \sl \leftmark}	% Left heading.
+    \def\@oddhead{\hbox{}\sl \rightmark \hfil}	% Right heading.
+    \def\chaptermark##1{\markboth {\ifnum \c@secnumdepth >\m@ne
+	\@chapapp\ \thechapter. \ \fi ##1}{}}
+    \def\sectionmark##1{\markright {\ifnum \c@secnumdepth >\z@
+	\thesection. \ \fi ##1}}
+    \pulldownheader				% Bring header down from edge
+}
+\makeatother
+
+\pagestyle{headings}
+
+% more colors (like RedOrange)
+\usepackage[dvipsnames]{xcolor}
+
+% qualitative colors
+% subset of https://jfly.uni-koeln.de/color/
+% that is also distinctive in grayscale
+\definecolor{set1}{HTML}{0071b2} % blue
+\definecolor{set2}{HTML}{e59c00} % orange
+\definecolor{set3}{HTML}{009e73} % green
+\definecolor{set4}{HTML}{efe440} % yellow
+
+% so we can splice in PDFs
+\usepackage{pdfpages}
+
+% set up bibliography
+\usepackage[square,comma,numbers,sort&compress]{natbib}
+
+% enumerate* and itemize*
+\usepackage[inline]{enumitem}
+
+% for \begin{comment}
+\usepackage{verbatim}
+
+% for source-code listings
+% (latex.out fixes compatibility with latexrun, see
+% https://github.com/aclements/latexrun/issues/13#issuecomment-322550767)
+\usepackage[newfloat,outputdir=latex.out]{minted}
+\setminted[rust]{frame=lines}
+\setminted[c]{frame=lines}
+
+% for formulas
+\usepackage{mathtools}
+
+% to split lists into multiple columns
+\usepackage{multicol}
+
+% for "on page NN" reference
+\usepackage[nospace]{varioref}
+
+% for \ifoptionfinal
+\usepackage{ifdraft}
+
+% for nice tables
+\usepackage{booktabs}
+\usepackage{multirow}
+
+% \xspace
+\usepackage{xspace}
+
+% subfigures
+\usepackage{subcaption}
+% default space between figure and caption
+\captionsetup[figure]{skip=0.5\baselineskip}
+
+% fpeval (to add numbers)
+\usepackage{xfp}
+
+\usepackage[breaklinks, pdfborder={0 0 0}]{hyperref}
+\usepackage[nameinlink]{cleveref}
+
+\hypersetup{
+    colorlinks=true,
+    linkcolor=set1,
+    filecolor=magenta,
+    urlcolor=set1,
+    citecolor=set3,
+    pdftitle={Verifying a concurrent file system with sequential reasoning},
+    pdfauthor={Tej Chajed},
+}
+
+% set the format of figure numbers
+\renewcommand{\thefigure}{\arabic{chapter}-\arabic{figure}}
+\newcommand{\eg}{{e.g.},\xspace}
+\newcommand{\ie}{{i.e.},\xspace}
+
+% restore these definitions to color wp/wpc and braces
+% \newcommand{\syntax}[1]{\textcolor{blue}{#1}}
+% \newcommand{\syntaxbraced}[1]{\cleft[blue]\{#1\cright[blue]\}}
+\newcommand{\syntax}[1]{#1}
+\newcommand{\syntaxbraced}[1]{\{#1\}}
+
+\usepackage{pftools}
+\usepackage{amsmath}
+\usepackage{amssymb}
+
+% used in \loc macro
+\usepackage{numprint}
+
+% some sanity for special characters
+\usepackage[utf8]{inputenc}
+\input{glyphtounicode}
+\pdfgentounicode=1
+
+% generate synctex output for inverse search
+\synctex=1
+
+% gnuplot figures have some page group issue, see
+% https://tex.stackexchange.com/questions/76273/multiple-pdfs-with-page-group-included-in-a-single-page-warning
+\pdfsuppresswarningpagegroup=1
+
+%% do not reset page numbers at \mainmatter
+%\let\mainmatterorig\mainmatter
+%\renewcommand\mainmatter
+% {\edef\p{\arabic{page}}%
+%  \mainmatterorig
+%  % we need to compute the actual current page number. we know the page number
+%  % from _before_ we called \mainmatter. but what is it now? well, it is
+%  % certainly that +1. but we also need to account for the next chapter starting
+%  % on a "right" (odd) page. we do this by adding the page number modulo two.
+%  % TODO: double check before final version
+%  \setcounter{page}{\p+1+(\p-\p/2*2)}%
+% }
+
+% adding TODOs
+\newcommand{\insertnote}[3]{\noindent\textcolor{#1}{\textbf{#2:} #3}}
+\newcommand{\note}[1]{\insertnote{blue}{NOTE}{#1}}
+\newcommand{\todocite}[1]{\textcolor{red}{[cite #1]}}
+
+% https://tex.stackexchange.com/questions/52697/automated-lists-for-todos-in-latex-document
+\newcounter{todo}
+\newcommand\todo[1]{\refstepcounter{todo}\textcolor{red}{#1}%
+\addcontentsline{tod}{subsection}{\thetodo.~(\S\thesection)~#1}}%
+\makeatletter
+\newcommand\listoftodos{%
+  \pdfbookmark{todo list}{Contents}
+  \chapter*{List of TODOs}\@starttoc{tod}}
+\makeatother
+
+% out of habit this macro is called \lyt, even though all TODOs are written by
+% and assigned to me
+\newcommand{\lyt}[1]{\textcolor{red}{\textbf{LYT:}} \todo{#1}}
+
+% a command to indicate current editing progress
+\newcommand{\resume}{
+  \begin{center}
+    \color{set2}
+    \hrule \vspace{1pt} \hrule \hrule
+    \vspace{10pt}
+    \textbf{This section is not yet complete.}
+    \vspace{10pt}
+    \hrule \hrule \vspace{1pt} \hrule
+  \end{center}
+}
+
+\usepackage{relsize}
+% sets monospace font
+\renewcommand{\ttdefault}{pxtt}

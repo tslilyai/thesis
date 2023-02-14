@@ -1,0 +1,12 @@
+\contentsline {chapter}{\numberline {1}Introduction}{9}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Motivation}{9}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Approach}{10}{section.1.2}%
+\contentsline {chapter}{\numberline {2}Related Work}{11}{chapter.2}%
+\contentsline {subsection}{\numberline {2.0.1}Encrypted Data Storage}{11}{subsection.2.0.1}%
+\contentsline {subsection}{\numberline {2.0.2}Policy-Enforcing Systems}{11}{subsection.2.0.2}%
+\contentsline {chapter}{\numberline {3}Research}{13}{chapter.3}%
+\contentsline {section}{\numberline {3.1}Edna}{13}{section.3.1}%
+\contentsline {section}{\numberline {3.2}Hydra}{14}{section.3.2}%
+\contentsline {section}{\numberline {3.3}Funhouse}{14}{section.3.3}%
+\contentsline {chapter}{\numberline {4}Execution Plan}{15}{chapter.4}%
+\contentsline {section}{\numberline {4.1}Timeline}{15}{section.4.1}%
