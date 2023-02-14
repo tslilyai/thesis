@@ -3,25 +3,25 @@ Edna provides the following contributions:
 \begin{enumerate}[nosep] 
     \item A new paradigm for developers to provide flexible user control over data in web applications, with cryptographic protection and while maintaining application functionality and invariants.
     \item Abstractions for sealing and revealing, and a small set of data-anonymizing primitives (remove, modify, decorrelate) that cover a wide range of application needs and compose cleanly.
-    \item The design and implementation of Edna, our prototype library that implements user data control via sealing and revealing, as well as Ednacrypt, which additionally encrypts unsealed data.
+    \item The design and implementation of Edna, our prototype library that implements user data control via sealing and revealing, as well as Edna-CryptDB, which additionally encrypts unsealed data.
     \item Case studies of integrating Edna with three real-world web applications, an evaluation of Edna's effectiveness, performance, and security, and a comparison to Qapla.
 \end{enumerate}
 
+\begin{comment}
 \subsection{Design}
-
-\subsection{Evaluation}
-Edna is complementary to existing data protection mechanisms. For example, we
-combine Edna with an encrypted database to achieve stronger guarantees.
-Ednacrypt simultaneously protects against database server compromises even for
+We combine Edna with an encrypted database to achieve stronger guarantees.
+Edna-CryptDB simultaneously protects against database server compromises even for
 unsealed data and adds Edna's protections for sealed data to encrypted
 databases, which have no built-in support for removing sensitive data without
 breaking the application.
 
+\subsection{Evaluation}
 To investigate the need for Edna as a new system, we tried to realize Edna's
 functionality atop Qapla~\cite{qapla}, a framework that rewrites SQL queries to
 conform to access control policies. We found that Qapla requires invasive
 application changes, its abstractions are awkward for sealing and revealing, and
 Qapla's query rewriting slows down common queries.
+\end{comment}
 
 \subsection{Limitations}
 Edna has some limitations. Its usability goals, and specifically the fact that
@@ -34,13 +34,12 @@ information (\eg logs) may contain old plaintext data; Edna-CryptDB strengthens
 these protections.
 
 \subsection{Extensions: Hydra}
-
 Hydra narrows down on a specific aspect of Edna, namely how users control their
 identities and links between their identities and data in web applications.
-Users today will manually implement ad-hoc alternatives like throwaway accounts
-and ``finstas''~\cite{reddit:throwaway, nytimes:finsta} to post content that is
-visible but disconnected from the ``real'' account. 
-
+%Users today will manually implement ad-hoc alternatives like throwaway accounts
+%and ``finstas''~\cite{reddit:throwaway, nytimes:finsta} to post content that is
+%visible but disconnected from the ``real'' account. 
+%
 Hydra provides a library that enables web applications to provide their
 users inbuilt for splintering and merging their web identities within the
 application. With Hydra, applications can let users decorrelate data to
@@ -51,13 +50,21 @@ web application identities are linked to themselves.
 %
 Hydra explores the result of taking application-supported data
 decorrelation to the extreme, while preserving application functionality and
-protecting correlations between data and users. Applications both retain
-(decorrelated) data for \eg analytical or advertising purposes, while users gain
-security and control over what data is linked to which of their web application
-identities.
+protecting correlations between data and users. 
+%Applications both retain
+%(decorrelated) data for \eg analytical or advertising purposes, while users gain
+%security and control over what data is linked to which of their web application
+%identities.
+
+Hydra adds the additional contributions:
+\begin{enumerate}[nosep] 
+    \item A new paradigm for developers to provide user account splintering and
+        merging, while cryptographically protecting links between user accounts
+        and while maintaining application functionality and invariants.
+    \item A case study integrating Hydra with a real-world web application,
+        Lobsters, and an evaluation of Hydra's effectiveness, performance, and
+        security.
+\end{enumerate}
 
 %Multi-account containers in Firefox let users act as distinct identities as they
 %browse the web.
-
-
-%\section{Funhouse}
