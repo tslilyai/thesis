@@ -89,16 +89,27 @@ Qapla's query rewriting slows down common queries.
 
 Hydra narrows down on a specific aspect of Edna, namely how users control their
 identities and links between their identities and data in web applications.
-Users today will 
+Users today will manually implement ad-hoc alternatives like throwaway accounts
+and ``finstas''~\cite{reddit:throwaway, nytimes:finsta} to post content that is
+visible but disconnected from the ``real'' account. 
 
-Users often want to 
-Hydra specifically on 
+Hydra provides a library that enables web applications to provide their
+users inbuilt for splintering and merging their web identities within the
+application. With Hydra, applications can let users decorrelate data to
+context-specific identities (\eg for work or for family), easily
+move their data between identities, spin off new identities when necessary, and
+merge identities if desired. Importantly, only the user can determine which
+web application identities are linked to themselves.
+%
+Hydra explores the result of taking application-supported data
+decorrelation to the extreme, while preserving application functionality and
+protecting correlations between data and users. Applications both retain
+(decorrelated) data for \eg analytical or advertising purposes, while users gain
+security and control over what data is linked to which of their web application
+identities.
 
-In Hydra, users authenticate with an application like normal,
-
-Finstas (fake instagrams), Reddit throwaways. 
-Multi-account containers in Firefox let users act as distinct identities as they
-browse the web.
+%Multi-account containers in Firefox let users act as distinct identities as they
+%browse the web.
 
 
 \section{Funhouse}
