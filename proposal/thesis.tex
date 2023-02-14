@@ -1,3 +1,71 @@
+\documentclass{article}
+
+\usepackage{geometry}
+\input{preamble}
+
+% must be last in usepackage list!
+\usepackage{hyperref}
+\usepackage{cleveref}
+
+% other stuff
+\newcommand{\mydate}{February 14, 2023}
+\newcommand{\mycompletion}{May 25, 2024}
+\newcommand{\mytitle}{Helping Web Developers Give Users Control Over Their Data}
+\newcommand{\mytimeline}{\vspace{1em}\noindent\textbf{Timeline} }
+
+\author{
+    Lillian Tsai\\
+    Massachusetts Institute of Technology\\
+    \texttt{tsilyai@mit.edu}
+}
+
+\date{\mydate}
+
+\title{\mytitle}
+
+\begin{document}
+
+\input{frontmatter/title}
+
+\newpage
+
+\maketitle
+
+\section{Introduction}%
+%\label{ch:introduction}
+\input{01-introduction.tex}
+
+\section{Background and Related Work}%
+%\label{ch:related}
+\input{02-related-work.tex}
+
+\section{Approach}%
+%\label{ch:research}
+\input{03-approach.tex}
+
+\section{Contributions}%
+%\label{ch:research}
+\input{04-contributions.tex}
+
+\section{Timeline}%
+%\label{ch:timeline}
+\input{99-timeline.tex}
+
+% single spacing for bibliography
+\begin{spacing}{1}
+\bibliography{n-str,paper,n,n-conf}{}
+% also consider alpha (more informative citation keys)
+\bibliographystyle{plainnat}
+\end{spacing}
+%\bibliographystyle{plain}
+%\bibliography{references}
+
+\include{edna.pdf}
+
+\end{document}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%
+\begin{comment}
 \documentclass[11pt,twoside,final]{mitthesis}
 
 \input{preamble}
@@ -8,6 +76,8 @@
 
 % always arabic page numbering (default is roman in \frontmatter)
 \pagenumbering{arabic}
+
+
 
 \input{frontmatter/title}
 \maketitle
@@ -38,29 +108,8 @@
 
 %\mainmatter
 
-\chapter{Thesis Proposal}%
-%\label{ch:introduction}
-\input{01-introduction.tex}
-
-%\chapter{Related Work}%
-%\label{ch:related}
-\input{02-related-work.tex}
-
-%\chapter{Research}%
-%\label{ch:research}
-\input{03-research.tex}
-
-%\chapter{Timeline}%
-%\label{ch:timeline}
-\input{99-timeline.tex}
-
 %\backmatter
 
-% single spacing for bibliography
-\begin{spacing}{1}
-\bibliography{n-str,paper,n,n-conf}{}
-% also consider alpha (more informative citation keys)
-\bibliographystyle{plainnat}
-\end{spacing}
 
 \end{document}
+\end{comment}
