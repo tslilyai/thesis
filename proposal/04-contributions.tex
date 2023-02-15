@@ -7,21 +7,41 @@ Edna provides the following contributions:
     \item Case studies of integrating Edna with three real-world web applications, an evaluation of Edna's effectiveness, performance, and security, and a comparison to Qapla.
 \end{enumerate}
 
-\begin{comment}
 \subsection{Design}
-We combine Edna with an encrypted database to achieve stronger guarantees.
-Edna-CryptDB simultaneously protects against database server compromises even for
+In this section, we will describe:
+\begin{itemize}[nosep]
+    \item Seal specifications written using the remove, modify, and decorrelate primitives.
+    \item Edna's sealing procedure and encryption protection for sealed data.
+    \item Edna's revealing procedure (including principal reveal credentials) and consistency checks.
+    \item Edna's sealing semantics for shared data.
+    \item Composition of sealing transformations, recursive sealing of
+        decorrelated data, and revealing in the presence of pseudoprincipal
+        chains. (This will be expanded upon much more than in the current Edna
+        paper).
+    \item The design of Edna-CryptDB, which simultaneously protects against database server compromises even for
 unsealed data and adds Edna's protections for sealed data to encrypted
-databases, which have no built-in support for removing sensitive data without
-breaking the application.
+        databases.
+\end{itemize}
+
+\subsection{Implementation}
+Edna's prototype is implemented in Rust. We describe Edna's high-level and low-level
+application APIs, implementation of password-based reveal credentials, and
+implementation choices (\eg chosen cryptographic scheme).
 
 \subsection{Evaluation}
-To investigate the need for Edna as a new system, we tried to realize Edna's
+We integrate Edna with three web applications as case studies: HotCRP, Lobsters,
+and WebSubmit in order to evaluate Edna's effectiveness at providing nuanced and
+useful sealing and revealing transformations.
+%
+We also evaluate Edna's security and performance (\eg effect on normal
+application throughput, and performance of transformations themselves).
+%
+To investigate the need for Edna as a new system, we also tried to realize Edna's
 functionality atop Qapla~\cite{qapla}, a framework that rewrites SQL queries to
-conform to access control policies. We found that Qapla requires invasive
-application changes, its abstractions are awkward for sealing and revealing, and
-Qapla's query rewriting slows down common queries.
-\end{comment}
+conform to access control policies. 
+%We found that Qapla requires invasive
+%application changes, its abstractions are awkward for sealing and revealing, and
+%Qapla's query rewriting slows down common queries.
 
 \subsection{Limitations}
 Edna has some limitations. Its usability goals, and specifically the fact that
