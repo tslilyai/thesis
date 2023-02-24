@@ -1,13 +1,14 @@
 \label{sec:intro:approach}
-Edna is a library that integrates with web applications and
-provides abstractions that let developers specify not just wholesale removal of
-data, but also flexible redaction or decorrelation of data. Edna then changes
-the database contents in well-defined ways that avoid breaking the application.
-Developers and users both benefit from Edna: applications can expose and
-advertise new privacy-protection features and reduce their exposure in the event
-of a data breach, while users gain more control over their sealed data,
-including the convenience of returning to the application as if their data had
-been there all along.
+To enable fine-grained user data controls while retaining application
+functionality, we build a library called Edna.  Edna integrates with web
+applications and provides abstractions that let developers specify not just
+wholesale removal of data, but also flexible redaction or decorrelation of data.
+Edna then changes the database contents in well-defined ways that avoid breaking
+the application.  Developers and users both benefit from Edna: applications can
+expose and advertise new privacy-protection features and reduce their exposure
+in the event of a data breach, while users gain more control over their sealed
+data, including the convenience of returning to the application as if their data
+had been there all along.
 
 Edna introduces \emph{sealing}, which removes or redacts some or all of a user's
 data, and \emph{revealing}, which restores the sealed data at a user's request.

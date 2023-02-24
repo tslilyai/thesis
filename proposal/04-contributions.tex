@@ -1,12 +1,16 @@
 \label{sec:intro:contrib}
-Edna provides the following contributions:
+Edna will provide the following contributions:
 \begin{enumerate}[nosep] 
     \item A new paradigm for developers to provide flexible user control over data in web applications, with cryptographic protection and while maintaining application functionality and invariants.
     \item Abstractions for sealing and revealing, and a small set of data-anonymizing primitives (remove, modify, decorrelate) that cover a wide range of application needs and compose cleanly.
     \item The design and implementation of Edna, our prototype library that implements user data control via sealing and revealing, as well as Edna-CryptDB, which additionally encrypts unsealed data.
     \item Case studies of integrating Edna with three real-world web applications, an evaluation of Edna's effectiveness, performance, and security, and a comparison to Qapla.
 \end{enumerate}
+%
+\S\ref{s:edna} appends a preliminary paper describing Edna's design, implementation, and
+evaluation to this proposal.
 
+\iffalse
 \subsection{Design}
 In this section, we will describe:
 \begin{itemize}[nosep]
@@ -42,6 +46,7 @@ conform to access control policies.
 %We found that Qapla requires invasive
 %application changes, its abstractions are awkward for sealing and revealing, and
 %Qapla's query rewriting slows down common queries.
+\fi
 
 \subsection{Limitations}
 Edna has some limitations. Its usability goals, and specifically the fact that
@@ -76,7 +81,7 @@ protecting correlations between data and users.
 %security and control over what data is linked to which of their web application
 %identities.
 
-Hydra adds the additional contributions:
+Hydra adds the following expected contributions:
 \begin{enumerate}[nosep] 
     \item A new paradigm for developers to provide user account splintering and
         merging, while cryptographically protecting links between user accounts

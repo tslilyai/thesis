@@ -34,29 +34,41 @@
 %application without breaking the application.
 %
 Existing systems for data protection aim to support data deletion, prevent
-unauthorized data access, or protect against database server compromise.
+unauthorized data access, protect against database server compromise, or store
+data in privacy-preserving ways.
 %
 However, none of these systems are explicitly designed to flexibly handle user
-data (via fine-grained removals or redactions), and to do so without breaking
+data (via fine-grained redactions), and to do so without breaking
 the application. Instead, many of these systems provide orthogonal or partial
 solutions.
 
+\subsection{Data Deletion Tools.}
 Laws and regulations such as the EU's General Data Protection Regulation
 (GDPR)~\cite{eu:gdpr}, the California Consumer Privacy Act (CCPA)~\cite{ccpa},
 and others~\cite{va:privacy-act, china:gdpr-like} give users the right to
 request deletion of their data from web applications.
 %
-\textbf{Data deletion tools} developed at large organizations, such as DELF at
+Data deletion tools developed at large organizations, such as DELF at
 Meta~\cite{delf}, help to correctly delete data in response to such requests.
 %
 DELF helps developers specify correct deletion policies via annotations on
 social graph edges and object types, and ensures correct cascading data
 deletion.
+
+
+Other systems to help with wholesale user data deletion modify the data layout~\cite{usershards} or use fine-grained
+information flow tracking~\cite{schengendb} to track the ownership and
+provenance of database rows.
 %
-However, data deletion systems support only simple deletion, and do not address
+This tracks how information propagates and provides information to support
+wholesale user data deletion.
+
+%
+However, these data deletion systems target only simple deletion, and do not address
 the entire range of possible user data controls (\eg temporarily removing old data of
 inactive users). 
-%
+
+%%
 %Like data deletion systems, \sys supports GDPR account deletion.
 %However, \sys also supports use cases beyond simple deletion.
 %
@@ -69,7 +81,9 @@ inactive users).
 %
 
 %
-\textbf{Policy enforcement systems} such as Qapla~\cite{qapla} aim to prevent
+\subsection{Protecting Against Unauthorized Access} 
+\textbf{Policy enforcement systems} such as Qapla~\cite{qapla}
+aim to prevent
 unauthorized access to data and protect against leakage via compromised,
 unauthorized accounts or SQL injections.
 %
@@ -93,7 +107,20 @@ rewriting database queries~\cite{blockaid, qapla, sieve}.
 %to contain the damage.
 %
 
-\textbf{Encrypted storage systems} such as CryptDB~\cite{cryptdb} and
+%
+Some platforms can prove that server-side processing respects
+user-defined data policies via cryptographic means~\cite{zeph} or
+systems security mechanisms~\cite{riverbed}.
+%
+This may restrict feasible application functionality (\eg to additively
+homomorphic functions), or restrict combining data with different policies.
+%
+%\sys only protects user data after sealing, but in exchange allows unrestricted
+%application functionality before sealing.
+%
+
+\textbf{Encrypted storage systems} like
+CryptDB~\cite{cryptdb} and
 Mylar~\cite{mylar} aim to protect against database server compromise (with some
 limitations~\cite{grubbs}), as well as SQL injection attacks.
 %
@@ -119,55 +146,10 @@ mechanisms (encryption or policy checks).
 These systems also keep data available in the database, thus leaving user data
 vulnerable to attacks by compromised accounts with authorized access (\eg an
 admin).
-%However, these mechanisms can 
 
 %
-%, which is \sys's explicit goal.
-%
-%Unlike these systems, \sys changes the database contents so sensitive data is no
-%longer available in the database.
-%
-%\sys encrypts users' sealed data, and ensures that the key material is
-%unavailable to the application and any privileged account.
-%
-%\sys can leverage policy-enforcement or encrypted storage to
-%strengthen its protections for unsealed data; we explore this with \syscrypt.
-%
-%Figure~\ref{tab:related_threats} shows the threats that policy-enforcement
-%systems (\eg Qapla~\cite{qapla}) and encrypted databases (\eg
-%CryptDB~\cite{cryptdb}) defend against.
-%, and \sys defend against.
-%
-
-% Adding an encrypted database to \sys also protects unsealed data against full
-% database server compromise.
-% %(via encrypted storage).
-% %
-% This necessarily comes with the overheads associated with encrypted databases.
-% %
-% \S\ref{s:design-cryptdb} describes \syscrypt, an extension to \sys that
-% leverages CryptDB-like encrypted storage; \S\ref{s:eval-cryptdb} evaluates the
-% resulting costs.
-%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Other Related Work.}
-%
-Some systems modify the data layout~\cite{usershards} or use fine-grained
-information flow tracking~\cite{schengendb} to track the ownership and
-provenance of database rows.
-%
-This tracks how information propagates and provides information to support
-wholesale user data deletion.
-%
-However, these solve orthogonal problems than the one of practical user data
-controls, and do not support more nuanced redactions such as partial
-anonymization of shared data.
-%\sys requires more developer input, but supports nuanced transformations like
-%decorrelation or partial anonymization of shared data.
-%
-
-%
+\subsection{New Database Designs}
+Other work has created new privacy-focused data storage designs for applications.
 Sypse~\cite{sypse} pseudonymizes user data and partitions personally-identifying
 information (PII) from other data.
 %
@@ -191,14 +173,4 @@ business model.
 %storing all data, including sealed data, on the application's servers.
 %
 
-%
-Some platforms can prove that server-side processing respects
-\rwhighlight{user-defined data policies} via cryptographic means~\cite{zeph} or
-systems security mechanisms~\cite{riverbed}.
-%
-This may restrict feasible application functionality (\eg to additively
-homomorphic functions), or restrict combining data with different policies.
-%
-%\sys only protects user data after sealing, but in exchange allows unrestricted
-%application functionality before sealing.
-%
+
