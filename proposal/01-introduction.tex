@@ -1,25 +1,31 @@
-The question of who controls personal data, and how it is used, has increasingly
-surfaced in the web ecosystem. 
+More than ever before, web services today must address the question of who controls
+personal data, and how it is used.
 %
-Recent legal developments such as the GDPR and CCPA, as well as growing public
-demand and news coverage of \eg data breaches, have increased the need for
-better user data handling in web applications. 
+As a result, web service developers increasingly need to implement
+better user controls in their web applications. However, doing so is challenging: the
+data that users want to protect is often important for the service's function.
+
+%Recent legal developments such as the GDPR and CCPA, as well as growing public
+%demand and news coverage of \eg data breaches, have increased the need for
+%better user data handling in web applications. 
 %
 %Users today give up control of their data to web services in order to use these
 %services, which can put user data at risk of data breaches and expose it to
-%third parties in ways unwelcome or unknown to the user.
-%developers increasingly need to implement better user controls in
-%their web applications.
-%However, doing so is challenging: the data that users want to protect is often
-%important for the service's function.
+%third parties in ways unwelcome or unknown to the user.  While developers
+%increasingly need and want to implement better user controls in their web
+%applications, doing so is challenging: the data that users want to protect is
+%often important for the service's function.
 %
-This thesis identifies key challenges that web developers face today in
-implementing better user data controls, and contributes practical systems that
-can help to give control of user data in web services back to the user.
+
 %
-In particular, this thesis introduces a novel system design that allows
-applications to implement a variety of user data controls while still remaining
-functional.
+This thesis identifies this key tension between application functionality and
+user data protections that web developers face today in implementing better user
+data controls. To address this challenge, this thesis introduces Edna, a novel
+system design that allows applications to implement user data controls that
+redact data in nuanced ways without breaking the application.
+%, and contributes practical systems that
+%can help to give control of user data in web services back to the user.
+%
 %tackles the gray space where users’ need for data protection and
 %application functionality requirements overlap. 
 
