@@ -1,67 +1,108 @@
-More than ever before, web services today must address the question of who controls
-personal data, and how it is used.
+Users' privacy requirements for their sensitive data on web applications are
+highly contextual and constantly in flux: for example, they might wish to hide
+and protect data of an e-commerce or dating app profile when inactive, but also
+want to restore their data should they return to use the application. 
 %
-As a result, web service developers increasingly need to implement
-better user controls in their web applications. However, doing so is challenging: the
-data that users want to protect is often important for the service's function.
-
-%Recent legal developments such as the GDPR and CCPA, as well as growing public
-%demand and news coverage of \eg data breaches, have increased the need for
-%better user data handling in web applications. 
-%
-%Users today give up control of their data to web services in order to use these
-%services, which can put user data at risk of data breaches and expose it to
-%third parties in ways unwelcome or unknown to the user.  While developers
-%increasingly need and want to implement better user controls in their web
-%applications, doing so is challenging: the data that users want to protect is
-%often important for the service's function.
+But today, achieving this flexible privacy remains out of reach, in part because
+of the many challenges facing web developers
+in building services that can adapt to changing privacy
+needs. Consequently, services often provide only coarse-grained, blunt tools that
+result in all-or-nothing exposure of users’ private information.
 %
 
 %
-This thesis identifies this key tension between application functionality and
-user data protections that web developers face today in implementing better user
-data controls. To address this challenge, this thesis introduces Edna, a novel
-system design that allows applications to implement user data controls that
-redact data in nuanced ways without breaking the application.
-%, and contributes practical systems that
-%can help to give control of user data in web services back to the user.
+This thesis identifies the need for new systems that help developers support
+automated, fine-grained controls over user data that provide users with flexible
+privacy, and grant them more nuanced controls over their data that don't exist
+today.
 %
-%tackles the gray space where users’ need for data protection and
-%application functionality requirements overlap. 
+To address the challenges associated with flexible privacy in web applications,
+this thesis introduces Edna, a system that helps web developers realize
+disguised data, a new state of user data that bridges the gap between
+permanently deleted data, and data left accessible and vulnerable to the
+application.
 
-\section{Motivation}
-\label{sec:intro:motivation}
-Users today have little to no control over the data they give to web
-applications.  They must either avoid using an application, or leave their data
-susceptible to leaks, \eg via SQL injections or compromise of other users'
-accounts.  Incentivized by growing public demand and laws such as the GDPR and
-CCPA~\cite{eu:gdpr, ccpa}, developers increasingly need to implement mechanisms
-to give users control over their data’s exposure.
+\subsection{Motivation} 
+Many users today have tens to hundreds of accounts with web
+services that store sensitive data, from social media to tax preparation and
+e-commerce sites~\cite{tens,hundreds,password_life_cycle}.
+%
+And while users now have the right to delete their data (via \eg the
+GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), users want and deserve more nuanced
+controls over their data that don't exist today.
+%
 
-Central to this conversation are two needs: users want to protect their data,
-and applications require data to be available in order to function. Problems
-arise when application functionality requires the same data users want to
-protect: for example, deleting a post may orphan other users' comments on it,
-crashing the application when it expects comments to have an associated post.
-Handling this correctly is difficult for developers---naively removing user data
-can break the application or reduce its functionality. Removal is also usually
-permanent, hurting both users and applications: once a user deletes their data,
-there is no coming back.
+Consider Twitter: after a change in management~\cite{musk-twitter}, many users
+wanted to leave the platform and try out alternatives (\eg Mastodon).  But each
+user faced a tricky question: should they keep their Twitter account, or should
+they delete it?
+%
+Advice on how to quit Twitter~\cite{quit-twitter-india, quit-twitter-mash}
+highlight how keeping an inactive account leaves sensitive information (\eg
+private messages) vulnerable on Twitter's servers; but deleting the account
+prevents the user from changing their mind and coming back.  Hence, many users
+left Twitter but kept their accounts~\cite{nbc-twitter,shondarhimes,kenolin}.
+%
+A better solution would let users temporarily revoke Twitter's access to their
+data while having the option to come back.
 
-Large companies have built systems to help developers get data deletion
-right~\cite{delf}, but the problem goes beyond data deletion. Users may want to
-take a break from using an application, but rest easy that their data is
-protected while they’re inactive; or users may want more fine-grained
-control—\ie have their data exist in a partially redacted state where it is both
-visible and protected. For example, a user might want to disassociate content
-with a specific hashtag from a social media account. Because applications today
-lack support for this, users resort to ad-hoc alternatives like throwaway
-accounts and ``finstas''~\cite{reddit:throwaway, nytimes:finsta} to post content
-that is visible but disconnected from the ``real'' account. This burdens users
-with managing multiple accounts and requires planning ahead, since moving posts
-into a throwaway account or reclaiming them is impossible.
+Similarly, users give dating apps personal data, and frequently deactivate and
+reactivate their accounts.
+%
+This sensitive data should be protected from the application and potential data
+breaches~\cite{tinder, okcupid} when a user deactivates their account, but be
+readily available when they choose to return.
 
-These problems call for research into systems that let web application
-developers provide users with means to manage their data in the gray space where
-users' need for data protection and application functionality requirements
-overlap. 
+Users may also prefer old data, such as past purchases in an online store or
+their passport details with a hotel, to be inaccessible to the service after
+some time of inactivity, and therefore protected from leaks or service
+compromises~\cite{retention,breach:marriott}. Or users may prefer
+to---explicitly or automatically---dissociate their identity from old data, such
+as teenage social media posts or old reviews on HotCRP.
+%
+Today, users work around the lack of such support by explicitly maintaining
+multiple identities (\eg Reddit throwaway
+accounts~\cite{reddit:throwaway} and Instagram
+``finstas''~\cite{nytimes:finsta}), an inflexible and laborious solution.
+%
+
+%
+Providing this functionality can benefit both the service and the user.
+%
+It helps the service comply with privacy regulations, reduces its liability on
+data breaches, and appeals to privacy-conscious users; meanwhile, the user can
+rest assured that their privacy is protected, but can also get their data back
+and reveal their association with it if they want.
+%
+
+\subsection{Why is this hard?} 
+Today, flexible privacy remains out of reach for users of
+web applications in part because getting it right is hard. 
+%
+Real applications have complex notions of privacy, data ownership, and data
+sharing.
+%
+Simple solutions that \eg delete all data associated with a user can break
+referential integrity or create orphaned data, which requires application
+changes to handle correctly, and lack support for users to return.
+%
+To solve this manually, a developer would have to carefully perform
+application-specific database changes to remove data, store any data removed to
+be able to later restore it, and correctly revert the database changes on
+restoring.
+%
+Furthermore, stored data must be inaccessible to the application and protected
+against data breaches, but must be accessible if the user chooses to return.
+%
+
+Developers would also have to reason about interactions between multiple
+data-redacting features.
+%
+For example, imagine an application that supports both account deletion and
+anonymizing old data: if a user wants to delete all their posts after they have
+been anonymized, a SQL query must somehow determine which anonymized posts
+belong to the user in order to remove them.
+%
+And if the user later wants to return, the developer must account for the
+applied anonymization and restore posts as anonymized.
+%

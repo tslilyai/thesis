@@ -1,21 +1,238 @@
-Some intro paragraph
+Many users today have tens to hundreds of accounts with web services that
+store sensitive data, from social media to tax preparation and e-commerce
+sites~\cite{tens,hundreds,password_life_cycle}.
+%
+Users' privacy requirements for this sensitive data are highly contextual and
+constantly in flux: for example, they might wish to hide and protect data of an
+e-commerce or dating app profile when inactive, but also want to restore their
+data should they return to use the app. 
 
-\section{Motivation}
-\label{sec:intro:motivation}
+Today, web developers face many challenges in building services that can adapt
+to these changing privacy needs; as a result, they provide only coarse-grained,
+blunt tools that result in all-or-nothing exposure of users’ private
+information. This thesis identifies the need for new systems to provide
+automated, fine-grained controls over user data that provide users with
+\emph{flexible privacy}, granting them more nuanced controls over their data
+that don't exist today.
 
-\section{Related Work}
-\label{sec:intro:related}
+This talk will focus on Edna, a system that helps web developers realize
+disguised data, a new state of user data that bridges the gap between
+permanently deleted data, and data left accessible and vulnerable to the
+application. Disguising transformations create disguised data by selectively
+rendering user data inaccessible via encryption; and users invoke revealing
+transformations to restore their data and return to the application. Edna
+introduces disguising primitives that address the challenges facing developers,
+such as maintaining application referential integrity, and composing multiple
+disguising and revealing transformations. With Edna, application users can
+remove their data without permanently losing their accounts, anonymize their old
+data, and selectively dissociate personal data from public profiles.
+
+Finally, I discuss applications of Edna’s abstractions beyond disguised data to
+support flexible privacy wherever user data is stored and accessed, including
+ongoing work on fine-grained access control; and how the techniques from Edna
+can integrate with other data protection and compliance systems to enhance user
+privacy on the web.
 
 
-\section{Approach}
-\label{sec:intro:approach}
+While users now have the right to delete this data (via \eg the
+GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), users want and deserve more nuanced
+controls over their data that don't exist today.
 
+Consider Twitter: after a change in management~\cite{musk-twitter}, many users
+wanted to leave the platform and try out alternatives
+(\eg Mastodon).
+But each user faced a tricky question: should they
+keep their Twitter account, or should they delete it?
+%
+Advice on how to quit Twitter~\cite{quit-twitter-india,
+quit-twitter-mash}
+highlight how keeping an inactive account leaves sensitive information (\eg
+private messages) vulnerable on Twitter's servers; but
+deleting the account prevents the user from changing their mind and coming back.
+Hence, many users left Twitter but kept their
+accounts~\cite{nbc-twitter,shondarhimes,kenolin}.
+%
+A better solution would let users temporarily revoke Twitter's access to
+their data while having the option to come back.
 
-\section{Contributions}
-\label{sec:intro:contributions}
+Similarly, users give dating apps personal data, and frequently
+deactivate and reactivate their accounts.
+%
+This sensitive data should be protected from the application and potential
+data breaches~\cite{tinder, okcupid} when a user deactivates their account,
+but be readily available when they choose to return.
 
+Users may also prefer old data, such as past purchases in an online store or
+their passport details with a hotel, to be inaccessible to the service after some
+time of inactivity, and therefore protected from leaks or service
+compromises~\cite{retention,breach:marriott}. Or users may prefer
+to---explicitly or automatically---dissociate their identity from old data, such
+as teenage social media posts or old reviews on HotCRP.
+%
+Today, users work around
+the lack of such support by explicitly maintaining multiple identities (\eg
+Reddit throwaway accounts~\cite{reddit:throwaway}\newstuff{ and Instagram
+``finstas''~\cite{nytimes:finsta}}), an inflexible and laborious
+solution.
+%
 
-\section{Reading Guide}
-\label{sec:intro:reading-guide}
+%
+Providing this functionality can benefit both the service and the user.
+%
+It helps the service comply with privacy regulations, reduces its
+liability on data breaches, and appeals to privacy-conscious users; meanwhile, the user can
+rest assured that their privacy is protected, but can also get their data back and
+reveal their association with it if they want.
+%
 
+\subsection{Why is this hard?}
+%
+Applications lack such functionality today in part because getting it right is hard.
+%
+Real applications have complex notions of privacy, data ownership, and
+data sharing.
+%
+Simple solutions that \eg delete all data associated with a user can break referential
+integrity or create orphaned data, which requires application changes to handle
+correctly, and lack support for users to return.
+%
+To solve this manually, a developer would have to carefully perform
+application-specific database changes to remove data, store any data removed
+to be able to later restore it, and correctly revert
+the database changes on restoring.
+%
+Furthermore, stored data must be inaccessible to the application and
+protected against data breaches, but must be accessible if the user
+chooses to return.
+%
 
+Developers would also have to reason about interactions between multiple
+data-redacting features.
+%
+For example, imagine an application that supports
+both account deletion and anonymizing old data: if
+a user wants to delete all their posts after they have been anonymized, a
+SQL query must somehow determine which anonymized posts belong to the user in
+order to remove them.
+%
+And if the user later wants to return, the developer must
+account for the applied anonymization and restore posts as anonymized.
+%
+
+\subsection{Our Approach}
+%
+We present a system design that moves closer to an
+internet where users can leave services and return at any time, where old data
+on servers is protected by default, and where services provide users with
+control over their identifying data visible to the service and other users.
+
+%
+Our approach is to create a general system that helps developers specify and apply
+two kinds of transformations: \emph{\xxing transformations}, which render all or
+some of the user’s original sensitive data inaccessible to the application; and
+\emph{revealing transformations}, which restore the original data at a user’s
+request.
+%
+\Xxing transformations aim to protect the confidentiality of users' \xxed
+data (\eg links to throwaway accounts or old HotCRP reviews) even if the
+application is later compromised (\eg via a SQL injection or a compromised
+admin's account).
+%
+
+%
+We demonstrate our approach in \sys, a system that realizes disguising and
+revealing transformations for
+database-backed web applications via a set of primitives that have well-defined
+semantics and compose cleanly.
+%
+Developers specify the transformations that their application should provide,
+and \sys takes care of correctly applying, composing, and optionally reverting
+them, while maintaining application functionality and referential integrity.
+%
+
+%
+\subsection{Challenges}
+%
+We had to address three challenges to make this approach work.
+%
+First, \sys needs to present a simple, yet versatile interface for developers to
+specify \xxing transformations.
+%
+\sys addresses this challenge with a restricted programming model centered
+around three primitives: remove, modify, and decorrelate (which reassigns data
+to placeholder users).
+%
+This model limits the potential for developer error, and lets \sys derive the
+correct \xxing and revealing operations, while supporting a wide range of
+transformations.
+%
+
+%
+Second, to work with existing applications in practice, \sys's \xxing
+transformations should require minimal application modifications.
+%
+To achieve this, \sys introduces \emph{pseudoprincipals}, anonymous placeholder
+users that are inserted into the database on \xxing and exist solely to own data
+decorrelated from real users (\eg because the application requires the
+data to continue operating) and maintain referential integrity.
+%
+Pseudoprincipals can also act as built-in ``throwaway accounts,'' as they let the
+user disown data after-the-fact, as well as potentially later reassociate with it.
+%
+To correctly reason about ownership when data may be decorrelated multiple times
+(\eg by global anonymization after throwaways have been created), \sys
+maintains an encrypted speaks-for chain of pseudoprincipals that only the
+original user can unlock and modify.
+%
+
+%
+Third, \sys needs to have access to the original data for users to be able to
+reveal their data and return to the application, but the whole point
+is to make that data inaccessible to the service.
+%
+While \sys could ask users to store their own \xxed data, this would be burdensome.
+%
+Instead, \sys stores the \xxed data on the server in encrypted form, and unlocks and
+restores data to the service only when a user provides their credentials to
+reveal.
+%
+%
+\subsection{Contributions}
+%
+In summary, this paper makes four key contributions:
+\begin{enumerate}[nosep]
+
+    \item Abstractions for \xxing and revealing, and a small set of data-anonymizing primitives (remove, modify, decorrelate) that cover a wide range of application needs and compose cleanly.
+
+    \item Techniques to implement these abstractions, including
+        pseudoprincipals~(\S\ref{s:spec}),
+        speaks-for and diff records~(\S\ref{s:applying}), and speaks-for
+        chains~(\S\ref{s:composition}).
+
+    \item Case studies that integrate \sys with three real-world web
+        applications and demonstrate \sys's ability to enable composable and reversible
+        transformations.
+
+    \item An evaluation of \sys's effectiveness and performance, including
+        how \sys contrasts with and complements related work
+        (Qapla~\cite{qapla} and CryptDB~\cite{cryptdb}).
+\end{enumerate}
+%
+
+%
+While \sys enables \xxing and revealing transformations in a broad class of
+applications, \sys has some limitations.
+%
+First, \sys assumes bug-free \xx specifications, and that applications use \sys
+correctly.
+%
+Second, while \sys helps developers add user data controls to single applications,
+\sys does not tackle the problem of data sharing between services.
+%
+Third, \sys does not aim to protect un\xxed data in the database against compromise;
+combining \sys with an encrypted database can add this protection.
+%
+Finally, attacks to identify users from \sys's metadata (\eg the size of
+stored \xxed data) or placeholder data left in the database (\eg embedded text)
+are out of scope.
+%

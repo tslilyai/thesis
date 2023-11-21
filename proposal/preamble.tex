@@ -1,5 +1,24 @@
 \usepackage{inconsolata}
 \usepackage[T1]{fontenc}
+\usepackage [
+n , % or lambda
+advantage ,
+operators ,
+sets ,
+adversary ,
+landau ,
+probability ,
+notions ,
+logic ,
+ff ,
+mm,
+primitives ,
+events ,
+complexity ,
+oracles ,
+asymptotics ,
+keys
+]{ cryptocode }
 
 \pdfminorversion=7
 
@@ -40,7 +59,43 @@
 %\pagestyle{headings}
 
 % more colors (like RedOrange)
-\usepackage[dvipsnames]{xcolor}
+%\usepackage[dvipsnames]{xcolor}
+\newcommand{\sys}{Edna\xspace}
+\newcommand{\xxed}{disguised\xspace}
+\newcommand{\Xxed}{Disguised\xspace}
+\newcommand{\xxing}{disguising\xspace}
+\newcommand{\Xxing}{Disguising\xspace}
+\newcommand{\Xx}{Disguise\xspace}
+\newcommand{\Xxs}{Disguises\xspace}
+\newcommand{\xx}{disguise\xspace}
+\newcommand{\xxs}{disguises\xspace}
+
+\newcommand\ms[1]{\textcolor{red!55!blue}{[malte: {#1}]}}
+\newcommand\lyt[1]{\textcolor{green!55!blue}{[lyt: {#1}]}}
+\newcommand\hmng[1]{\textcolor{blue!40!red}{[hmng: {#1}]}}
+\newcommand\eddie[1]{\textcolor{blue!55!blue}{[E: {#1}]}}
+\newcommand\newc{\color{green!55!blue}}
+\newcommand\oldc{\color{red!50}}
+\newcommand\normalc{\color{black!100}}
+\newcommand{\tabitem}{~~\llap{\textbullet}~~}
+\newcommand{\eg}{{e.g.},\xspace}
+\newcommand{\ie}{{i.e.},\xspace}
+\newcommand{\vs}{{vs.}\xspace}
+
+% Enumeration commands
+\newcommand{\one}{({\em i}\/)}
+\newcommand{\two}{({\em ii}\/)}
+\newcommand{\three}{({\em iii}\/)}
+\newcommand{\four}{({\em iv}\/)}
+\newcommand{\five}{({\em v}\/)}
+\newcommand{\six}{({\em vi}\/)}
+
+\newcommand{\One}{\textbf{({1}\/)}}
+\newcommand{\Two}{\textbf{({2}\/)}}
+\newcommand{\Three}{\textbf{({3}\/)}}
+
+\hyphenation{set-ups pseu-do-nymize}
+
 
 % qualitative colors
 % subset of https://jfly.uni-koeln.de/color/
@@ -49,6 +104,40 @@
 \definecolor{set2}{HTML}{e59c00} % orange
 \definecolor{set3}{HTML}{009e73} % green
 \definecolor{set4}{HTML}{efe440} % yellow
+
+\definecolor{codegreen}{rgb}{0,0.4,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+
+\newcommand\head[1]{\vspace{6pt}\noindent\textbf{#1}}
+
+% records stuff
+\newcommand\fn[1]{\texttt{{#1}}}
+\newcommand\op[1]{\ensuremath{\texttt{op}_{#1}}}
+\newcommand\privk[1]{\texttt{\ensuremath{\texttt{k}^{\text{pri}}_{#1}}}}
+\newcommand\pubk[1]{\texttt{\ensuremath{\texttt{k}^{\text{pub}}_{#1}}}}
+\newcommand\symk[1]{\texttt{\ensuremath{\texttt{k}_{#1}}}}
+
+\newcommand\tdiff[1]{\ensuremath{\texttt{R}^{\texttt{diff}}_{#1}}}
+\newcommand\town[1]{\ensuremath{\texttt{R}^{\texttt{sf}}_{#1}}}
+\newcommand\lcapa[1]{\ensuremath{\texttt{L}_{#1}}}
+\newcommand\sysk{\texttt{\ensuremath{\texttt{k}_{\text{\sys}}}}}
+
+\newcommand\app[1]{\ensuremath{\texttt{A}({#1})}\xspace}
+\newcommand\rev[1]{\ensuremath{\texttt{R}({#1})}\xspace}
+\newcommand\xstart{\ensuremath{x_{\texttt{start}}}\xspace}
+\newcommand\xhist[1]{\ensuremath{x_{#1}}\xspace}
+\newcommand\appcompone{\ensuremath{\mathcal{S}_1}\xspace}
+\newcommand\appcomptwo{\ensuremath{\mathcal{S}_2}\xspace}
+\newcommand{\syscrypt}{Edna+\allowbreak CryptDB\xspace}
+
+% for protocols
+\createpseudocodeblock{pcb}{center,boxed}{}{}{}
+\createprocedureblock{procb}{center,boxed}{}{}{}
+
+% bold faced captions
+%\captionsetup{textfont=rm,belowskip=-8pt,aboveskip=8pt}
 
 % so we can splice in PDFs
 \usepackage{pdfpages}
@@ -68,7 +157,50 @@
 \usepackage[newfloat,outputdir=latex.out]{minted}
 \setminted[rust]{frame=lines}
 \setminted[c]{frame=lines}
-\usepackage{listings}
+\usepackage{listings, listings-rust, listings-pseudo}
+
+\lstdefinestyle{rust}{
+    language = Rust,
+    aboveskip=0mm,
+    belowskip=0mm,
+    basicstyle=\ttfamily\footnotesize,
+    stringstyle=\color{blue},
+    %backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codepurple},
+    keywordstyle=[2]{\color{lime}},
+    morekeywords=[2]{StartDisguise,EndDisguise}
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+\lstset{style=rust}
+
+\lstdefinestyle{pseudo}{
+    language = Pseudo,
+    aboveskip=0mm,
+    belowskip=0mm,
+    basicstyle=\ttfamily\footnotesize,
+    stringstyle=\color{blue},
+    %backgroundcolor=\color{backcolour},
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{codepurple},
+    keywordstyle=[2]{\color{lime}},
+    breakatwhitespace=false,
+    breaklines=true,
+    captionpos=b,
+    keepspaces=true,
+    showspaces=false,
+    showstringspaces=false,
+    showtabs=false,
+    tabsize=2
+}
+%\lstset{style=pseudo}
 
 % for formulas
 \usepackage{mathtools}
@@ -107,21 +239,17 @@
     filecolor=magenta,
     urlcolor=set1,
     citecolor=set3,
-    pdftitle={Giving Users Control Over Their Data in Web Applications},
+    pdftitle={Flexible Privacy via Disguising and Revealing},
     pdfauthor={Lillian Tsai},
 }
 
 % set the format of figure numbers
 \renewcommand{\thefigure}{\arabic{chapter}-\arabic{figure}}
-\newcommand{\eg}{{e.g.},\xspace}
-\newcommand{\ie}{{i.e.},\xspace}
-
 % restore these definitions to color wp/wpc and braces
 % \newcommand{\syntax}[1]{\textcolor{blue}{#1}}
 % \newcommand{\syntaxbraced}[1]{\cleft[blue]\{#1\cright[blue]\}}
 \newcommand{\syntax}[1]{#1}
 \newcommand{\syntaxbraced}[1]{\{#1\}}
-\newcommand\head[1]{\vspace{6pt}\noindent\textbf{#1}}
 
 \usepackage{pftools}
 \usepackage{amsmath}
@@ -169,10 +297,6 @@
   \pdfbookmark{todo list}{Contents}
   \chapter*{List of TODOs}\@starttoc{tod}}
 \makeatother
-
-% out of habit this macro is called \lyt, even though all TODOs are written by
-% and assigned to me
-\newcommand{\lyt}[1]{\textcolor{red}{\textbf{LYT:}} \todo{#1}}
 
 % a command to indicate current editing progress
 \newcommand{\resume}{

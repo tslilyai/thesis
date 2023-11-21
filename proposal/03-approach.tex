@@ -1,147 +1,77 @@
-\label{sec:intro:approach}
-To enable fine-grained user data controls while retaining application
-functionality, we build a library called Edna.  Edna integrates with web
-applications and provides abstractions that let developers specify not just
-wholesale removal of data, but also flexible redaction or decorrelation of data.
-Edna then changes the database contents in well-defined ways that avoid breaking
-the application.  Developers and users both benefit from Edna: applications can
-expose and advertise new privacy-protection features and reduce their exposure
-in the event of a data breach, while users gain more control over their sealed
-data, including the convenience of returning to the application as if their data
-had been there all along.
-
-Edna introduces \emph{sealing}, which removes or redacts some or all of a user's
-data, and \emph{revealing}, which restores the sealed data at a user's request.
-Sealed data remains on the server, but is encrypted and inaccessible to the web
-application. Sealing changes the database contents and replaces the data to seal
-with placeholder values where necessary (\eg comments require an associated
-post). 
-
-\begin{comment}
-\begin{figure}[t!]
-  \centering
-    \includegraphics{figs/edna_overview.pdf}
-    \caption{Developers write seal specifications and add hooks to invoke Edna
-        from the application (green); in normal operation, clients use these
-        hooks in the application to seal and reveal their data in the database
-        (blue).
-    }
-  \label{f:edna-overview}
-\end{figure}
-
-\begin{figure*}[h]
-  \centering
-  \begin{subfigure}[h]{0.6\columnwidth}
-  \includegraphics[width=\columnwidth]{figs/lobsters_catanon.pdf}
-  \end{subfigure}
-  \begin{subfigure}[h]{1.4\columnwidth}
-  \begin{lstlisting}[language=Ruby,escapeinside={(*}{*)}]
-  def tag_anon
-    # instantiate the seal spec with the provided tag to anonymize
-    seal_spec = edna.instantiate_spec("tag_anon.json", params[:tag])
-    # apply the sealing transformation
-    seal_id = edna.apply_seal(@user.id, params[:password], seal_spec)
-    # email the seal ID to the user to allow revealing
-    SendSealEmail(@user, seal_id)
-  end
-  \end{lstlisting}
-  \end{subfigure}
-  \vspace*{-1em}
-  \caption{The Lobsters developer adds a hook in the UI and code to perform
-      category-based content anonymization.}
-  \label{f:lobsters_hook}
-  \end{figure*}
-\end{comment}
+%
+To tackle the problem of flexible privacy in web applications, we present a
+system design that moves closer to an internet where users can leave services
+and return at any time, where old data on servers is protected by default, and
+where services provide users with control over their identifying data visible to
+the service and other users.
 
 %
-Edna supports user data control in web applications using
-application-specific \emph{sealing transformations}.
+Our approach is to create a general system that helps developers specify and
+apply two kinds of transformations: \emph{\xxing transformations}, which render
+all or some of the user’s original sensitive data inaccessible to the
+application; and \emph{revealing transformations}, which restore the original
+data at a user’s request.
 %
-To integrate an application with Edna, the developer writes seal
-specifications and adds hooks to seal or reveal data using Edna's API.
-%(Figure~\ref{f:edna-overview}).
-%
-Applications (1) register users (human principals) with Edna, (2) invoke Edna to apply
-transformations that seal user data, and (3) invoke Edna to reveal that data
-when requested.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-(1) Applications register users with a public--private keypair
-that either the application or the user's client generates; Edna stores the
-public key in its database, while the user remembers the private key for use in
-future reveal operations.
+\Xxing transformations aim to protect the confidentiality of users' \xxed data
+(\eg links to throwaway accounts or old HotCRP reviews) even if the application
+is later compromised (\eg via a SQL injection or a compromised admin's account).
 %
 
 %
-(2) When the application wants to seal some data, it invokes Edna with the
-corresponding developer-provided seal specification and any necessary
-parameters (such as a user ID).
+We demonstrate our approach in \sys, a system that realizes disguising and
+revealing transformations for database-backed web applications via a set of
+primitives that have well-defined semantics and compose cleanly.
 %
-Seal specifications can remove data, modify data (replacing some or all of its
-contents with placeholder values), or decorrelate data, replacing
-links to users with links to pseudoprincipals (fake users).
-%
-Edna takes the data it removed or replaced and the connection between
-the user and any pseudoprincipals it created, encrypts that data with the user's
-public key, and stores the resulting ciphertext---the \emph{sealed
-data}---such that it cannot be linked to
-the user without the user's private key.
+Developers specify the transformations that their application should provide,
+and \sys takes care of correctly applying, composing, and optionally reverting
+them, while maintaining application functionality and referential integrity.
 %
 
 %
-(3) When a user wishes to reveal their sealed data, they pass credentials
-to the application, which calls into Edna to reveal the data.
+\subsection{Challenges}
 %
-Credentials are application-specific: users may either provide their private
-key or other credentials sufficient for Edna to re-derive the private key.
+We had to address three challenges to make this approach work.
 %
-Edna gets the sealed data and decrypts it, undoing the changes to the
-application database that sealing introduced.
+First, \sys needs to present a simple, yet versatile interface for developers to
+specify \xxing transformations.
+%
+\sys addresses this challenge with a restricted programming model centered
+around three primitives: remove, modify, and decorrelate (which reassigns data
+to placeholder users).
+%
+This model limits the potential for developer error, and lets \sys derive the
+correct \xxing and revealing operations, while supporting a wide range of
+transformations.
+%
 
 %
-Edna provides the developer with sensible default sealing and revealing
-semantics (\eg revealing makes sure not to overwrite changes made since
-sealing), which the developer can customize via a low-level API provided by
-Edna.
+Second, to work with existing applications in practice, \sys's \xxing
+transformations should require minimal application modifications.
+%
+To achieve this, \sys introduces \emph{pseudoprincipals}, anonymous placeholder
+users that are inserted into the database on \xxing and exist solely to own data
+decorrelated from real users (\eg because the application requires the data to
+continue operating) and maintain referential integrity.
+%
+Pseudoprincipals can also act as built-in ``throwaway accounts,'' as they let
+the user disown data after-the-fact, as well as potentially later reassociate
+with it.
+%
+To correctly reason about ownership when data may be decorrelated multiple times
+(\eg by global anonymization after throwaways have been created), \sys maintains
+an encrypted speaks-for chain of pseudoprincipals that only the original user
+can unlock and modify.
+%
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\head{Threat Model.}
-\label{s:threat}
 %
-Edna assumes well-intentioned developers who write seal specifications
-that capture the desired application semantics.
+Third, \sys needs to have access to the original data for users to be able to
+reveal their data and return to the application, but the whole point is to make
+that data inaccessible to the service.
 %
-Edna seals data according to these specifications, but because some data
-must be retained in the database to keep application semantics intact,
-Edna cannot protect against inference attacks.
-%provide information-theoretic privacy guarantees.
+While \sys could ask users to store their own \xxed data, this would be
+burdensome.
 %
-Nevertheless, Edna protects a user's \emph{sealed} data against:
-%
-\begin{enumerate}[nosep]
-  \item arbitrary application database accesses (\eg SQL
-    injection attacks);
-  \item public exposure or other users' ability to view the data through
-    the application (\eg compromised accounts, including privileged ones); and
-  \item remote code execution with the application's privileges
-    (\eg PHP's \texttt{eval()}).
-\end{enumerate}
-%
-Edna guarantees that a user's sealed data is protected unless an attacker
-obtains their credentials.
-%
-While Edna hides the contents of sealed data and relationships between sealed
-data and users, it does not hide the existence of sealed data. (An attacker
-can see whether a user has sealed some data, but cannot see which sealed data
-corresponds to this user.)
-%
-Some transformations, especially decorrelation, cannot protect against
-statistical inference attacks over information still visible in the database.
-%
-Edna also cannot handle copies of data embedded in other data (\eg quoted
-text) or snapshots saved when the data was still in the database.
-%
-% STANDARD CLAIMS ABOUT CRYPTO ASSUMPTIONS
-We make standard assumptions about the security of cryptographic primitives:
-attackers cannot break encryption, and keys stored with clients are safe.
+Instead, \sys stores the \xxed data on the server in encrypted form, and unlocks
+and restores data to the service only when a user provides their credentials to
+reveal.
 %

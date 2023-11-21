@@ -1,95 +1,69 @@
 \label{sec:intro:contrib}
-Edna will provide the following contributions:
-\begin{enumerate}[nosep] 
-    \item A new paradigm for developers to provide flexible user control over data in web applications, with cryptographic protection and while maintaining application functionality and invariants.
-    \item Abstractions for sealing and revealing, and a small set of data-anonymizing primitives (remove, modify, decorrelate) that cover a wide range of application needs and compose cleanly.
-    \item The design and implementation of Edna, our prototype library that implements user data control via sealing and revealing, as well as Edna-CryptDB, which additionally encrypts unsealed data.
-    \item Case studies of integrating Edna with three real-world web applications, an evaluation of Edna's effectiveness, performance, and security, and a comparison to Qapla.
+%
+This thesis makes the following contributions: 
+\begin{enumerate}[nosep]
+    \item The identification and exploration of the problem of \emph{flexible privacy} in
+        web applications
+    \item Abstractions to achieve flexible privacy via \emph{disguised data},
+        including abstractions for \xxing and revealing, and a small set of
+        data-anonymizing primitives (remove, modify, decorrelate) that cover a
+        wide range of application needs and compose cleanly.
+
+    \item Techniques to implement these abstractions, including
+    pseudoprincipals, speaks-for and diff
+    records, and speaks-for chains.
+
+    \item A design and realization of these techniques in \sys, a prototype
+        library that implements user data control via disguising and revealing.
+
+    \item Case studies that integrate \sys with three real-world web
+    applications and demonstrate \sys's ability to enable composable and
+    reversible transformations.
+
+    \item An evaluation of \sys's effectiveness and performance, including how
+    \sys contrasts with and complements related work (Qapla~\cite{qapla} and
+    CryptDB~\cite{cryptdb}).  
 \end{enumerate}
 %
-\S\ref{s:edna} appends a preliminary paper describing Edna's design, implementation, and
-evaluation to this proposal.
-
-\iffalse
-\subsection{Design}
-In this section, we will describe:
-\begin{itemize}[nosep]
-    \item Seal specifications written using the remove, modify, and decorrelate primitives.
-    \item Edna's sealing procedure and encryption protection for sealed data.
-    \item Edna's revealing procedure (including principal reveal credentials) and consistency checks.
-    \item Edna's sealing semantics for shared data.
-    \item Composition of sealing transformations, recursive sealing of
-        decorrelated data, and revealing in the presence of pseudoprincipal
-        chains. (This will be expanded upon much more than in the current Edna
-        paper).
-    \item The design of Edna-CryptDB, which simultaneously protects against database server compromises even for
-unsealed data and adds Edna's protections for sealed data to encrypted
-        databases.
-\end{itemize}
-
-\subsection{Implementation}
-Edna's prototype is implemented in Rust. We describe Edna's high-level and low-level
-application APIs, implementation of password-based reveal credentials, and
-implementation choices (\eg chosen cryptographic scheme).
-
-\subsection{Evaluation}
-We integrate Edna with three web applications as case studies: HotCRP, Lobsters,
-and WebSubmit in order to evaluate Edna's effectiveness at providing nuanced and
-useful sealing and revealing transformations.
-%
-We also evaluate Edna's security and performance (\eg effect on normal
-application throughput, and performance of transformations themselves).
-%
-To investigate the need for Edna as a new system, we also tried to realize Edna's
-functionality atop Qapla~\cite{qapla}, a framework that rewrites SQL queries to
-conform to access control policies. 
-%We found that Qapla requires invasive
-%application changes, its abstractions are awkward for sealing and revealing, and
-%Qapla's query rewriting slows down common queries.
-\fi
+\S\ref{s:edna} appends \sys's paper describing \sys's design, implementation,
+and evaluation to this proposal.
 
 \subsection{Limitations}
-Edna has some limitations. Its usability goals, and specifically the fact that
-placeholder data continues to exist in the database, prevent Edna from
-protecting against inference attacks (\eg statistical correlation attacks). Edna
-also assumes bug-free seal specifications, and that applications use
-Edna correctly. Finally, Edna provides limited protection for sealed data
-against attackers who compromise the database server, as auxiliary database
-information (\eg logs) may contain old plaintext data; Edna-CryptDB strengthens
-these protections.
-
-\subsection{Extensions: Hydra}
-Hydra narrows down on a specific aspect of Edna, namely how users control their
-identities and links between their identities and data in web applications.
-%Users today will manually implement ad-hoc alternatives like throwaway accounts
-%and ``finstas''~\cite{reddit:throwaway, nytimes:finsta} to post content that is
-%visible but disconnected from the ``real'' account. 
 %
-Hydra provides a library that enables web applications to provide their
-users inbuilt for splintering and merging their web identities within the
-application. With Hydra, applications can let users decorrelate data to
-context-specific identities (\eg for work or for family), easily
-move their data between identities, spin off new identities when necessary, and
-merge identities if desired. Importantly, only the user can determine which
-web application identities are linked to themselves.
+While \sys enables \xxing and revealing transformations in a broad class of
+applications, \sys has some limitations.
 %
-Hydra explores the result of taking application-supported data
-decorrelation to the extreme, while preserving application functionality and
-protecting correlations between data and users. 
-%Applications both retain
-%(decorrelated) data for \eg analytical or advertising purposes, while users gain
-%security and control over what data is linked to which of their web application
-%identities.
+First, \sys assumes bug-free \xx specifications, and that applications use \sys
+correctly.
+%
+Second, while \sys helps developers add user data controls to single applications,
+\sys does not tackle the problem of data sharing between services.
+%
+Third, \sys does not aim to protect un\xxed data in the database against compromise;
+combining \sys with an encrypted database can add this protection.
+%
+Finally, attacks to identify users from \sys's metadata (\eg the size of
+stored \xxed data) or placeholder data left in the database (\eg embedded text)
+are out of scope.
+%
 
-Hydra adds the following expected contributions:
-\begin{enumerate}[nosep] 
-    \item A new paradigm for developers to provide user account splintering and
-        merging, while cryptographically protecting links between user accounts
-        and while maintaining application functionality and invariants.
-    \item A case study integrating Hydra with a real-world web application,
-        Lobsters, and an evaluation of Hydra's effectiveness, performance, and
-        security.
+\subsection{Extensions: Robust Revealing}
+\sys currently performs a set of consistency checks that allow it to detect if
+revealing transformations will violate referential integrity or other structual
+database invariants (\eg uniqueness requirements). However, because disguised
+data remained inaccessible to the application prior to reveal, application
+updates that implicitly enforce invariants on application data remain unknown
+(and thus uncheckable) by \sys.
+%
+Futhermore, \sys's checks are conservative: data could still be revealed even
+in the presence of structual database transformations like schema migrations, if
+\sys transforms the disguised data in appropriate ways prior to reveal.
+
+These extensions will add the following contributions:
+\begin{enumerate}[nosep]
+    \item Support for revealing in the presence of schema migrations that affect
+        the data to reveal.
+    \item Addition of implicit application invariants to \sys's consistency
+        checks, which enable \sys to prevent revealing transformations from
+        breaking implicit application semantics.
 \end{enumerate}
-
-%Multi-account containers in Firefox let users act as distinct identities as they
-%browse the web.
