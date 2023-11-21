@@ -1,16 +1,22 @@
 %
 To tackle the problem of flexible privacy in web applications, we present a
-system design that moves closer to an internet where users can leave services
+system design that moves closer to an Internet where users can leave services
 and return at any time, where old data on servers is protected by default, and
 where services provide users with control over their identifying data visible to
 the service and other users.
-
 %
-Our approach is to create a general system that helps developers specify and
-apply two kinds of transformations: \emph{\xxing transformations}, which render
-all or some of the user’s original sensitive data inaccessible to the
-application; and \emph{revealing transformations}, which restore the original
-data at a user’s request.
+We capture this goal with the new key abstraction of \emph{disguised data}.
+Disguised data represents a state of data where \one{} some or all of the user's
+original sensitive data is rendered inaccessible to the application; \two{} some
+data may be replaced with placeholders to keep the application structure intact
+(\eg placeholder parent comments to maintain comment thread structure); and
+\three{} the data can be restored with the user's authorization.
+%
+
+To realize disguised data, we present a general system that helps developers
+specify and apply two kinds of transformations: \emph{\xxing transformations},
+which move the user's data into a disguised state; and \emph{revealing
+transformations}, which restore the original data at a user’s request.
 %
 \Xxing transformations aim to protect the confidentiality of users' \xxed data
 (\eg links to throwaway accounts or old HotCRP reviews) even if the application
@@ -88,30 +94,6 @@ reveal.
     }
   \label{f:edna-overview}
 \end{figure}
-
-\begin{figure}[h]
-  \centering
-  \begin{subfigure}[h]{0.5\columnwidth}
-  \includegraphics[width=\columnwidth]{figs/lobsters_catanon}
-  \end{subfigure}
-  \begin{subfigure}[h]{\columnwidth}
-  \begin{lstlisting}[language=Ruby,escapeinside={(*}{*)}]
-  def tag_anon
-    # instantiate the disguise spec with the provided tag to anonymize
-    disg_spec = edna.instantiate_spec("tag_anon.json",params[:tag])
-    # apply the disguising transformation
-    disg_id = edna.apply_disguise(@user.id,params[:passwd],disg_spec)
-    # email the disguise ID to the user to allow revealing
-    SendDisguiseEmail(@user, disg_id)
-  end
-  \end{lstlisting}
-  \end{subfigure}
-  \vspace*{-1em}
-  \caption{The Lobsters developer adds a hook in the UI and code to perform
-      topic-based anonymization.}
-  \label{f:lobsters_hook}
-  \end{figure}
-
 %
 \sys helps developers realize new options for users to control their data
 via \emph{\xxing transformations}.
@@ -166,8 +148,97 @@ application database that \xxing introduced.
 \sys provides the developer with sensible default \xxing and revealing
 semantics (\eg revealing makes sure not to overwrite changes made since
 \xxing).
-%which the developer can customize via a low-level API provided by
-%\sys.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Example: Lobsters Topic Anonymization}
+\label{s:design:lobsters}
+
+\begin{figure}[t]
+\centering
+\begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
+// Decorrelate comments on stories w/tag {{TAG}}
+"comments": [{
+  "type": "Decorrelate",
+  "predicate": "tags.tag = {{TAG}}",
+  "from": "comments JOIN stories ON comments.story_id = stories.id
+           JOIN taggings ON stories.id = taggings.story_id
+           JOIN tags ON...",
+  "group_by": "stories.id",
+  "principal_fk": "comments.user_id" } ],
+// Remove votes on stories w/tag {{TAG}}
+"votes": [{
+  "type": "Remove",
+  "predicate": "tags.tag = {{TAG}}",
+  "from": "votes JOIN stories...",
+  "principal_fk": "votes.user_id",
+}, ... ]
+\end{lstlisting}
+    \caption{Lobsters topic-based anonymization \xx specification (JSON
+    pseudocode), which decorrelates comments and removes votes on stories with
+    the specific topic tag.}
+\label{f:spec}
+\end{figure}
+
+
+
+\begin{figure}[h]
+  \centering
+  \begin{subfigure}[h]{0.5\columnwidth}
+  \includegraphics[width=\columnwidth]{figs/lobsters_catanon}
+  \end{subfigure}
+  \begin{subfigure}[h]{\columnwidth}
+  \begin{lstlisting}[language=Ruby,escapeinside={(*}{*)}]
+  def tag_anon
+    # instantiate the disguise spec with the provided tag to anonymize
+    disg_spec = edna.instantiate_spec("tag_anon.json",params[:tag])
+    # apply the disguising transformation
+    disg_id = edna.apply_disguise(@user.id,params[:passwd],disg_spec)
+    # email the disguise ID to the user to allow revealing
+    SendDisguiseEmail(@user, disg_id)
+  end
+  \end{lstlisting}
+  \end{subfigure}
+  \vspace*{-1em}
+  \caption{The Lobsters developer adds a hook in the UI and code to perform
+      topic-based anonymization.}
+  \label{f:lobsters_hook}
+  \end{figure}
+
+Lobsters~\cite{lobsters} is a link-sharing and discussion platform with 15.4k
+users.
+%
+Its database schema consists of stories, tags on stories, comments, votes,
+private messages, user accounts, and other user-associated metadata.
+%
+Users create accounts, submit URLs as stories, and interact with other users
+and their posted stories via comment threads and votes.
+%
+
+Consider \textbf{topic-based anonymization}, which allows users to
+hide their interest in a topic (a ``tag'' in Lobsters) by decorrelating
+their comments and removing their votes on stories with that tag.
+%
+For instance, a Lobsters user Bea who posts about their interests---Rust,
+static analysis, and Star Wars---might want to hide associations with
+Star Wars before sharing their profile with potential employers.
+%
+This is currently not possible in Lobsters.
+
+%
+The Lobsters developer can realize topic-based anonymization as a \xxing
+transformation.
+% that anonymizes Bea's contributions in the database, while allowing
+% Bea to later edit and reclaim them if desired.
+%
+First, the developer writes a \xx specification that instructs \sys to
+decorrelate comments and remove votes on ``Star Wars'' stories
+(Figure~\ref{f:spec}), and provides it to \sys.
+%
+They also add frontend code and UI elements that allow authenticated users to
+trigger the \xxing transformation (Figure~\ref{f:lobsters_hook}).
+%
+When Bea wants to anonymize their contributions on content tagged ``Star Wars'',
+Lobsters invokes \sys with the provided specification .
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Threat Model.}
