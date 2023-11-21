@@ -24,28 +24,24 @@
 \end{figure}
 \fi
 
-\sys is the first system to address the problem of reversible and composable data
-transformations for selective data removal in web applications.
+This thesis describes \sys, the first system to address the problem of
+reversible and composable data transformations for flexible data privacy in web
+applications.
 %
-Existing systems aim instead to support data deletion, prevent
-unauthorized data access, or protect against database server
-compromise---valuable, but complementary goals to \sys's.
-%
-%\S\ref{s:eval-related} delves further into these system differences:
-%we contrast \sys with Qapla (a policy enforcement system),
-%and demonstrate how \sys can leverage encrypted storage
-%to add protections for un\xxed data.
+Existing systems aim instead to support data deletion, prevent unauthorized data
+access, or protect against database server compromise---valuable, but
+complementary goals to \sys's.
 
 \textbf{Data deletion tools}, such as DELF at
-Meta~\cite{delf}, help correctly delete data.
+Meta~\cite{delf} and K9DB\cite{k9db} help correctly delete data.
 %
-DELF lets developers specify deletion policies via annotations on
-social graph edges and object types, and ensures correct cascading data
-deletion.
+%DELF lets developers specify deletion policies via annotations on
+%social graph edges and object types, and ensures correct cascading data
+%deletion.
 %
-Other systems support wholesale user data deletion by tracking
-data ownership by modifying the data layout~\cite{usershards, k9db} or
-tracking information flow~\cite{schengendb}.
+%Other systems support wholesale user data deletion by tracking
+%data ownership by modifying the data layout~\cite{usershards, k9db} or
+%tracking information flow~\cite{schengendb}.
 %
 While \sys also supports GDPR account deletion, \sys's focus is on more nuanced
 use cases beyond simple deletion: \sys allows users to return after deletion,
@@ -56,15 +52,17 @@ can continue using the application.
 user's data.
 %
 
-\textbf{Policy enforcement systems} such as Qapla~\cite{qapla} aim to prevent
-unauthorized access to data and protect against leakage via compromised
-accounts or SQL injections. They enforce developer-specified
-visibility and access control policies via information flow
-control~\cite{static, jeeves, jif, hails, ifdb}, authorized views~\cite{oracle},
-per-user views~\cite{multiverse}, or by blocking or rewriting database
-queries~\cite{blockaid, qapla, sieve}.
+\textbf{Policy enforcement systems} such as Qapla~\cite{qapla},
+Blockaid~\cite{blockaid} and others~\cite{static, jeeves, jif, hails, ifdb,
+oracle, multiverse, sieve} aim to prevent unauthorized access to data and
+protect against leakage via compromised accounts or SQL injections. 
+%They enforce developer-specified
+%visibility and access control policies via information flow
+%control~\cite{static, jeeves, jif, hails, ifdb}, authorized views~\cite{oracle},
+%per-user views~\cite{multiverse}, or by blocking or rewriting database
+%queries~\cite{blockaid, qapla, sieve}.
 %
-Policy-enforcing systems do not help users anonymize data or maintain
+However, policy-enforcing systems do not help users anonymize data or maintain
 application integrity constraints, which is \sys's explicit
 goal.
 %
@@ -77,12 +75,12 @@ service itself.
 Mylar~\cite{mylar} protect against database server compromise, with some
 limitations~\cite{grubbs}.
 %
-These systems encrypt data in the database, and
-ensure that only users with access to the right keys can decrypt the data.
+%These systems encrypt data in the database, and
+%ensure that only users with access to the right keys can decrypt the data.
 %
-Applications must handle keys, and send queries
-either through trusted proxies that decrypt data~\cite{cryptdb}, or move
-application functionality client-side~\cite{mylar}.
+%Applications must handle keys, and send queries
+%either through trusted proxies that decrypt data~\cite{cryptdb}, or move
+%application functionality client-side~\cite{mylar}.
 %
 Encrypted databases have orthogonal goals to \sys's: while they protect data at all times
 against attackers who do not have the keys, encrypted databases do not help applications
@@ -90,67 +88,57 @@ anonymize or temporarily remove data, which \sys does.
 %
 Any user with legitimate access can view the data in an encrypted database,
 whereas \sys removes \xxed data from the database.
-%changes the database contents to hide sensitive data.
-%from anyone other than the owning user.
 
-%Policy-enforcing and encrypted storage systems do not help users anonymize data
-%or maintain application integrity constraints via anonymized data, which is
-%\sys's explicit goal. Unlike these systems, \sys changes the database contents,
-%so sensitive data is no longer available in the database (and thus unavailable
-%even to the service itself).
-
-%\lyt{Changed above.}
+\textbf{Other related work} uses crytographic or systems security methods to
+prove enforcement of user-defined policies~\cite{zeph, riverbed,
+vanish}\lyt{does vanish belong here?}, or explores
+new decentralized paradigms for web application operation~\cite{solid, bstore,
+databox, diy, amber, oort, w5, blockstack}.  These may restrict application
+functionality, whereas \sys leaves the data and business models unchanged.
+\lyt{ignoring single-device mobile dada encryption here.}
 %
-%Figure 1 shows
-%the threats that policy enforcement systems (\eg Qapla~\cite{qapla}), encrypted
-%databases (\eg CryptDB~\cite{cryptdb}, and \sys defend against.
-
-\textbf{Other related work}.
+%%
+%{Devices} using iOS~\cite{applesecurity},
+%Android~\cite{applesecurity}, or CleanOS~\cite{cleanos} revoke
+%data access via encryption, like \sys does.
+%%
+%However, these systems operate in settings that store only a single user's data;
+%\sys instead tackles the problem of
+%transformations that operate over multiple users' data and shared data without
+%breaking the application.
+%%
 %
-% Other systems share \sys's goal of giving users more control over user
-% data.
+%%
+%Vanish~\cite{vanish} provides users with self-destructing data and a {proof of
+%data deletion} using decentralized infrastructure and cryptographic techniques
+%(with limitations against Sybil attacks~\cite{defeat_vanish}). Unlike
+%\sys, Vanish cannot restore deleted data and requires extensive application
+%restructuring.
+%%
 %
-{Devices} using iOS~\cite{applesecurity},
-Android~\cite{applesecurity}, or CleanOS~\cite{cleanos} revoke
-data access via encryption, like \sys does.
+%%
+%{Sypse~\cite{sypse}} pseudonymizes user data and partitions
+%personally identifying information (PII) from other data. Instead of
+%partitioning data, \sys modifies the database and stores \xxed data
+%encrypted.
+%%
 %
-However, these systems operate in settings that store only a single user's data;
-\sys instead tackles the problem of
-transformations that operate over multiple users' data and shared data without
-breaking the application.
+%{Decentralized platforms} such as Solid~\cite{solid}, BSTORE~\cite{bstore},
+%Databox~\cite{databox}, and others~\cite{diy, amber, oort, w5, blockstack} put
+%data directly under user control, since users store their own data.
+%%
+%But decentralized platforms burden users with maintaining infrastructure, lack
+%the capacity for server-side compute, and break today's ad-based
+%business model.
+%%
+%By contrast, \sys leaves the data and business models unchanged,
+%and stores all data, including \xxed data, on the application's servers.
+%%
 %
-
-%
-Vanish~\cite{vanish} provides users with self-destructing data and a {proof of
-data deletion} using decentralized infrastructure and cryptographic techniques
-(with limitations against Sybil attacks~\cite{defeat_vanish}). Unlike
-\sys, Vanish cannot restore deleted data and requires extensive application
-restructuring.
-%
-
-%
-{Sypse~\cite{sypse}} pseudonymizes user data and partitions
-personally identifying information (PII) from other data. Instead of
-partitioning data, \sys modifies the database and stores \xxed data
-encrypted.
-%
-
-{Decentralized platforms} such as Solid~\cite{solid}, BSTORE~\cite{bstore},
-Databox~\cite{databox}, and others~\cite{diy, amber, oort, w5, blockstack} put
-data directly under user control, since users store their own data.
-%
-But decentralized platforms burden users with maintaining infrastructure, lack
-the capacity for server-side compute, and break today's ad-based
-business model.
-%
-By contrast, \sys leaves the data and business models unchanged,
-and stores all data, including \xxed data, on the application's servers.
-%
-
-Some platforms can prove that server-side processing respects
-{user-defined policies} via cryptographic means~\cite{zeph} or
-systems security mechanisms~\cite{riverbed}. This may restrict feasible
-application functionality (\eg to additively homomorphic functions), or restrict
-combining data with different policies. \sys protects data only after
-\xxing, but allows unrestricted application functionality before
-\xxing.
+%Some platforms can prove that server-side processing respects
+%{user-defined policies} via cryptographic means~\cite{zeph} or
+%systems security mechanisms~\cite{riverbed}. This may restrict feasible
+%application functionality (\eg to additively homomorphic functions), or restrict
+%combining data with different policies. \sys protects data only after
+%\xxing, but allows unrestricted application functionality before
+%\xxing.
