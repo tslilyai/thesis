@@ -3,8 +3,7 @@
 This thesis makes the following contributions: 
 \begin{enumerate}[nosep]
     \item The identification and exploration of the problem of \emph{flexible
-        privacy} for user data in web applications. \lyt{including a survey of 
-        state of the art systems for data privacy and data protections?}
+        privacy} for user data in web applications.
 
     \item Abstractions to achieve flexible privacy in web applications via \emph{disguised data},
         including abstractions for \xxing and revealing, and a small set of
@@ -25,14 +24,9 @@ This thesis makes the following contributions:
     \item An evaluation of \sys's effectiveness and performance, including how
     \sys contrasts with and complements related work (Qapla~\cite{qapla} and
     CryptDB~\cite{cryptdb}).  
-    
-\item \lyt{An exploration of additional areas to apply flexible privacy? (Dunno
-    if this is a contribution, but it would be nice to demonstrate how Funhouse
-        fits into the picture!)}
 \end{enumerate}
 %
-\S\ref{s:edna} appends \sys's paper describing \sys's design, implementation,
-and evaluation to this proposal.
+Appended to this proposal is the \sys paper describing \sys's design, implementation, and evaluation.
 
 \subsection{Limitations}
 %
@@ -53,23 +47,17 @@ stored \xxed data) or placeholder data left in the database (\eg embedded text)
 are out of scope.
 %
 
-\subsection{Extensions: Robust Revealing}
-\sys currently performs a set of consistency checks that allow it to detect if
-revealing transformations will violate referential integrity or other structual
-database invariants (\eg uniqueness requirements). However, because disguised
-data remained inaccessible to the application prior to reveal, application
-updates that implicitly enforce invariants on application data remain unknown
-(and thus uncheckable) by \sys.
-%
-Futhermore, \sys's checks are conservative: data could still be revealed even
-in the presence of structual database transformations like schema migrations, if
-\sys transforms the disguised data in appropriate ways prior to reveal.
+\subsection{Remaining Work: Revealing with Schema Migrations and Application
+Updates}
 
-These extensions will add the following contributions:
-\begin{enumerate}[nosep]
-    \item Support for revealing in the presence of schema migrations that affect
-        the data to reveal.
-    \item Addition of implicit application invariants to \sys's consistency
-        checks, which enable \sys to prevent revealing transformations from
-        breaking implicit application semantics.
-\end{enumerate}
+In \sys's current design, \textbf{application updates} that implicitly enforce
+invariants on application data remain unknown (and thus uncheckable) by \sys.
+\sys also fails to reveal disguised data affected by \textbf{schema migrations}
+performed since the time of disguise.
+%
+We will add an API for developers to log important updates and schema migrations with \sys, which \sys will apply to disguised data prior to restoring it to the database.
+
+\sys will apply these updates or schema migrations prior to performing \sys's
+existing consistency checks; these checks enable \sys to detect if revealing
+transformations will violate referential integrity or other structual database
+invariants (\eg uniqueness requirements). 
