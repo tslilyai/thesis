@@ -28,16 +28,19 @@ This thesis makes the following contributions:
 %
 Appended to this proposal is the \sys paper describing \sys's design, implementation, and evaluation.
 
+\iffalse
 \subsection{Limitations}
 %
-While \sys enables \xxing and revealing transformations in a broad class of
-applications, \sys has some limitations.
+While disguised data can help developers to add more flexible user data
+controls, the abstraction and its implementation in \sys have some limitations. 
 %
-First, \sys assumes bug-free \xx specifications, and that applications use \sys
+First, disguised data is a concept scoped for single applications, and does not tackle the problem of data sharing between services.
+%
+%While \sys enables \xxing and revealing transformations in a broad class of
+%applications, \sys has some limitations.
+%
+Second, \sys assumes bug-free \xx specifications, and that applications use \sys
 correctly.
-%
-Second, while \sys helps developers add user data controls to single applications,
-\sys does not tackle the problem of data sharing between services.
 %
 Third, \sys does not aim to protect un\xxed data in the database against compromise;
 combining \sys with an encrypted database can add this protection.
@@ -46,6 +49,7 @@ Finally, attacks to identify users from \sys's metadata (\eg the size of
 stored \xxed data) or placeholder data left in the database (\eg embedded text)
 are out of scope.
 %
+\fi
 
 \subsection{Remaining Work: Revealing with Schema Migrations and Application
 Updates}

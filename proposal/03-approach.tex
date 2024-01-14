@@ -36,7 +36,7 @@ them, while maintaining application functionality and referential integrity.
 %
 \subsection{Challenges}
 %
-We had to address three challenges to make this approach work.
+\sys's approach faces three challenges.
 %
 First, \sys needs to present a simple, yet versatile interface for developers to
 specify \xxing transformations.
@@ -280,11 +280,9 @@ user provides them to the application for reveal, or via external means such as
 phishing, \sys provides no guarantees about the user's current or future
 disguised data.
 %
-\sys also expects the application to protect backups created prior to disguising;%
-\footnote{If the application restores a backup, \sys continues operating
-as if only the transformations up to the time of the snapshot had been applied.}
-and external copies of the data
-(\eg Internet Archive or screenshots) are out of scope.
+\sys also expects the application to protect backups created prior to
+disguising, and external copies of the data (\eg Internet Archive or
+screenshots) are out of scope.
 %
 
 %

@@ -1,26 +1,35 @@
 Users' privacy requirements for their sensitive data on web applications are
-highly contextual and constantly in flux: for example, they might wish to hide
+highly contextual and constantly in flux. For example, a user might wish to hide
 and protect data of an e-commerce or dating app profile when inactive, but also
-want to restore their data should they return to use the application. 
+want their data to be present should they return to use the application. 
 %
-But today, achieving this flexible privacy remains out of reach, in part because
-of the many challenges facing web developers
-in building services that can adapt to changing privacy
-needs. Consequently, services often provide only coarse-grained, blunt tools that
+%But today, achieving this flexible privacy remains out of reach, in part
+%because of the many challenges facing web developers in building services that
+%can adapt to changing privacy needs. 
+Today, however, services often provide only coarse-grained, blunt tools that
 result in all-or-nothing exposure of users’ private information.
 %
 
 %
-This thesis identifies the need for new systems that help developers support
-automated, fine-grained controls over user data that provide users with flexible
-privacy, and grant them more nuanced controls over their data that don't exist
-today.
+This thesis introduces the notion of \emph{disguised data}, a reversible state
+of data in which sensitive data is selectively hidden.
 %
-To address the challenges associated with flexible privacy in web applications,
-this thesis introduces Edna, a system that helps web developers realize
-\emph{disguised data}, a new state of user data that bridges the gap between
-permanently deleted data, and data left accessible and vulnerable to the
-application.
+This thesis then describes \sys---the first system for disguised data---which
+helps web applications allow users to remove their data without permanently
+losing their accounts, anonymize their old data, and selectively dissociate
+personal data from public profiles.
+%
+\sys helps developers support these features while maintaining application
+functionality and referential integrity via \emph{disguising} and \emph{revealing}
+transformations.
+%
+Disguising selectively renders user data inaccessible via encryption, and
+revealing enables the user to restore their data to the application.
+%
+\sys's techniques allow transformations to compose in any order, \eg deleting a
+previously anonymized user's account, or restoring an account back to an
+anonymized state.
+%
 
 \subsection{Motivation} 
 Many users today have tens to hundreds of accounts with web
@@ -74,6 +83,8 @@ data breaches, and appeals to privacy-conscious users; meanwhile, the user can
 rest assured that their privacy is protected, but can also get their data back
 and reveal their association with it if they want.
 %
+This thesis introduces the new abstraction of \emph{disguised data} that
+enables this functionality and supports these use cases. 
 
 \subsection{Why is this hard?} 
 Today, flexible privacy remains out of reach for users of

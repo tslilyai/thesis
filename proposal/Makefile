@@ -3,10 +3,10 @@ TEX_FILES := $(wildcard *.tex) \
 PLOTS := 
 DEPS := $(TEX_FILES) $(wildcard *.bib) $(wildcard fig/*.png) $(PLOTS)
 
-default: thesis.pdf abstract.txt
+default: proposal.pdf abstract.txt
 
-thesis.pdf: $(DEPS)
-	./latexrun --latex-args='-shell-escape' --bibtex-args=-min-crossrefs=100 -W no-overfull -W no-tabfigures thesis.tex
+proposal.pdf: $(DEPS)
+	./latexrun --latex-args='-shell-escape' --bibtex-args=-min-crossrefs=100 -W no-overfull -W no-tabfigures proposal.tex
 
 abstract.txt: frontmatter/abstract.tex
 	cat $< | \
@@ -36,4 +36,4 @@ spell:
 
 clean:
 	./latexrun --clean
-	rm -f *.pdf
+	rm -f proposal.pdf

@@ -24,16 +24,17 @@
 \end{figure}
 \fi
 
-This thesis describes \sys, the first system to address the problem of
-reversible and composable data transformations for flexible data privacy in web
-applications.
+Disguised data provides flexible (and reversible) degrees of data privacy.
+%\sys addresses the problem of
+%reversible and composable data transformations for flexible data privacy in web
+%applications.
 %
 Existing systems aim instead to support data deletion, prevent unauthorized data
 access, or protect against database server compromise---valuable, but
-complementary goals to \sys's.
+complementary goals to achieving disguised data.%\sys's.
 
 \textbf{Data deletion tools}, such as DELF at
-Meta~\cite{delf} and K9DB\cite{k9db} help correctly delete data.
+Meta~\cite{delf} and K9DB~\cite{k9db} help correctly delete data.
 %
 %DELF lets developers specify deletion policies via annotations on
 %social graph edges and object types, and ensures correct cascading data
@@ -43,10 +44,11 @@ Meta~\cite{delf} and K9DB\cite{k9db} help correctly delete data.
 %data ownership by modifying the data layout~\cite{usershards, k9db} or
 %tracking information flow~\cite{schengendb}.
 %
-While \sys also supports GDPR account deletion, \sys's focus is on more nuanced
-use cases beyond simple deletion: \sys allows users to return after deletion,
-hides old data for inactive users, or hides some but not all data so the user
-can continue using the application.
+While disguised data states can provide GDPR-compliant account deletion,
+disguised data also supports more nuanced use cases beyond simple deletion: for
+example, \sys allows users to return after deletion, hides old data for inactive
+users, or hides some but not all data so the user can continue using the
+application.
 %
 \sys could, however, benefit from these systems' proposed techniques to track a
 user's data.
@@ -63,12 +65,13 @@ protect against leakage via compromised accounts or SQL injections.
 %queries~\cite{blockaid, qapla, sieve}.
 %
 However, policy-enforcing systems do not help users anonymize data or maintain
-application integrity constraints, which is \sys's explicit
-goal.
+application integrity constraints, which is the explicit
+goal of disguised data.
 %
-Instead of denying access to data, \sys changes the database contents so sensitive
-data is no longer available in the database, and thus unavailable even to the
-service itself.
+Database contents of data under disguise is also modified so sensitive data (the
+data under disguise) is no longer available in the database, and thus
+unavailable even to the service itself. This is unlike policy enforcement
+systems, which can deny access to sensitive data, but will still retain it in the database.
 %
 
 \textbf{Encrypted storage systems} such as CryptDB~\cite{cryptdb} and
@@ -82,18 +85,18 @@ limitations~\cite{grubbs}.
 %either through trusted proxies that decrypt data~\cite{cryptdb}, or move
 %application functionality client-side~\cite{mylar}.
 %
-Encrypted databases have orthogonal goals to \sys's: while they protect data at all times
+Encrypted databases have orthogonal goals to systems for disguised data: while they protect data at all times
 against attackers who do not have the keys, encrypted databases do not help applications
-anonymize or temporarily remove data, which \sys does.
+anonymize or temporarily remove data, which systems for disguised data do.
 %
 Any user with legitimate access can view the data in an encrypted database,
-whereas \sys removes \xxed data from the database.
+whereas \xxed data is removed from the database.
 
 \textbf{Other related work} uses crytographic or systems security methods to
 prove enforcement of user-defined policies~\cite{zeph, riverbed}, or explores
 new decentralized paradigms for web application operation~\cite{solid, bstore,
 databox, diy, amber, oort, w5, blockstack}.  These may restrict application
-functionality, whereas \sys leaves the data and business models unchanged.
+functionality, whereas a system for disguised data can leave the data and business models unchanged.
 % TODO vanish, single-device mobile data encryption
 %
 %%
