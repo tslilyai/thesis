@@ -1,0 +1,225 @@
+\section{Case Studies}
+\label{s:casestudies}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+This section evaluates \sys by using it to add new data-redacting features to
+several applications; \S\ref{s:eval} evaluates the effort needed to do so and the
+resulting performance.
+%
+
+%
+We add \xxing and revealing transformations based on
+the motivating examples in \S\ref{s:intro}
+to three applications---Lobsters~\cite{lobsters},
+WebSubmit~\cite{websubmit-rs},
+and HotCRP~\cite{hotcrp}.
+%using \sys's API and \sys's default semantics.
+%and fully integrated \sys with Lobsters and WebSubmit.
+%
+%We wrote \xxing transformations for three applications---%
+%Lobsters~\cite{lobsters},
+%WebSubmit~\cite{websubmit-rs},
+%and HotCRP~\cite{hotcrp}---%
+%and fully integrated \sys with Lobsters and WebSubmit.
+%
+%These case studies show that \sys's abstractions and high-level API sufficiently
+%support fine-grained, selective \xxing transformations necessary that add
+%desirable application-specific \xxing support for users.
+%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Lobsters}
+\label{s:cs:lobsters}
+
+%
+Lobsters is a Ruby-on-Rails application backed by a MySQL database.
+%
+Beyond the previously-mentioned stories, tags, etc., Lobsters also contains
+moderations that mark inappropriate content as removed.
+%a link-sharing and discussion platform with 14.5k users~\cite{lobsters},
+%
+We added three \xxing transformations: account deletion with return; account
+decay, \ie automatic dissociation and protection of old data; and topic-specific
+throwaway accounts.
+%
+
+%%%%%%%%%%%%%%%%%%%%
+%
+\textbf{GDPR-compliant account deletion}
+\one{} removes the user account;
+\two{} removes information that's only relevant to the individual user, such as
+their saved stories;
+\three{} modifies story and comment content to ``[deleted content]'';
+%, but retains the
+%database objects in order to preserve comment threads (and nested threads) on stories;
+\four{} decorrelates private messages; and
+%if the other party is still active, and removes them otherwise; and
+\five{} decorrelates votes, stories, comments, and moderations on the user's
+data. % by associating each remaining object with a unique pseudoprincipal.
+%
+%The originals of all deleted and modified data are stored in \sys as encrypted
+%diffs.
+%
+This preserves application semantics for other users---\eg vote counts remain
+consistent even after account deletion, and other users' comments
+remain visible---while protecting the privacy of removed users.
+%
+Important information such as moderations on user content remains in the
+database, and \sys recorrelates it if the user restores their account.
+%
+After \sys applies the \xxing transformation, Lobsters emails the user a URL
+that embeds the \xx ID.
+%
+The user can visit this URL and provide their credentials to restore their account.
+%
+%This transformation achieves GDPR compliance, as neither the application nor
+%\sys have the cryptographic keys to read the \xxed data~\cite{gdpr-encryption},
+%but users can return.
+%
+
+%%%%%%%%%%%%%%%%%%%%
+The \textbf{account decay} transformation protects
+user data after a period of user inactivity.
+%
+We added a cron job that applies account decay to
+user accounts that have been inactive for over a year.
+%
+This
+\one{} removes the user's account;
+\two{} removes information only relevant to the user, such as saved stories;
+\three{} and decorrelates votes, stories, comments, and moderations on the
+user's data by associating them with pseudoprincipals.
+%
+%Removed data is stored as encrypted diffs.
+%
+%While similar to account removal, account decay does not remove story or comment
+%content.
+%
+%This preserves greater utility for other users, but also potentially retains
+%identifying information within the content.
+%
+Lobsters sends the user an email which informs them that their data has
+decayed, and includes a URL with an embedded \xx ID that can reactivate or
+completely remove the account if credentials are provided.
+%
+
+%%%%%%%%%%%%%%%%%%%%
+Finally, topic-based throwaway accounts via \textbf{topic-based
+anonymization}
+enable users to decorrelate their content relating to a particular topic.
+%
+As per \S\ref{s:design:lobsters}, this \xxs contributions associated with the
+specified tag by \one{} decorrelating tagged stories and comments associated with
+tagged stories, and \two{} removing votes for tagged stories.
+%
+Again, Lobsters sends the user an email with links that allow reclaiming or
+editing these contributions.
+%
+%Category-based content anonymization leaves the original user account active.
+%However, as a consequence of anonymizing tag-related contributions, account
+%statistics will not reflect the votes these contributions accumulated.
+
+%
+With \sys and its support for composing \xxing transformations, users can
+delete accounts that have been decayed or dissociated into throwaways, and
+can later reveal them.
+
+%Importantly, with \sys, these transformations and users' revealing of them can occur in any
+%order: \eg users can delete accounts that have been decayed or that have been
+%dissociated into throwaways, and reveal deleted accounts.
+%
+% Furthermore, multiple users can perform account deletion with
+% shared private messages, and \sys enforces the shared-data semantics in
+% \S\ref{s:shared}.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{WebSubmit}
+\label{s:case-websubmit}
+
+%
+We integrated \sys as a Rust library with WebSubmit~\cite{websubmit-rs}.
+%
+WebSubmit is a homework submission application used at Brown University, and
+its schema consists of tables for lectures, questions, answers, and user accounts.
+%
+Clients create an account, submit homework answers, and view their submissions;
+course staff can also view submissions, and add/edit questions and lectures.
+%
+The original WebSubmit retains all user data forever.
+%
+We added support for two \xxing
+transformations: {GDPR-compliant user account removal} with return, and
+{instructor-initiated answer anonymization}, which protects data of prior years'
+students by decorrelating student answers for a given course.
+%(associating one pseudoprincipal with a student's set of lecture answers).
+%
+These transformations allow instructors to retain FERPA-compliant~\cite{ferpa}
+answers after the class has finished. %\hmng{each or both together?}
+%
+With \sys, students can delete their
+accounts or access and view their answers even after class anonymization,
+and can always restore their deleted accounts, including restoring them to
+anonymized state.
+%
+%Our modified WebSubmit sends users emails with links to restore their account
+%or edit their \xxed data.
+%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{HotCRP}
+\label{s:case-hotcrp}
+
+%
+HotCRP is a conference management application whose users can be reviewers and/or
+authors.
+%
+HotCRP's schema contains papers, reviews, comments, tags,
+and per-user data such as watched papers and review ratings~\cite{hotcrp}.
+%
+HotCRP currently retains past conference data forever and requires manual
+requests for account removal~\cite{hotcrp:privacy}.
+%
+We wrote two \xx specifications for HotCRP: conference anonymization to
+protect old conference reviews, and GDPR account removal with
+return.
+%
+
+%
+\textbf{Conference anonymization} is invoked by PC chairs after the conference
+and decorrelates users from their submissions, reviews, comments, and
+per-user data such as watched papers.
+%
+User accounts remain in the database with no associated data.
+%
+Conference anonymization protects users' data after the conference; with \sys,
+users can come back to view or edit their anonymized reviews and comments.
+%
+
+\textbf{Account removal} \one{} removes the user's account; \two{} removes
+information only relevant to the user, such as their review preferences;
+\three{} removes their author relationships to papers; and \four{} decorrelates
+the remainder of their data, such as reviews. %, to individual pseudoprincipals.
+%
+Decorrelating a review removes its association with the reviewing user, but
+importantly keeps the review itself around to preserve utility for others (\eg
+the PC and the authors of the reviewed paper).
+%makes them difficult to reassociate with one another or with the natural
+%principal.
+%
+%Pseudoprincipals have suitable default properties provided by HotCRP; for
+%example, they are marked as disabled, so that they have no permissions and
+%cannot log in.
+%
+%This account removal \xxing transformation removes a user's relationship to
+%co-authored papers, but does not remove the papers themselves.
+%
+%A different policy might go even further and remove papers whose final author
+%is removed.
+%
+With \sys, users can remove their accounts even after conference anonymization has taken
+place, and can always restore their accounts.% to the state prior to removal.
+%
+

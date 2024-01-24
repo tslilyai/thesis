@@ -1,0 +1,67 @@
+\label{sec:intro:contrib}
+%
+This thesis makes the following contributions: 
+\begin{enumerate}[nosep]
+    \item The identification and exploration of the problem of \emph{flexible
+        privacy} for user data in web applications.
+
+    \item Abstractions to achieve flexible privacy in web applications via \emph{disguised data},
+        including abstractions for \xxing and revealing, and a small set of
+        data-anonymizing primitives (remove, modify, decorrelate) that cover a
+        wide range of application needs and compose cleanly.
+
+    \item Techniques to implement these abstractions, including
+    pseudoprincipals, speaks-for and diff
+    records, and speaks-for chains.
+
+    \item A design and realization of these techniques in \sys, a prototype
+        library that implements user data control via disguising and revealing.
+
+    \item Case studies that integrate \sys with three real-world web
+    applications and demonstrate \sys's ability to enable composable and
+    reversible transformations.
+
+    \item An evaluation of \sys's effectiveness and performance, including how
+    \sys contrasts with and complements related work (Qapla~\cite{qapla} and
+    CryptDB~\cite{cryptdb}).  
+\end{enumerate}
+%
+Appended to this proposal is the \sys paper describing \sys's design, implementation, and evaluation.
+
+\iffalse
+\subsection{Limitations}
+%
+While disguised data can help developers to add more flexible user data
+controls, the abstraction and its implementation in \sys have some limitations. 
+%
+First, disguised data is a concept scoped for single applications, and does not tackle the problem of data sharing between services.
+%
+%While \sys enables \xxing and revealing transformations in a broad class of
+%applications, \sys has some limitations.
+%
+Second, \sys assumes bug-free \xx specifications, and that applications use \sys
+correctly.
+%
+Third, \sys does not aim to protect un\xxed data in the database against compromise;
+combining \sys with an encrypted database can add this protection.
+%
+Finally, attacks to identify users from \sys's metadata (\eg the size of
+stored \xxed data) or placeholder data left in the database (\eg embedded text)
+are out of scope.
+%
+\fi
+
+\subsection{Remaining Work: Revealing with Schema Migrations and Application
+Updates}
+
+In \sys's current design, \textbf{application updates} that implicitly enforce
+invariants on application data remain unknown (and thus uncheckable) by \sys.
+\sys also fails to reveal disguised data affected by \textbf{schema migrations}
+performed since the time of disguise.
+%
+We will add an API for developers to log important updates and schema migrations with \sys, which \sys will apply to disguised data prior to restoring it to the database.
+
+\sys will apply these updates or schema migrations prior to performing \sys's
+existing consistency checks; these checks enable \sys to detect if revealing
+transformations will violate referential integrity or other structual database
+invariants (\eg uniqueness requirements). 

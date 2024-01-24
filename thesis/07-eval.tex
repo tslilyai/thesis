@@ -1,0 +1,785 @@
+Our evaluation seeks to answer \newstuff{five} questions:
+%
+\begin{enumerate}[nosep]
+ %
+ \item How much developer effort and application modification does \sys require? (\S\ref{s:eval-effort})
+ %
+%\item Can a policy-enforcement system like Qapla~\cite{qapla} be used to realize
+   %\sys-like functionality? (\S\ref{s:eval:qapla}) %(Qapla) One WS graph
+%
+\item How expensive are common application operations, as well as
+  \xxing, revealing, and operations over \xxed data with \sys? (\S\ref{s:eval-ops})
+ %
+%Add common operation to Lobsters/HotCRP (Common Read Operation / label explicitly, list papers, frontpage)
+%3-way graph
+%composition
+%
+\item What overheads does \sys impose, and where do they come from?
+    (\S\ref{s:eval-overheads})
+%Drill down (storage, impact on concurrent app throughput)
+%Lobsters throughput graph
+
+\item 
+    How does the effort required to implement \sys's
+    functionality in a related system (Qapla~\cite{qapla}),
+    and its performance, compare with using \sys?
+    (\S\ref{s:eval-qapla})
+
+\item 
+    What is the performance impact of composing \sys's guarantees
+    with those of encrypted databases?
+        (\S\ref{s:eval-cryptdb})
+%
+\end{enumerate}
+
+%\paragraph{Methodology.}
+%
+
+We compare Edna to three alternative settings:
+\one{} a manual version
+of each \xxing transformation that directly modifies the database
+(\eg via SQL queries that remove data), which
+%akin to what developers might do today
+%This manual baseline lacks support for revealing, and does not support
+lacks support for revealing and does not support
+composition of multiple transformations;
+\two{} an implementation of disguising and revealing in Qapla~\cite{qapla}
+using Qapla’s query rewriting and access control policies; and \three{} an integration of Edna with CryptDB~\cite{cryptdb}, an encrypted database.
+
+%
+%To understand the cost of using \sys, we implemented a manual version of each
+%\xxing transformation that directly modifies the database, akin to what
+%developers might do today (\eg via SQL queries that remove data).
+%%
+%This manual baseline lacks support for revealing, and does not support
+%composition of multiple transformations.
+%%
+
+%
+%To evaluate the benefits of \sys's design, we compare it to
+%Qapla~\cite{qapla}.
+%%
+%Qapla enforces access control policies by rewriting SQL queries,
+%with predicates that restrict the rows returned,
+%and we implemented \xxing and revealing functionality using these policies.
+%
+%With Qapla,
+%developers can write policies that enable users to control visibility of their
+%data.
+%, and developers may want to use Qapla to implement user data controls.
+%
+%Finally, we combine \sys with CryptDB~\cite{cryptdb} and show that the two
+%systems offer different, complementary guarantees.
+%
+
+All benchmarks run on a Google Cloud \texttt{n1-standard-16} instance with 16 CPUs
+and 60 GB RAM, running Ubuntu 20.04.5 LTS. Benchmarks run in
+a closed-loop setting, so throughput and latency are inverses. %of each other.
+%
+We use MariaDB 10.5 with the InnoDB storage engine atop a local SSD.
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{\sys Developer Effort}
+\label{s:eval-effort}
+
+\begin{comment}
+\begin{figure}[t]
+\centering
+\small
+\begin{tabular}{c|ccc}
+    \textbf{App} & \textbf{Original LoC} & \textbf{Spec LoC (JSON)} & \textbf{Hooks LoC}\\
+\hline
+    Lobsters & 160k & 518 & 179 \\
+    WebSubmit & 908 & 75 & 312 \\
+    HotCRP & N/A & 357 & N/A \\
+\end{tabular}
+    \caption{Adding \sys specs (JSON) and \xxing/revealing endpoints require
+    reasonable developer effort.}
+  \label{f:loc}
+\end{figure}
+\end{comment}
+
+% We estimate developer effort to use \sys via the lines of code of spec (JSON)
+% and application code added to support \xxing and revealing transformations.
+
+%Although developer effort is difficult to quantitively measure, there are
+%clear effort benefits to using \sys over a manual approach, which we now engage with.
+%
+We evaluate the developer effort required to use \sys by measuring the
+difficulty of implementing the \xxing and revealing transformations in our three
+case studies.  This took one person-day per case study for a developer
+familiar with \sys but unfamiliar with the applications.
+
+A developer supporting these transformations must first add application
+infrastructure to allow users to invoke them and notify users when they happen.
+This is required even if the developer were to implement transformations
+manually without \sys.
+%Any support for these transformations---even if implemented manually without
+%\sys---requires application changes to allow users to invoke them, and notify
+%users when they happen.
+%
+%Support for \xxing and revealing transformations---even if implemented manually
+%without \sys---necessarily require changes to application code. These changes
+%add HTTP endpoints to invoke \xxing and revealing, and modifications to perform
+%authorization checks for anonymous users and send emails to users with \xx IDs.
+These changes add 179 LoC of Ruby to Lobsters (160k LoC), and 312 LoC of Rust
+to the original WebSubmit (908 LoC). They implement HTTP endpoints,
+authorization of anonymous users, and email notifications.
+%
+
+%
+A developer using \sys also writes \xx specifications and invokes \sys.
+%The added effort to use \sys lies in writing \xx specifications.
+Lobsters' \xx specifications are written in 518 LoC, WebSubmit's in 75 LoC, and
+HotCRP's in 357 LoC (all in JSON).  The specification size is proportional to
+schema size and what data each application \xxs.
+%
+%Given \xx specifications, \sys
+%
+%\lyt{
+    %\sout{
+%In comparison, a manual approach must implement (via \eg templated SQL
+%statements) \xxing and revealing database changes that correctly compose, as
+%well as secure ways of storing \xxed data so only authorized users can reveal
+%it.
+%}}
+%%
+
+%
+The developer effort required to use \sys---writing \sys specifications, and
+invoking \sys---is small, even though these applications were not written with
+\sys in mind.
+%\sys also allows developers to add and reason about their
+%transformations in isolation, and enables credential-based revealing
+%of the specified \xxed transformations, and composition with prior or
+%future transformations.
+
+%These three applications were not written with \sys in mind, yet \sys still
+%allows developers to add and reason about their transformations in isolation.
+%\lyt{XXX}
+%These applications satisfy \sys's assumptions (\S\ref{s:impl}) with no
+%modifications.
+%
+%
+
+%And, most importantly, required no debugging.
+%
+%
+%
+%Doing this manually would be much more laborious: it would require writing templated
+%SQL statements, that are condiitonal not only on the subject and are different
+%for every transformation, but also take into consideration other previous transformations,
+%as well as writing similar statements for revealing.
+
+%specifications follow systematic patterns, and require few lines of code compared to application code.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Performance of \sys Operations}
+\label{s:eval-ops}
+
+%
+We now evaluate \sys's performance using WebSubmit,
+HotCRP, and Lobsters (\S\ref{s:case-studies}).
+%
+%To measure the extra cost that \sys's cryptographic operations add,
+%, as a developer would do without \sys.
+%, and measure its latency.
+%
+We measure the latency of common operations, \xxing transformations,
+and operations over \xxed data enabled by \sys
+(\eg account restoration and editing \xxed data).
+%
+The three applications do not create new data that references pseudoprincipals,
+but to fully capture any overheads we configure \sys to nevertheless run the
+checks for lingering pseudoprincipal references on revealing.
+%
+A good result for \sys would show no overhead on common operations,
+competitive performance with manual \xxing, and reasonable
+latencies for revealing operations only supported by \sys
+(\eg a few seconds for account restoration)
+%impossible in the manual baseline
+%
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}[b]{\columnwidth}
+      \includegraphics[width=\columnwidth]{figs/websubmit_op_stats}
+    \caption{WebSubmit (2k users, 80 answers/user).}
+    \label{f:ops-websubmit}
+  \end{subfigure}
+  \begin{subfigure}[b]{\columnwidth}
+    \includegraphics{figs/hotcrp_op_stats}
+      \caption{HotCRP (80 reviewers, 3k total users, 200--300 records/reviewer).}
+    \label{f:ops-hotcrp}
+  \end{subfigure}
+  \begin{subfigure}[b]{\columnwidth}
+    \includegraphics{figs/lobsters_op_stats}
+    \caption{Lobsters (16k users, Zipf-distributed data/user).}
+    \label{f:ops-lobsters}
+  \end{subfigure}
+  \caption{\sys adds no latency overhead to common application operations and
+  modestly increases the latencies of \xxing operations compared to a manual
+  implementation that lacks support for revealing or composition.
+  %
+  Bars show medians, error bars are 5\textsuperscript{th}/95\textsuperscript{th}
+  percentile latencies.}
+  \label{fig:client_opstats}
+\end{figure}
+
+\textbf{WebSubmit.}
+%
+We run WebSubmit with a database of 2k users, 20 lectures with four questions
+each, and an answer for each question for each user (160k total answers).
+%We implement WebSubmit account removal and answer anonymization both manually
+%as an irreversible database change, and with \sys.
+%
+We measure end-to-end latency to perform common application operations (which
+each issue multiple SQL queries), as well as \xxing and revealing operations
+when possible (revealing operations are impossible in the baseline).
+%
+%A good result for \sys would show competitive performance with the manual
+%baseline, as \sys does strictly more work (\eg encrypting \xxed
+%data).
+%
+%Latency includes request processing in WebSubmit and \sys's
+%operations, and the response to the client.
+%
+Figure~\ref{f:ops-websubmit} shows that common operations have comparable
+latencies with and without \sys.
+%
+\sys adds 9ms to account creation; and \xxing
+and revealing operations take longer in \sys (13.1--53.2ms), but allow users to
+reveal their data and take less developer effort.
+%
+
+\textbf{HotCRP.}
+%
+We measure server-side HotCRP operation latencies for PC members on a database seeded with 3,080
+total users (80 PC members)
+%and per-user data such as paper watches;
+and 550 papers with eight reviews, three comments, and four conflicts each
+(distributed evenly among the PC).
+%
+HotCRP supports the same \xxing transformations as WebSubmit, but PC users have more
+data (200--300 records each), and HotCRP's \xxing transformations mix deletions and
+decorrelations across 12 tables. %, so we would expect higher latencies.
+%
+
+%
+Figure~\ref{f:ops-hotcrp} shows higher latencies in general, even for the manual
+baseline, which reflects the more complex \xxing transformations.
+%
+\sys takes 63.8--84.6ms to \xx and reveal a PC member's data, again owing to the
+extra cryptographic operations necessary.
+%
+HotCRP's account anonymization is admin-applied and runs for all PC members, so
+its total latency is proportional to the PC size.
+%
+With 80 PC members, this transformation takes 6.8s, which is acceptable for a
+one-off operation.
+%
+As before, \sys adds small latency to common application operations, and 9ms to
+account creation.
+%
+
+\textbf{Lobsters.}
+%
+We run Lobsters benchmarks on a database seeded with 16k users, and
+120k stories and 300k comments with votes, comparable to the late-2022 size of
+production Lobsters~\cite{lobsters}.
+%
+Content is distributed among users in a Zipf-like distribution according to
+statistics from the actual Lobsters deployment~\cite{lobsters-data}, and 20\% of
+each user's contributions are associated with the topic to anonymize.
+%
+The benchmark measures server-side latency of common operations and
+\xxing/revealing transformations.
+%
+%Because Lobsters users have far more variable amounts of
+%data, we expect higher variability in latencies.
+%and we measure the account
+%decay \xxing transformation (and subsequent restoration) in addition to GDPR-compliant
+%account removal and restoration.
+%
+%Lobsters does not support editing decayed contributions.
+%
+%As the amount of data per user follows a Zipf-like distribution, we would
+%expect \xxing some users to be more expensive than others.
+%
+
+%
+The results are in Figure~\ref{f:ops-lobsters}.
+%
+The median latencies for entire-account removal or decay are small (9.7--13.4ms
+for \sys, and 4.0--5.2ms for the baseline), since the median Lobsters user has
+little data. Revealing \xxed accounts takes 13.1--17.6ms in the median.
+%
+Highly active users with lots of data raise the 95\textsuperscript{th} percentile
+latency to 100--180ms for \xxing and 45--80ms for revealing.
+%
+Topic anonymization touches less data and is faster than
+whole-account transformations, taking 3.6ms and 13.1ms for the median user to
+\xx and reveal, respectively.
+%
+
+\textbf{Summary.}
+%
+\sys necessarily adds some latency compared to manual, irreversible data
+removal, since it encrypts and stores \xxed data.
+%
+However, most \xxing transformations are fast enough to run interactively as
+part of a web request.
+%
+Some global \xxing transformations---\eg HotCRP's conference anonymization over
+many users---take several seconds, but an application can apply these
+incrementally in the background, as in Lobsters account decay.
+%
+%We next break down these costs.
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsubsection{\sys Performance Drill-Down.}
+\label{s:eval-additional}
+%\lyt{made this a subsubsection}
+
+\begin{figure}[t]
+    \centering
+    \includegraphics{figs/composition_legend}
+    \begin{subfigure}[b]{0.49\columnwidth}
+        \includegraphics{figs/composition_stats_websubmit}
+        \caption{WebSubmit}
+        \label{f:comp-websubmit}
+      \end{subfigure}
+      \begin{subfigure}[b]{0.49\columnwidth}
+        \includegraphics{figs/composition_stats_hotcrp}
+          \caption{HotCRP}
+        \label{f:comp-hotcrp}
+      \end{subfigure}
+    \caption{Applying \xxing transformations to previously-decorrelated accounts
+      increases latency linear in the number of pseudoprincipals involved.
+      %to the amount of data touched, as \sys performs
+      %3--5.5$\times$ and restoration by 5.7--10$\times$ as \sys
+      %cryptographic operations linear in the number of pseudoprincipals
+      %involved.
+      Hatched lines indicate the proportion of cost attributed to
+      cryptographic operations.}
+    \label{f:composition}
+\end{figure}
+
+We next break down the cost of \sys's operations into the cost of database
+operations and the cost of cryptographic operations.
+%
+%\sys's basic API performs some computation (which we expect to be quick) as
+%well as two operations that could cause bottlenecks, namely data encryption
+%and decryption and access to \sys's database.
+%
+%\sys's high-level API additionally performs queries on the application database.
+%
+\sys's database operations are fast; in our prototype, they generally take
+$0.2$--$0.3$ms but vary depending on the amount of data touched.
+%
+%Database query latency depends on the amount of data
+%touched, but is normally $<$1ms in our case studies.
+%
+\sys's cryptographic operations are comparatively expensive.
+%; Figure~\ref{f:opstats} shows their cost.
+%
+PBKDF2 hashing for private key management incurs a 8ms cost and affects account
+registration and operations on \xxed data that reconstruct a user's private key;
+this accounts for up to 79\% of these operations' cost when the operation issues
+only a few database queries.
+%
+%This appears during registration (generating password-based credentials from the
+%private key), as well as operations on \xxed data that reconstruct the private key
+%(\ie editing or restoring \xxed data).
+%
+%Applications that only wish to support private keys as reveal credentials can tell
+%\sys to skip PBKDF hashing and secret sharing, eliminating this cost.
+%
+
+Encryption and decryption incur baseline costs of 0.1ms and 0.02ms respectively;
+their cost grows linearly with data size.
+%
+In the common case, \xxing or revealing data performs two cryptographic
+operations: one to encrypt/decrypt the \xx records, and one to
+encrypt/decrypt the ID at which they are stored.
+%
+
+\sys also generates a new key for each pseudoprincipal created, which takes
+0.2ms.
+\sys's cryptography accounts for up to 35\%
+%1--35\%
+of the cost of \xxing/revealing operations such as account removal or
+anonymization; this proportion decreases as the number of database
+modifications made by a transformation increases.
+%Disguising undisguised data performs a single encryption, and
+%A new disguise or reveal operation requires a single encryption/decryption
+%when a single disguise to the data.
+%
+When the application applies multiple \xxing transformations and \xxs the
+data of pseudoprincipals, doing so may require several encryptions/decryptions.
+%
+We evaluate this cost next.
+%
+
+%
+%\lyt{ADDED THIS.}
+%%
+%\sys's \xxing transformations (\eg remove account) incur costs proportional to
+%the amount of data a user owns: decorrelating a user's per-lecture answers in
+%WebSubmit, for example, requires retrieving the user's answers,  inserting
+%per-lecture pseudoprincipals, and update queries (one per each of the 80
+%answers) to rewrite answers to correlate to pseudoprincipals. This results in a
+%total of $\approx$18ms simply to perform database modifications.
+%%
+%For each of these decorrelations, \sys produces speaks-for records that are then
+%encrypted and persisted, accounting for the remaining 2ms costs.
+%%
+%
+%The cost of \sys's revealing transformations (\eg restore account) can also be
+%explained as a breakdown between database query overheads and decryption
+%overheads.
+%%
+%Restoring removed answers first requires decrypting a user's diff tokens.
+%%
+%For each of a user's 80 answers, \sys performs three selection queries for
+%consistency checks to ensure that reinsertion can correct proceed (0.4-0.5ms)
+%and inserts the answer (0.2ms).
+%%
+%Total restoration of a user's answers thus takes $\approx$50ms; the remaining 1-2ms cost
+%comes from clearing the diff and speaks-for tokens of the revealed
+%transformation, which requires both a decryption and a database deletion query.
+%%
+%Wrapping all reveal queries in a transaction did not meaningfully improve
+%performance.
+%%
+%
+
+\subsubsection{Composing \Xxing Transformations.}
+\label{s:eval-composition}
+% \lyt{this is now under \sys op performance}.
+
+%
+To understand the overhead of composing transformations in \sys,
+we measure the cost of composing account removal on top of
+%from an application that already invoked
+a prior \xxing transformation to anonymize and decorrelate all users' data.
+%
+We consider WebSubmit and HotCRP, and compare three setups: \one{} manual
+account removal (as before); \two{} account removal and restoration
+\emph{without} a prior anonymization \xxing transformation; and \three{} account
+removal and restoration \emph{with} a prior anonymization \xxing transformation.
+%
+With prior anonymization, a subset of the user's data has already been decorrelated
+when removal occurs, and removal therefore performs per-pseudoprincipal encryptions of
+\xxed data with pseudoprincipals' public keys.
+%by the first \xxing transformation, and \sys
+%
+%This requires individually encrypting data with each pseudoprincipal's
+%public key.
+%
+Restoring the removed, anonymized account must then individually decrypt
+pseudoprincipal records and restore them.
+% to both restore and then clear them.
+%
+Hence, \xxing and revealing in the third setup should take time proportional to
+the number of pseudoprincipals created by anonymization.
+%
+
+%
+Figure~\ref{f:composition} shows the resulting latencies.
+%
+WebSubmit account removal and restoration latencies increase by $\approx$1ms per
+pseudoprincipal (18.2ms and 21.8ms respectively); 50\% of this increased cost
+comes from the additional, per-pseudoprincipal encryption and decryption of
+records, the rest comes from database operations.
+%
+HotCRP removal and restoration latencies also increase by $\approx$1ms
+per pseudoprincipal (191.2ms and 230.4ms respectively); again, cryptographic
+operations add $\approx$0.5ms per pseudoprincipal, and the remaining cost
+increase comes from per-pseudoprincipal database queries and
+updates.
+%querying-for and per-pseudorpicnipal
+%
+WebSubmit and HotCRP do not create new references to pseudoprincipals
+after data gets disguised, but if they did, \sys would need to issue additional
+per-pseudoprincipal queries to rewrite or remove these references (if configured
+to do so).
+%
+Compared to accounts in WebSubmit, accounts in HotCRP have more data and
+14--15$\times$ more pseudoprincipals after anonymization, which accounts for the
+larger relative slowdown.
+%\newstuff{11$\times$ more references by other schema tables (which \sys queries
+%to check referential integrity during reveal)}
+%so these slowdowns make sense.
+%
+%HotCRP particularly demonstrates how cryptographic operations grow comparatively
+%more expensive: from 21\% of the cost to 41\% for account removal, and from 8\%
+%to 25\% for account restoration.
+%
+%
+%Restoring an account (\ie undoing a composed disguise) is more expensive than removing an
+%account (\ie composing a disguise atop another) because
+%decryption is more expensive than encryption (Figure~\ref{f:opstats}).
+%
+
+%
+Importantly, \xxing latencies stabilize when \sys composes further \xxing
+transformations: since cost is proportional to the number of pseudoprincipals
+affected, latency does not grow once the application has maximally decorrelated
+data (to one pseudoprincipal per record), as done by HotCRP anonymization.
+%\lyt{XXX} HotCRP's anonymization
+%performs maximal decorrelation, and the subsequent account removal demonstrates
+%this maximal cost.
+%
+
+
+% %
+% The experiment composed an interactive \xxing transformation (account removal) atop a
+% non-interactive one (anonymization).
+% %
+% This benefits from the optimization for interactive \xxing transformations mentioned in
+% \S\ref{s:composition}: the natural principal introduces locators for
+% pseudoprincipal-owned bags that \sys forgot, which helps avoid a locator
+% decryption on revealing the composed \xxing transformation.
+% %
+% Composing a non-interactive \xxing transformation requires this extra encryption/decryption
+% as \sys store the locators; but the cost remains linear in the number of
+% pseudoprincipals touched.
+% %
+
+\subsection{\sys Overheads}
+\label{s:eval-overheads}
+
+\sys adds both space and compute overheads to the application; we measure the
+impact of these next.
+
+\subsubsection{Space Used By \sys.}
+%\begin{figure*}[t]
+%\centering
+%\begin{tabular}{ccc}
+%    & \textbf{Pre-Delete (MB)} & \textbf{Post-Delete (MB)} \\
+%\hline
+%    App DB (does not include metadata) & 261 & 290\\
+%    Encrypted Bags (Mem) & 0 & 34.3\\
+%    Encrypted Locators (Mem) & 0 & 1.9\\
+%    Principal Metadata (Mem) & 1.8 & 16.5\\
+%    Shares Metadata (Mem) & 2.0 & 2.0\\
+%    Encrypted Bags (Disk) & 0 & 35.1\\
+%    Encrypted Locators (Disk) & 0 & 0.4\\
+%    Principal Metadata (Disk) & 2.6 & 14.1 \\
+%    Shares Metadata (Disk) & 8.9 & 8.9\\
+%\end{tabular}
+%    \caption{Amount of data before and after 10\% of users remove their accounts. Edna adds an extra
+%    110MB on disk (and 44MB in memory).}
+%  \label{f:storage}
+%\end{figure*}
+%
+To understand \sys's space footprint, we measure the size of all data stored
+on disk by \sys before and after 10\% of users in Lobsters (1.6k users)
+remove their accounts.
+%
+%
+Cryptographic material adds overhead and each generated pseudoprincipal adds an
+additional user to the application database; \sys also stores data for each
+registered principal (a public key and a list of opaque indexes) as well as
+encrypted records.
+%
+%Clients keep track of their credentials, but these are small and encoded
+%in application-specific ways.
+
+
+%
+\sys's \xx record storage uses 12 MB, which grows to
+58.5 MB after the users remove their accounts, and the application database
+size increases from 261 MB to 290 MB (+11\%).
+%
+(\sys also caches some of this data in memory.)
+%
+The space used is primarily proportional to the number of pseudoprincipals
+produced: each pseudoprincipal requires storing an application database record, a
+speaks-for record, and row in the principal table.
+%
+In this experiment, Lobsters produces 78.1k pseudoprincipals.
+%
+%Storing a private key is necessary if the application wants to further
+%disguise decorrelated data, but avoidable if disguises cannot compose.
+%
+%In addition, each pseudoprincipal inserts a public key into \sys's
+%metadata, adding $\approx$0.3 KB per pseudoprincipal and 24 MB combined,
+%
+%
+\sys removes the public keys and database data for the 1.6k removed principals, but
+stores encrypted diff records with their information, which uses another 2.2 MB.
+%
+%These diff records amount to a small overhead (2.2MB).
+%
+%2.2MB is 0.8\% of the original Lobsters database size of 261 MB.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsubsection{Impact On Concurrent Application Use.}
+\label{s:eval-conc}
+
+%
+%Web applications serve many concurrent users, most of whom are simply using the
+%application.
+%
+%Occasionally, a user (or an admin, or a cron job) will initiate a \xxing
+%transformation via \sys.
+%
+For \sys to be practical, the throughput and latency of normal application requests
+by other users must be largely unaffected by \sys's \xxing and revealing operations.
+%
+%If an expensive \xxing transformation---such as a popular Lobsters user removing their
+%account---blocked application processing for all other users, developers would
+%be rightly leery of \sys.
+%
+
+\begin{figure}[t]
+    \centering
+    \includegraphics{figs/lobsters_concurrent_results}
+    \caption{Continuous \xxing/revealing operations in Lobsters
+    have a <7\% impact on application request
+    throughput when disguising a random user; an extreme case of a
+    heavy-hitter user with lots of data repeatedly \xxing and revealing
+    causes a 3--17\% drop in throughput.}
+    \label{f:concurrent-lobsters}
+\end{figure}
+
+%
+We thus measure the impact of \sys's operations on other concurrent requests
+in Lobsters.
+%
+In the experiment, a set of users make continuous requests to the
+application that simulate normal use, while another distinct set of users
+continuously remove and restore their accounts.
+%
+\sys applies \xxing transformations sequentially, so only one transformation
+happens at a time.
+%
+% (This is realistic, as the UI can process later requests asynchronously; it also
+% avoids \sys having to reason about overlapping data between two or more \xxing
+% transformations.)
+%
+We measure the throughput of ``normal'' users' application operations, both
+without \sys operations (the baseline) and with the application continuously
+invoking \sys.
+%
+The Lobsters workload is based on request distributions in the real
+Lobsters deployment~\cite{lobsters-data}.
+% users read stories, load the frontpage,
+% vote and comment, and post stories.
+%
+
+%
+Since users' \xxing/revealing costs vary in Lobsters, we measure the
+impact of \one{} randomly chosen users invoking account removal/restoration, and
+\two{} the user with the most data continuously removing and restoring their
+account (a worst-case scenario).
+% , since this overlaps most with the data touched by normal users).
+%
+We show throughput in a low load scenario ($\approx$20\% CPU load),
+and a high load scenario ($\approx$95\% CPU load).
+%
+Finally, we measure settings with and without a transaction for \sys
+transformations.
+%
+%The latter makes sense if the application wishes to avoid exposing
+%partially-\xxed data to other clients.
+%
+A good result for \sys would show little impact on normal operation throughput
+when concurrent \xxing transformations occur.
+%
+
+%
+Figure~\ref{f:concurrent-lobsters} shows the results.
+%
+If a random user disguises and reveals their data (the common case),
+normal operations are mostly unaffected by concurrent \xxing and revealing:
+throughput drops $\le$3.7\% without transactions and $\le$7.0\% with transactions.
+%
+Constantly \xxing and revealing the user with the most data (the worst-case
+scenario) has a larger effect, with throughput reduced by up to $7.4$\%
+(without transactions) and up to $17$\% (with transactions, high load).
+%5.8\% in low load, 2.6 high
+%13.3\% in low load, 16.3 high
+%dropping by at most 4.6\%---by concurrent \xxing of a random user
+%(with and without transactions) and of the most expensive user (without
+%transactions); \xxing the most expensive user with transactions does, however,
+%impact performance by 11.9\%.
+%%
+%Under high load, the relative impacts are similar: the throughput when
+%concurrently \xxing a random user (with and without transactions) and the most
+%expensive user (without transactions) drops by $\le 4.4$\%; and when disguising the
+%%most expensive user with transactions, drops by 17.1\%.
+%
+\oldtext{Under both low and high load, the throughput of normal operations is
+only slightly affected by concurrent \xxing, dropping by at most 5.8\% without
+transactions (and $<17$\% with transactions).}
+%\lyt{XXX Note: drop w/out txn is actually more for low load than high load.}
+%10% low load
+%
+%The throughput of normal application requests under low load, with account
+%removals and restorations of either random users or the most expensive user,
+%remains relatively unaffected at 1.3k ops/s (decreasing by $<$100 ops/s, or
+%6\%).
+%%
+%Account removal and restoration under high load results in a slight decrease
+%(1.8\%) in throughput (transactions decrease throughput by 3.8\%), but
+%throughput remains high ($>5$ops/ms).
+%
+
+This shows that \sys's \xxing and revealing transformations have acceptable
+impact on other users' application experience in the common case.
+%and operations over \xxed data
+%
+%\ms{Did we lose a sentence about account removals under low load here? The following doesn't quite flow from the prior point}
+%
+%Account removals and restorations under low load take longer, with
+%the expensive user's account removal and revealing taking 4.4 and 3.6 seconds
+%respectively.
+%
+
+The latency of disguising operations depends on load:
+the expensive user's account removal and revealing take 4.4 and 3.6 seconds
+under high load, and 3.3 and 2.6 seconds under low load.
+%
+This is acceptable: 50\% of data deletions at Facebook take five minutes or
+longer to complete~\cite{delf}.
+%
+
+%low load
+%-0.03667745415
+%-0.07011866235
+%-0.07443365696
+%-0.1488673139
+
+%high load
+%-0.03243377074
+%-0.04431790047
+%-0.02995791037
+%-0.1705867789
+%cheap disguise 17 27 39
+%cheap restore 118 291 472
+%cheap disguise txn 22 35 49
+%cheap restore txn 118 288 467
+%expensive disguise 3212 3517 3693
+%expensive restore 2693 2811 2979
+%exp txn delete 3029 3269 3481
+%exp txn restore 2422 2612 2868
+%expensive disguise 4105 4373 4594
+%expensive restore 3704 3903 4317
+%exp txn delete 4135 4400 4592
+%exp txn restore 3542 3661 3785
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\oldc{}
+%\subsection{Related Work Comparison}
+%\normalc{}
+
+\input{07-eval-qapla}
+
+\input{07-eval-cryptdb}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

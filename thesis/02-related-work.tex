@@ -1,3 +1,4 @@
+\iffalse
 \begin{figure}[t]
     \centering
     \small
@@ -19,151 +20,127 @@
         \syscrypt & \hfil \checkmark & \hfil \checkmark & \hfil \checkmark \\
     \end{tabular}
     \caption{Threats protected against by different classes of systems.}
-    %\sys
-    %also keeps the application functional if it relies on data
-    %that users want to protect.}
     \label{tab:related_threats}
 \end{figure}
+\fi
 
+Disguised data provides flexible (and reversible) degrees of data privacy.
+%\sys addresses the problem of
+%reversible and composable data transformations for flexible data privacy in web
+%applications.
 %
-%\sys gives developers tools to remove and redact user data from a web
-%application without breaking the application.
-%
-Existing systems for data protection aim to support data deletion, prevent
-unauthorized data access, protect against database server compromise, or store
-data in privacy-preserving ways.
-%
-However, none of these systems are explicitly designed to flexibly handle user
-data (via fine-grained redactions), and to do so without breaking
-the application. Instead, many of these systems provide orthogonal or partial
-solutions.
+Existing systems aim instead to support data deletion, prevent unauthorized data
+access, or protect against database server compromise---valuable, but
+complementary goals to achieving disguised data.%\sys's.
 
-\subsection{Data Deletion Tools.}
-Laws and regulations such as the EU's General Data Protection Regulation
-(GDPR)~\cite{eu:gdpr}, the California Consumer Privacy Act (CCPA)~\cite{ccpa},
-and others~\cite{va:privacy-act, china:gdpr-like} give users the right to
-request deletion of their data from web applications.
+\textbf{Data deletion tools}, such as DELF at
+Meta~\cite{delf} and K9DB~\cite{k9db} help correctly delete data.
 %
-Data deletion tools developed at large organizations, such as DELF at
-Meta~\cite{delf}, help to correctly delete data in response to such requests.
+%DELF lets developers specify deletion policies via annotations on
+%social graph edges and object types, and ensures correct cascading data
+%deletion.
 %
-DELF helps developers specify correct deletion policies via annotations on
-social graph edges and object types, and ensures correct cascading data
-deletion.
-
-
-Other systems to help with wholesale user data deletion modify the data layout~\cite{usershards} or use fine-grained
-information flow tracking~\cite{schengendb} to track the ownership and
-provenance of database rows.
+%Other systems support wholesale user data deletion by tracking
+%data ownership by modifying the data layout~\cite{usershards, k9db} or
+%tracking information flow~\cite{schengendb}.
 %
-This tracks how information propagates and provides information to support
-wholesale user data deletion.
-
+While disguised data states can provide GDPR-compliant account deletion,
+disguised data also supports more nuanced use cases beyond simple deletion: for
+example, \sys allows users to return after deletion, hides old data for inactive
+users, or hides some but not all data so the user can continue using the
+application.
 %
-However, these data deletion systems target only simple deletion, and do not address
-the entire range of possible user data controls (\eg temporarily removing old data of
-inactive users). 
+\sys could, however, benefit from these systems' proposed techniques to track a
+user's data.
+%
 
+\textbf{Policy enforcement systems} such as Qapla~\cite{qapla},
+Blockaid~\cite{blockaid} and others~\cite{static, jeeves, jif, hails, ifdb,
+oracle, multiverse, sieve} aim to prevent unauthorized access to data and
+protect against leakage via compromised accounts or SQL injections. 
+%They enforce developer-specified
+%visibility and access control policies via information flow
+%control~\cite{static, jeeves, jif, hails, ifdb}, authorized views~\cite{oracle},
+%per-user views~\cite{multiverse}, or by blocking or rewriting database
+%queries~\cite{blockaid, qapla, sieve}.
+%
+However, policy-enforcing systems do not help users anonymize data or maintain
+application integrity constraints, which is the explicit
+goal of disguised data.
+%
+Database contents of data under disguise is also modified so sensitive data (the
+data under disguise) is no longer available in the database, and thus
+unavailable even to the service itself. This is unlike policy enforcement
+systems, which can deny access to sensitive data, but will still retain it in the database.
+%
+
+\textbf{Encrypted storage systems} such as CryptDB~\cite{cryptdb} and
+Mylar~\cite{mylar} protect against database server compromise, with some
+limitations~\cite{grubbs}.
+%
+%These systems encrypt data in the database, and
+%ensure that only users with access to the right keys can decrypt the data.
+%
+%Applications must handle keys, and send queries
+%either through trusted proxies that decrypt data~\cite{cryptdb}, or move
+%application functionality client-side~\cite{mylar}.
+%
+Encrypted databases have orthogonal goals to systems for disguised data: while they protect data at all times
+against attackers who do not have the keys, encrypted databases do not help applications
+anonymize or temporarily remove data, which systems for disguised data do.
+%
+Any user with legitimate access can view the data in an encrypted database,
+whereas \xxed data is removed from the database.
+
+\textbf{Other related work} uses crytographic or systems security methods to
+prove enforcement of user-defined policies~\cite{zeph, riverbed}, or explores
+new decentralized paradigms for web application operation~\cite{solid, bstore,
+databox, diy, amber, oort, w5, blockstack}.  These may restrict application
+functionality, whereas a system for disguised data can leave the data and business models unchanged.
+% TODO vanish, single-device mobile data encryption
+%
 %%
-%Like data deletion systems, \sys supports GDPR account deletion.
-%However, \sys also supports use cases beyond simple deletion.
+%{Devices} using iOS~\cite{applesecurity},
+%Android~\cite{applesecurity}, or CleanOS~\cite{cleanos} revoke
+%data access via encryption, like \sys does.
+%%
+%However, these systems operate in settings that store only a single user's data;
+%\sys instead tackles the problem of
+%transformations that operate over multiple users' data and shared data without
+%breaking the application.
+%%
 %
-%\sys can seal data in a GDPR-compliant manner and allow the user to return,
-%seal old data for inactive users, or seal some but not all data,
-%allowing the user to continue using the application.
+%%
+%Vanish~\cite{vanish} provides users with self-destructing data and a {proof of
+%data deletion} using decentralized infrastructure and cryptographic techniques
+%(with limitations against Sybil attacks~\cite{defeat_vanish}). Unlike
+%\sys, Vanish cannot restore deleted data and requires extensive application
+%restructuring.
+%%
 %
-%Finally, \sys emphasizes maintaining application functionality, which
-%involves storing placeholder data and fake users in the database.
+%%
+%{Sypse~\cite{sypse}} pseudonymizes user data and partitions
+%personally identifying information (PII) from other data. Instead of
+%partitioning data, \sys modifies the database and stores \xxed data
+%encrypted.
+%%
 %
-
-%
-\subsection{Protecting Against Unauthorized Access} 
-\textbf{Policy enforcement systems} such as Qapla~\cite{qapla}
-aim to prevent
-unauthorized access to data and protect against leakage via compromised,
-unauthorized accounts or SQL injections.
-%
-They enforce developer-specified visibility and access control policies via
-information flow control~\cite{static, jeeves, jif, hails, ifdb}, authorized
-views~\cite{oracle} or per-user views~\cite{multiverse}, or blocking or
-rewriting database queries~\cite{blockaid, qapla, sieve}.
-%
-%These systems restrict access to user data by restricting a client's queries
-%depending on the access policy of the client's application role.
-%
-%Users can only successfully query data if authorized by their application
-%role's policy.% to view certain data can successfully query it.
-%
-%This addresses the threat of a compromised \emph{unauthorized} user account, as
-%well as arbitrary SQL queries via SQL injections: in either case, the exposed
-%data is restricted to what the policy allows.
-%
-%However, if a compromised user (\eg an admin) has a legitimate reason to view
-%data and their policy authorizes broad access, policy enforcement will fail
-%to contain the damage.
-%
-
-%
-Some platforms can prove that server-side processing respects
-user-defined data policies via cryptographic means~\cite{zeph} or
-systems security mechanisms~\cite{riverbed}.
-%
-This may restrict feasible application functionality (\eg to additively
-homomorphic functions), or restrict combining data with different policies.
-%
-%\sys only protects user data after sealing, but in exchange allows unrestricted
-%application functionality before sealing.
-%
-
-\textbf{Encrypted storage systems} like
-CryptDB~\cite{cryptdb} and
-Mylar~\cite{mylar} aim to protect against database server compromise (with some
-limitations~\cite{grubbs}), as well as SQL injection attacks.
-%
-These systems encrypt data in the database, and ensure that only
-users with legitimate reasons to view the data (\ie the owner or an
-admin) can decrypt the data.
-%
-Applications handle keys, and send queries either through
-trusted proxies that decrypt data~\cite{cryptdb}, or move application
-functionality client-side~\cite{mylar}.
-%
-%However, they fail to prevent \emph{authorized} accesses from a compromised
-%account that (for legitimate purposes) holds the key material to decrypt the
-%data.
-
-Policy-enforcing and encrypted storage systems do not help users redact data,
-nor maintain application functionality in the face of partially or fully
-redacted data. 
-%
-Their goal is orthogonal: to protect unauthorized data access via access control
-mechanisms (encryption or policy checks).
-%
-These systems also keep data available in the database, thus leaving user data
-vulnerable to attacks by compromised accounts with authorized access (\eg an
-admin).
-
-%
-\subsection{New Database Designs}
-Other work has created new privacy-focused data storage designs for applications.
-Sypse~\cite{sypse} pseudonymizes user data and partitions personally-identifying
-information (PII) from other data.
-%
-%Instead of partitioning data, \sys actually modifies the application database
-%and stores sealed data encryptedly.
-%
-However, Sypse does not securely store (\eg with encryption) PII, nor modify the
-actual data stored by the application
-%, and thus tackles a different threat model.
-
-%
-Decentralized platforms such as Solid~\cite{solid}, BSTORE~\cite{bstore},
-Databox~\cite{databox}, and others~\cite{diy, amber, oort, w5, blockstack} put
-data fully and directly under user control, since users store their own data.
-%
-But this burdens users with maintaining infrastructure, and decentralized platforms
-lack the capacity for server-side compute and break today's ad-based
-business model.
-%
+%{Decentralized platforms} such as Solid~\cite{solid}, BSTORE~\cite{bstore},
+%Databox~\cite{databox}, and others~\cite{diy, amber, oort, w5, blockstack} put
+%data directly under user control, since users store their own data.
+%%
+%But decentralized platforms burden users with maintaining infrastructure, lack
+%the capacity for server-side compute, and break today's ad-based
+%business model.
+%%
 %By contrast, \sys leaves the data and business models unchanged,
-%storing all data, including sealed data, on the application's servers.
+%and stores all data, including \xxed data, on the application's servers.
+%%
+%
+%Some platforms can prove that server-side processing respects
+%{user-defined policies} via cryptographic means~\cite{zeph} or
+%systems security mechanisms~\cite{riverbed}. This may restrict feasible
+%application functionality (\eg to additively homomorphic functions), or restrict
+%combining data with different policies. \sys protects data only after
+%\xxing, but allows unrestricted application functionality before
+%\xxing.
