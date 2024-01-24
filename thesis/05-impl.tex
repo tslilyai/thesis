@@ -1,1 +1,217 @@
-Implementation
+%
+We implemented our \sys prototype in 7.9k lines of Rust.
+%(1.6k LoC specifically added for \syscrypt).
+%
+%We also provide an API server that exposes a JSON-HTTP API that applications
+%can use to invoke \sys.
+%
+%In the following, we discuss key implementation details that \sys relies for
+%security and performance.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{API.}
+\label{s:api}
+%
+An application can use the prototype if:
+\one{} it uses a MySQL database;
+\two{} rows to \xx have direct foreign key relationships to a users table,
+where each user corresponds to a row of that table;
+\three{} all rows to \xx are owned by one or more principals; and
+\four{} all rows can be uniquely identified (\eg via primary key).
+%
+Applications that do not satisfy these assumptions---\eg because they have
+complex ownership chains or use a NoSQL database---could be supported with
+extensions to the prototype.
+
+\iffalse
+\begin{figure}[t]
+\begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
+// Generates keypair for p and returns
+// the user's backup credential
+(*\textbf{RegisterPrincipal}*)(p: UID, pw: Password,
+        pubkey: PublicKey, privkey: PrivKey)
+    -> Credential;
+// \xxs principal p according to the spec,
+// optionally over already-\xxed data ((*\S\ref{s:composition}*))
+(*\textbf{\xxData}*)(p: Option<UID>, spec: \xxSpec,
+    \xx_over: Option<(
+        Credential,
+        Vec<Locator>
+    )>) -> (\xxID, Vec<Locator>);
+// Reveals data \xxed by s for p with p's
+// private key.
+// locs point to bags p can decrypt
+(*\textbf{RevealData}*)(p: Option<UID>, s: \xxID,
+    cred: Credential, locs: Vec<Locator>);
+// Gets principals at loc that p can speak-for.
+(*\textbf{CanSpeakFor}*)(p: UID, cred: Credential,
+    loc: Locator) -> Vec<UID>;
+\end{lstlisting}
+\caption{\sys's high-level API (Rust-like syntax).}
+\label{f:api-high}
+\end{figure}
+%
+\fi
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Secure Record Storage.}
+%\sys stores the \xx and principal tables in the database.
+%
+When encrypting diff and speaks-for records, \sys appends a random nonce to
+the record plaintext to prevent known-plaintext attacks.
+%
+It then generates a new public/private keypair for x25519 elliptic curve key
+exchange.
+%
+Using the newly created private key and the principal's public key, \sys
+performs the x25519 elliptic curve Diffie-Hellman ephemeral key exchange to
+generate a shared secret.
+%
+\sys encrypts the record data with the shared secret, and saves the
+ciphertext along with the freshly generated public key (required to decrypt
+the data given the principal's private key).
+%
+This public key algorithm lacks key anonymity, so an attacker can determine
+which records belong to the same principal, but this is not
+fundamental~\cite{anonymous-keys}.
+%because public key encrypted which \xx records
+
+%Locators group together related diff and speaks-for records by principal and
+%transformation; they are opaque in order to hide the principal's identity.
+%
+%Maintaining a locator set allows \sys's to easily find which records correspond
+%to a principal's \xxed data to \eg reveal it (\S\ref{s:reveal}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
+\section{Reveal Credentials.}
+%
+Our prototype supports two forms of reveal credentials: \one{} private keys; or
+\two{} principals' passwords, and recovery
+tokens in case they forget their passwords.
+%
+If an application chooses to use the latter, it provides the principal's password
+to \sys upon user registration.
+%
+Our prototype uses a variant of Shamir's Secret Sharing~\cite{secretsharing}
+to generate three shares from the private key, any two of which can reconstruct the
+private key.
+%
+Shares are $(x, f(x) \bmod p)$ tuples, where $f(x) = \fn{privkey} + \fn{rand} \cdot
+x$ and $p > \fn{privkey}$ is a known prime.
+%
+One share derives $x$ from the user's password using a Password-Based Key
+Derivation Function (PBKDF)~\cite{pbkdf-rfc}.
+%
+\sys stores the resulting $f(x)$ half of the share, allowing \sys to derive one
+full share from the password.
+%
+%\sys generates the remaining two shares via randomly sampled $x$ coordinates.
+%
+\sys returns the second full share as a recovery token and stores the third full
+share.
+%
+\sys can combine this third share with the recovery token
+or a full share derived from the password to recover the
+private key.
+%if the user provides either
+%their recovery token, or their password (from which \sys derives a full share).
+%either derived from the password, or the recovery token.}
+%
+%if \sys obtains one additional share from either the password or from a recovery token,
+%\sys can recover the private key.}
+
+The PBKDF ensures that \sys cannot guess the password-derived value with
+dictionary and rainbow table attacks~\cite{pbkdf}, and that \sys cannot brute force
+the recovery token.
+%
+%\sys cannot reconstruct the private key without either the backup share or the
+%other half of the password-derived share, and \sys cannot brute force the
+%value of the backup share.
+%
+
+%
+%\sys stores its shares---both its full share, and its half of the
+%password-derived share---at an index equal to the hash of the user's ID and
+%password in a separate shares table.
+%%
+%If the user loses their password and instead provides their recovery
+%token, the user also provides this index so \sys can efficiently find the
+%relevant shares.
+%\sys thus returns both the backup share and the index as backup credentials in
+%\fn{RegisterPrincipal}.
+%
+%\sys derives the private key given either form of credentials: given the user's
+%password, \sys reconstructs the third share as well as the index; or, if the
+%user forgets their password, they can provide the backup credentials instead.
+%\sys combines the derived share with the one it stored to reconstruct the
+%private key.
+
+%When principals change their passwords or keypairs, applications re-register the
+%principal with \sys.
+%%
+%To change a password, the principal provides their existing
+%credentials (password or backup) and new password; \sys then derives
+%their private key, redoes the secret sharing process described with the
+%new password, and returns the new backup credential.
+%%
+%Users can similarly change their public/private keypair.
+%%
+
+%
+Password-based secret-sharing is only one possible implementation for backup
+secrets; \sys could also support password-based backup secrets by \eg storing an
+version of the private key encrypted with the user's password.
+%
+
+%
+\section{Concurrency.}
+%
+\sys runs \xxing and revealing transformations in transactions, providing
+serializable isolation to application users.
+%
+If a query within a transformation fails, the entire transformation aborts
+(returning an error to the application).
+%
+\sys provides an option to run long-running transformations that
+touch large amounts of data (\eg anonymization of all users' posts) without a
+transaction, at the expense of clients potentially observing intermediate
+states.
+%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
+%\head{Pre-generated Pseudoprincipal Keypairs.}
+%%
+%Generating a single private-public keypair is expensive ($\approx$300ms), but
+%decorrelating disguises require creating many pseudoprincipals.
+%%
+%To make pseudoprincipal creation cheap, \sys maintains a pool of
+%pregenerated keypairs for pseudoprincipals that it periodically refreshes.
+%%
+%The application tells \sys an appropriate size for the pool (\eg an upper bound
+%on how much data a user might have).
+%%
+%If an attacker compromises the key pool, an admin must generate a new key pool and
+%reset any public/private keypairs that were accessed since the compromise.
+%%but \sys makes no security guarantees
+%%about  the point when the compromise happens.
+%
+%%To recover, an admin must generate a new key pool and reset
+%%extant principals' keys.
+%
+
+%Security against an attacker who compromises the server and observes future
+%disguises is unaffected, as \sys only keys from the pool when it generates
+%pseudoprincipals during disguises (when the keys would otherwise have been
+%generated, and leaked to the attacker).
+%%
+%However, an attacker who compromises the server, exfiltrates the keys, and
+%leaves would be able to come back and use the keys later to reveal disguised
+%data.
+%%
+%A fixed-size pool and periodic refreshes bound the period of vulnerability and
+%amount of data such an attacker can reveal.
+%
+

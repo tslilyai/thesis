@@ -58,7 +58,7 @@ achieve GDPR-compliant data removal. %, as the data remains in the database.
   \centering
       \includegraphics[width=\columnwidth]{figs/websubmit_qapla_op_stats}
     \caption{\sys achieves competitive performance with a manual baseline and
-    outperforms Qapla \newstuff{on nearly all common WebSubmit operations} \oldtext{on nearly all operations in WebSubmit} (2k users,
+    outperforms Qapla on nearly all common WebSubmit operations (2k users,
     80 answers/user).
     Bars show medians, error bars are 5\textsuperscript{th}/95\textsuperscript{th}
     percentile latencies.}
@@ -79,10 +79,7 @@ actually deletes it from the database.
 %
 However, Qapla rewrites all read queries, so Qapla performs poorly on operations
 that require reads, such as listing answers and editing (disguised or
-undisguised) data.\oldtext{, and anonymizing
-accounts. (lyt: note, one particular query during account anonymization for Qapla improved by an order of
-magnitude with index optimizations that we added when rerunning experiments,
-leading to comparable numbers to Edna for this operation.)}
+undisguised) data.
 %
 Qapla's query rewriting takes $\approx$1ms, and rewrites \fn{SELECT} queries in
 ways that affect performance (\eg adding joins to evaluate predicates).

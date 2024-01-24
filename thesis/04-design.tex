@@ -1,67 +1,664 @@
-\label{sec:intro:contrib}
 %
-This thesis makes the following contributions: 
+We now describe how \sys's API and \xx specifications work via a \xxing transformation for Lobsters~\cite{lobsters}.
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Example: Lobsters Topic Anonymization}
+\label{s:design:lobsters}
+
+Lobsters~\cite{lobsters} is a link-sharing and discussion platform with 15.4k
+users.
+%
+Its database schema consists of stories, tags on stories, comments, votes,
+private messages, user accounts, and other user-associated metadata.
+%
+Users create accounts, submit URLs as stories, and interact with other users
+and their posted stories via comment threads and votes.
+%
+
+Consider \textbf{topic-based anonymization}, which allows users to
+hide their interest in a topic (a ``tag'' in Lobsters) by decorrelating
+their comments and removing their votes on stories with that tag.
+%
+For instance, a Lobsters user Bea who posts about their interests---Rust,
+static analysis, and Star Wars---might want to hide associations with
+Star Wars before sharing their profile with potential employers.
+%
+This is currently not possible in Lobsters.
+
+%
+The Lobsters developer can realize topic-based anonymization as a \xxing
+transformation.
+% that anonymizes Bea's contributions in the database, while allowing
+% Bea to later edit and reclaim them if desired.
+%
+First, the developer writes a \xx specification (\S\ref{s:spec})
+and provides it to \sys.
+%
+They also add frontend code and UI elements that allow authenticated users to
+trigger the \xxing transformation (Figure~\ref{f:lobsters_hook}).
+%
+When Bea wants to anonymize their contributions on content tagged ``Star Wars'',
+Lobsters invokes \sys with a \xx specification that instructs \sys to
+decorrelate comments and remove votes on ``Star Wars'' stories
+(\S\ref{s:applying}).
+
+%We focus here on a Lobsters \xxing transformation for \emph{topic-based anonymization}.
+% and \emph{GDPR-compliant account removal}.
+%
+%Our Lobsters integration additionally supports three other transformations---account decay,
+%GDPR-compliant account removal, and Lobster's current, non-GDPR-compliant account removal
+%policy---as \xxing transformations (\S\ref{s:cs:lobsters}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%\section{\Xxing}
+%\label{s:design:\xxing}
+
+\section{\Xx Specifications}
+\label{s:spec}
+
+\begin{figure}[t]
+\centering
+\begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
+// Decorrelate comments on stories w/tag {{TAG}}
+"comments": [{
+  "type": "Decorrelate",
+  "predicate": "tags.tag = {{TAG}}",
+  "from": "comments JOIN stories
+           ON comments.story_id = stories.id
+           JOIN taggings
+           ON stories.id = taggings.story_id
+           JOIN tags ON...",
+  "group_by": "stories.id",
+  "principal_fk": "comments.user_id" } ],
+// Remove votes on stories w/tag {{TAG}}
+"votes": [{
+  "type": "Remove",
+  "predicate": "tags.tag = {{TAG}}",
+  "from": "votes JOIN stories...",
+  "principal_fk": "votes.user_id",
+}, ... ]
+\end{lstlisting}
+    \caption{Lobsters topic-based anonymization \xx specification (JSON
+    pseudocode), which decorrelates comments and removes votes on stories with
+    the specific topic tag.}
+\label{f:spec}
+\end{figure}
+
+%For every \xxing transformation, the developer writes a \xx specification
+%(Figure~\ref{f:spec})
+\noindent
+\Xx specifications tell \sys what application data objects to \xx and how to \xx them.
+%
+A \xx specification identifies objects by database table name, principal, and
+predicate, where a predicate is a SQL \fn{WHERE} clause.
+%
+\sys by default \xxs all objects related to the given principal, as defined by
+a foreign-key relationship provided in the \xx specification (using
+\texttt{principal\_fk}), but predicates can narrow the transformation's scope
+(\eg to stories with specific tags).
+%
+For each selected group of objects, developers choose to
+\emph{remove}, \emph{modify}, or \emph{decorrelate} them.
+%, replacing some or all of their contents with placeholder values;
+%or \three{} \emph{decorrelate} them.
+%where decorrelation removes associations between principals and objects and
+%re-associates the objects with pseudoprincipals. \hmng{this is a pretty verabtim
+%repetition from section 3, remove or condense I'd say?}
+%
+The example specification in Figure~\ref{f:spec} decorrelates all comments and removes all
+votes on stories with a particular tag, specified by the \texttt{TAG} parameter provided
+at invocation time.
+
+%
+%or a custom set of objects specified by the \xxing transformation.
+%\lyt{skipping the ``custom set of objects''; that seems unclear to me.}
+%
+
+To ensure that decorrelation preserves referential integrity, \sys generates
+pseudoprincipals to replace the original principal.
+%
+Decorrelation can use pseudoprincipals at different granularities.
+In the extreme, the \xx specification may tell \sys to create a unique
+pseudoprincipal for each decorrelated application object.
+In our example, however, all comments by the same user on the same story
+decorrelate to the same pseudoprincipal (\verb+"group_by": "stories.id"+), thus
+keeping same-story comment threads intact.
+%
+The same user's comments on different stories, however, decorrelate to different
+pseudoprincipals; an alternative might group comments by
+\texttt{comments.user\_id}, so a single pseudoprincipal adopts all of a user's
+\fn{TAG}-related comments (effectively creating a ``Star Wars'' throwaway account).
+
+ Developers can inform \sys to, upon revealing, check for any objects
+added after disguising that refer to pseudoprincipals; for example, a
+decorrelated comment might have new responses. This enables \sys to preserve
+referential integrity for data referring to pseudoprincipals. \sys
+provides three options if it finds such objects: \one{} change the object's
+reference to point to the original principal; \two{} delete the object; and
+\three{} continue referring to the pseudoprincipal.
+
+% Applications can use \sys to generate pseudoprincipals, or
+% % by telling \sys which
+% % table to put pseudoprincipals into and how to generate each column of the table
+% % (\eg constants, random emails, etc.). Alternatively, applications
+% %
+% can generate pseudoprincipals themselves and
+% provide \sys with these pseudoprincipals' unique IDs.
+%
+%
+%
+%
+% E: these points do not seem central
+%
+%% Pseudoprincipals may be observably different from \emph{natural
+%% principal}---human application users---at the application level.
+%% %
+%% The application only needs to register natural principals with \sys, since
+%% \sys handles pseudoprincipal creation.
+%
+%
+%
+% In our Lobsters specification, \sys generates pseudoprincipals with random
+% usernames and emails in the \fn{users} table.
+
+
+% Like natural principals, pseudoprincipals have affiliated public keys and
+% credentials that \sys uses to \xx or reveal their data; this
+% supports the composition of \xxing transformations (\S\ref{s:composition}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{\Xxing}
+\label{s:applying}
+
+To apply a \xxing transformation, \sys creates a unique \emph{\xx ID} and
+queries for the data to \xx based on the \xx specification predicates.
+%\lyt{Selecting all
+%predicated data prior to performing database modifications ensures that
+%any updates during \xxing do not affect what data to \xx. (put as footnote?
+%cut? dunno)}
+%
+\sys then performs the specified database changes by first applying all
+removals, and then decorrelations and modifications in specification order,
+potentially generating and storing pseudoprincipals.
+%If \sys must apply more than one change to the same selected data object
+%attribute (\eg because the object satisfies multiple predicates), \sys applies
+%the changes in the order specified in the spec.
+%
+%The developer can reason about which objects are \xxed based on the state of
+%the database at the point of time the \xxing transformation occurs.
+%
+
+%
+\sys next generates \emph{diff records} that contain the original data, the
+changes the disguise made to the original data (\eg the value of any modified
+columns), and the \xx ID.
+%
+For each new pseudoprincipal, \sys generates a public--private keypair and a
+\emph{speaks-for record} that contains a pair of (original principal,
+pseudoprincipal) IDs and the pseudoprincipal’s
+private key. \sys registers the pseudoprincipal with its public key to enable
+composition of disguises (\S\ref{s:composition}).
+%
+\sys then encrypts diff and speaks-for records---collectively called
+\emph{\xx records}---with the principal's key, and stores them in the database.
+%
+%
+%
+Finally, \sys returns the \xx ID to the application.
+%
+A client can use the \xx ID and the principal's
+credentials to reveal the transformation later.
+%
+
+\begin{figure}[t]
+\centering
+\includegraphics{figs/lobsters_catanon_visual}
+\caption{When \sys applies topic-based anonymization to Bea's comments on stories tagged
+  ``Star Wars'' (red), these comments are decorrelated to pseudoprincipals (``AnonPig'',
+  ``AnonFox'') and \sys stores encrypted speaks-for records mapping Bea to their pseudoprincipals.}
+\label{f:lobsters_visual}
+\end{figure}
+
+
+%
+To perform Bea's topic-based anonymization (Figure~\ref{f:lobsters_visual}),
+\sys thus:
+%
+\one{} queries the database to fetch comments and votes by Bea
+affiliated with ``Star Wars'';
+%
+\two{} creates a pseudoprincipal (\eg
+``AnonFox'') for every ``Star Wars''-tagged story that Bea commented
+on, and inserts it as a new user;
+% into the database;
+%
+\three{} modifies the database by rewriting comment
+foreign keys to point to the created pseudoprincipals, and
+removing Bea's votes on those stories;
+%
+\four{} creates speaks-for records that map Bea to the created
+pseudoprincipals, diff records containing Bea's votes on
+``Star Wars'' stories, and diff records that document Bea's original
+ownership of ``Star Wars''-tagged comments;
+%
+\five{} encrypts the speaks-for and diff records with Bea's public key, stores
+them; and
+%
+\six{} returns a unique \xx ID to the application.
+
+%
+% \sys's security properties require that \xx records be untraceable: even a
+% complete dump of \sys's state should not allow an attacker to match \xx records
+% with users.
+% %
+% But efficient revealing requires there be a way to reference the records for a
+% given \xx transformation and principal.
+% %
+% To this end, \sys encrypts both \xx records \emph{and} references to \xx
+% records using principal public keys, which we describe next.
+%
+%We now describe how this works.
+%
+
+\sys adds a \emph{\xx table} and a \emph{principal table} to the application
+database to store principals' \xxed data.
+%
+The \xx table contains lists of per-principal \xx records encrypted with the
+principal's public key.
+%(Recall that private keys are not stored in the database.)
+%; for instance, \verb+\xx_table[1]+ might be a list of \xx records
+%pertaining to Bea's \xxing of ``Star Wars'' comments.
+%
+%These records are encrypted
+%by Bea's public key, and thus can only be decrypted when Bea's private key is
+%available.
+%
+The principal table is indexed by application user ID; each row contains the
+principal's public key, and a list of \xx table indexes encrypted with the
+public key.
+%
+To store \xx records for principal $p$, \sys \one{} encrypts the records with
+$p$'s public key; \two{} stores the ciphertext in the \xx table under index
+\fn{idx}; \three{} encrypts \fn{idx} (salted to
+prevent rainbow table attacks) with $p$'s public key; and \four{} appends the
+encrypted \fn{idx} to $p$'s list of encrypted \xx tables indexes
+in the principal table.
+%an encrypted $[i \parallel \text{random-nonce}]$ (encrypted with the principal's public key).
+%encrypts $[i \parallel \text{random-nonce}]$ with the principal's public
+%key and appends the result to its principal table record.
+
+%
+This allows \sys to store records without needing access to the principal's
+private key, and to do so securely: the principal table adds a layer of
+indirection from user ID to encrypted \xx records, so an attacker cannot link
+principals to their records.
+%
+At reveal time, \sys can efficiently find \xxed data for a given user
+by decrypting and using \xx table indexes in the principal table.
+%
+%This also hides from an attacker which \xxed data belongs to a given principal
+%because entries in the principal table cannot be interpreted without
+%principals' private keys, which are not stored in the database.
+%
+
+%
+\Xxing transformations may completely remove a principal from the
+application database.
+%
+When this happens, \sys moves the corresponding list of encrypted \xx table
+indexes from the principal table to a \emph{deleted principal table} indexed
+opaquely, \eg by the public key.
+%
+This removes the user ID from the database while allowing future reveal
+operations by the principal to find their \xx table indexes.
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Revealing}
+\label{s:reveal}
+
+%
+To apply a reveal transformation, \sys first locates and decrypts the
+corresponding \xx records using a \xx ID and the user’s \emph{reveal
+credentials}.
+%
+\sys supports two forms of reveal credentials: \one{} the principal's private key
+itself; or \two{} the principal's application password or a recovery
+token (in case they forget their password), either of which \sys can use to rederive
+the private key.
+%
+%\begin{enumerate}[nosep]
+%    \item the principal's private key itself; or
+%    \item backup secrets created at principal registration time.
+%\end{enumerate}
+%
+%
+%
+Developers can use either or both of these credentials depending on application needs.
+%
+In our Lobsters example, \sys rederives the user's private key using their password.
+%
+% To support forgetful users, Lobsters could use a backup token.
+% secret stored with a third party as a recovery token;
+%
+% users who forget their passwords would authenticate to this third party to
+% retrieve their Lobsters token, and provide it to \sys to rederive the relevant
+% private key.
+%
+Password or keypair changes require an application to re-register the user with
+\sys, which generates new recovery tokens and re-encrypts the user's \xxed data.
+%
+%Alternatively, the application may keep password-encrypted private keys; users
+%authenticate with their password to the application, but the application provides the decrypted
+%private key to \sys as the reveal credential.
+%\sys can thus flexibly support the various common user authorization protocols used by applications
+%today.
+%
+%Users can use their password (the common case), just as they would need to in order to access the
+%application.
+%
+%The application can give the user the backup credential to store locally, or can send it to a
+%trusted third party that the user can retrieve from if the user forgets their password.
+%
+%Finally, the application can simply let the user use their private key directly if they wish.
+
+%
+%Using passwords as credentials renders the encryption on the users data only as secure as the user's
+%password, but maintains good usability as users can use their application password to reveal data.
+%
+
+%
+\begin{figure}[t]
+  \small
+\begin{lstlisting}[style=pseudo,escapeinside={(*}{*)}]
+Reveal(disgID, uid, privkey):
+ encrypted_disg_table_idxs := principal_table[uid]
+ decrypted_disg_table_idxs :=
+    decrypt(encrypted_disg_table_idxs, privkey)
+ for idx in decrypted_disg_table_idxs:
+   records = decrypt(disg_table[idx], privkey)
+   for rec in records:
+     if rec.disgID == disgID:
+       // apply rec to application database
+       // remove rec from disg_table
+     else if rec.type == SPEAKS_FOR:
+       // recursively reveal for pseudoprincipal
+       // generated by another disguise
+       Reveal(disgID, rec.pp_uid, rec.pp_privkey)
+\end{lstlisting}
+    \caption{Pseudocode for revealing a \xxing transformation while
+    application principal \fn{uid} exists. Recursive revealing (the
+    \texttt{\small else} clause) walks the speaks-for chain to reveal composed
+    records of pseudoprincipals created by other disguising transformations
+    if necessary (\S\ref{s:composition}).}
+  \label{f:revealpseudo}
+\end{figure}
+
+\sys's reveal procedure (Figure~\ref{f:revealpseudo}) first looks up all \xx
+records related to the provided reveal credentials via \sys's principal and \xx
+tables.
+%
+\sys then applies diff records created for the \verb+disgID+ \xx transformation
+to the database, thus restoring the relevant
+application objects to their pre-\xxed state.
+% Additionally, \sys recursively applies the procedure for
+% pseudoprincipals that the current user speaks-for; this supports the
+% composition of \xxing transformations, such as a Lobsters user who removes
+% their previously-anonymized contributions (\S\ref{s:composition}).
+
+%
+To preserve referential integrity, \sys first restores \xxed data that was
+removed.
+%
+\sys then reveals any modifications, and finally performs recorrelations using
+decrypted speaks-for records.
+%
+Finally, \sys de-registers any pseudoprincipal who no longer has any associated
+disguised data, removing them from the principal table and the application's
+users table.
+%
+Developers can configure \sys to also check for references to pseudoprincipals
+prior to removing them, and depending on the application's needs, configure \sys
+to delete, rewrite, or leave the references in place.
+%
+After revealing, the \xxed data is no longer needed, so \sys clears the
+corresponding \xx records.
+%
+
+
+%
+\sys's reveal semantics rely on consistency checks to handle
+database changes (\eg application updates to un\xxed data).
+%
+\sys reveals data only if revealed data: \one{} will still satisfy uniqueness and
+primary key constraints; \two{} will not overwrite modifications that occurred
+while data was \xxed; and \three{} will maintain referential integrity.
+
+For \one{}, \sys checks that \emph{removed} \xxed data is still removed from the
+database;
+%
+and for \two{}, \sys ensures that \emph{modified} \xxed data is in the same
+modified state and \emph{decorrelated}
+\xxed data is still affiliated with the same pseudoprincipal in the database
+using the new value stored in the diff record.
+%
+To ensure \three{}, \sys checks for the existence of all objects referenced by the data to reveal
+(\eg a post referenced by a to-be-revealed comment).
+%and ensures that any foreign
+%key references to pseudoprincipals to be deleted are rewritten to the original.
+
+\sys is conservative and will never reveal rows for which checks fail; the
+affected data remains \xxed.
+%\sys could flag encountered conflicts, giving the application a chance to fix
+%them so a later reveal can pass the checks.
+%Furthermore, \sys's consistency checks
+%only check static invariants associated with database contents, and
+%may still restore content that violate newly introduced
+%application invariants since the time of disguising.
+%\hmng{This comes a bit out of the blue if you're not anticipating this exact problem, I'd add an example maybe?}
+%, for example if all posts of a social media site had been scrubbed of a selection of swear words.
+\S\ref{s:disc} describes ways to increase the scope of \sys's checks.
+
+%This ensures referential integrity and adherence to column uniqueness constraints.
+
+%
+In the example, if Bea wants to reveal their ``Star Wars'' contributions,
+Lobsters invokes \sys with the \xx ID and Bea's password as reveal credentials.
+%to reveal their Star Wars \xxing transformation.
+%
+\sys uses the password to reconstruct Bea's private key, retrieve and decrypt
+Bea's \xx records, and filter those records for those with the \xx ID.
+%
+\sys then restores deleted votes and Bea's ownership of
+decorrelated comments.
+%
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Shared Data}
+\label{s:shared}
+%
+Many applications support shared data; in Lobsters, for example, messages
+between users are owned by both users.
+%or co-authored papers in HotCRP.
+%
+\sys's default semantics for shared data implement an ownership model inspired
+by a common treatment of messages.
+%
+When a user \xxs shared data, \sys decorrelates the data from the \xxing user,
+but preserves the data and its association with other owners.
+%
+\sys removes the data once all users have \xxed it and all ownership links are
+to pseudoprincipals.
+%
+For instance, consider a Lobsters message between Bea and Chris: after Bea \xxs
+the message, the message is owned by Chris and a pseudoprincipal; if Chris then
+\xxs the message, \sys removes it.
+%
+Either owner can reveal the message, which restores the message to the database
+and recorrelates the revealing user.
+%
+Regardless of the reveal order, if all owners reveal the message, \sys returns
+the message to its original state.
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\input{04-design-composition}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Authenticating As Pseudoprincipals}
+
+As described so far, if Bea wanted to modify a decorrelated ``Star Wars''
+comment, they would have to reveal the comment, edit it using their normal
+credentials, and then re\xx the comment.
+%
+\sys applications can also let users modify decorrelated records without
+the reveal step.
+%
+To support this, an application accepts reveal credentials along with a
+modification request. \sys uses these credentials to validate that the
+user speaks-for a specific pseudoprincipal, and updates the
+database with the modification.
+%its \xx records
+%
+%previous diff records to reflect the newly modified state.
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Security Discussion}
+\label{s:eval-security}
+
+%
+%We now analyze what security \sys's design provides.
+%
+\sys's design achieves confidentiality of disguised data between the time of
+disguising and revealing, its key goal.
+%
+Some aspects of \sys's design help make \sys practical and deployable without
+major application modifications, but give up stronger security in exchange for
+usability.
+%
+
+%Because \sys encrypts \xxed data, \sys achieves:
+%lyt: I didn't like this because we already talk about encrypting disguised data
+%below, and this is only a subset of WHY Edna achieves these security guarantees
+%
+Under \sys's threat model, \sys achieves:
 \begin{enumerate}[nosep]
-    \item The identification and exploration of the problem of \emph{flexible
-        privacy} for user data in web applications.
-
-    \item Abstractions to achieve flexible privacy in web applications via \emph{disguised data},
-        including abstractions for \xxing and revealing, and a small set of
-        data-anonymizing primitives (remove, modify, decorrelate) that cover a
-        wide range of application needs and compose cleanly.
-
-    \item Techniques to implement these abstractions, including
-    pseudoprincipals, speaks-for and diff
-    records, and speaks-for chains.
-
-    \item A design and realization of these techniques in \sys, a prototype
-        library that implements user data control via disguising and revealing.
-
-    \item Case studies that integrate \sys with three real-world web
-    applications and demonstrate \sys's ability to enable composable and
-    reversible transformations.
-
-    \item An evaluation of \sys's effectiveness and performance, including how
-    \sys contrasts with and complements related work (Qapla~\cite{qapla} and
-    CryptDB~\cite{cryptdb}).  
+    \item confidentiality of disguised data, via encrypting disguised data using asymmetric encryption, so only the owning user’s private key can reveal it;
+    \item confidentiality of which encrypted disguised data belongs to which
+        user, via opaque, encrypted indexing to reference a user’s disguised data; and
+    \item reduced linkability between parts of a user's data, via splitting data ownership among pseudoprincipals.
 \end{enumerate}
 %
-Appended to this proposal is the \sys paper describing \sys's design, implementation, and evaluation.
+However, an attacker sees all application database
+content and code, and \sys's \xx, principal, and deleted principal tables.
+%
+Thus, what the attacker learns includes:
+\begin{enumerate}[nosep]
+  \item any un\xxed data in the application database;
+  \item the active principals that have \xxed data, via \sys's principal
+      table;
+  \item the pseudoprincipals currently registered, from \sys's
+    principal table and the application DB;
+  \item the number of deleted principals, via the size of the deleted
+    principal table;
+  \item the amount of \xxed data in \sys; and
+  \item the \xx specifications, from application code.
+\end{enumerate}
 
-\iffalse
-\subsection{Limitations}
 %
-While disguised data can help developers to add more flexible user data
-controls, the abstraction and its implementation in \sys have some limitations. 
+\sys provides decorrelation with pseudoprincipals to ease integration with
+existing applications, even though pseudoprincipals (and their mere existence) can
+reveal information to the attacker.
 %
-First, disguised data is a concept scoped for single applications, and does not tackle the problem of data sharing between services.
+Pseudoprincipals preserve application data and referential integrity, ensuring that
+\eg every post always has an author, or that vote counts on posts remain unchanged,
+without requiring the developer to handle special cases of deleted users and
+orphaned data.
 %
-%While \sys enables \xxing and revealing transformations in a broad class of
-%applications, \sys has some limitations.
+However, this necessarily leaves information in the database.
+% that an attacker could use.
 %
-Second, \sys assumes bug-free \xx specifications, and that applications use \sys
-correctly.
-%
-Third, \sys does not aim to protect un\xxed data in the database against compromise;
-combining \sys with an encrypted database can add this protection.
-%
-Finally, attacks to identify users from \sys's metadata (\eg the size of
-stored \xxed data) or placeholder data left in the database (\eg embedded text)
-are out of scope.
-%
-\fi
 
-\subsection{Remaining Work: Revealing with Schema Migrations and Application
-Updates}
-
-In \sys's current design, \textbf{application updates} that implicitly enforce
-invariants on application data remain unknown (and thus uncheckable) by \sys.
-\sys also fails to reveal disguised data affected by \textbf{schema migrations}
-performed since the time of disguise.
+Similarly, leveraging the application database to store \xxed data increases \sys's
+practicality as it reuses existing server-side storage and avoids burdening
+users with managing their disguised data, but leaves potentially
+exploitable metadata available to attackers.
 %
-We will add an API for developers to log important updates and schema migrations with \sys, which \sys will apply to disguised data prior to restoring it to the database.
+An attacker could leverage pseudoprincipal groupings (\eg a pseudoprincipal
+owning posts in both ``CMU 2018'' and ``BayArea'' topics), un\xxed data
+(\eg comments signed with the user's name), and \sys metadata (\eg that some
+anonymous user has more \xxed data than another, as \sys stores \xxed data without
+padding for efficiency) to infer the identity of the original owning principal.
 
-\sys will apply these updates or schema migrations prior to performing \sys's
-existing consistency checks; these checks enable \sys to detect if revealing
-transformations will violate referential integrity or other structual database
-invariants (\eg uniqueness requirements). 
+Finally, \sys makes no guarantees for users who actively use \xxed data after
+compromise (\eg by revealing or editing decorrelated data): after an attacker
+compromises the application at time $t$, they can harvest private keys that
+clients provide after $t$.
+%
+However, \sys always protects users' \xxed data if they remain inactive.
+%
+%%Likewise, when a client provides $(\lcapa{pd}, p, d)$ to operate over data under
+%%disguise, the attacker learns the correspondence between \lcapa{pd} and $(p, d)$.
+%
+%%But this merely makes the attack more efficient, as the attacker can already discover
+%%$p$'s disguise history by attempting to decrypt all bags with $p$'s private key.
+%
+%However, the attacker cannot gain access to any previously-revealed data that users
+%subsequently removed from the application database.
+%
+
+%
+%: viable protections (\eg storing
+%\xxed data externally, \xxing all user data, or padding \xx records and
+%pseudoprincipal counts) can break application functionality by removing too much
+%data, prevent further \xxing of pseudoprincipal-owned data, and result in
+%prohibitively expensive space costs.
+%
+%\lyt{This could let us cut the disc..}
+
+%
+%The attacker could also try to leverage remaining data in the application
+%database, the size of the \xxed data, and the number of registered
+%pseudoprincipals for a statistical inference attack that lets them conclude
+%which pseudoprincipals likely correspond to a natural principal.
+%%
+%\sys does not protect against such attacks: viable protections would break the
+%application for others by removing too much data from the application DB and
+%require expensive padding of \xxed data and the pseudoprincipal count.
+%%
+
+%as the cost of the necessary protections would be
+%prohibitive: \sys would have to add padding to every bag and pseudoprincipal locator set, and the
+%amount of padding would need to be proportional to the largest amount of data any natural principal
+%holds in the application DB (see \S\ref{s:disc}).
+%
+%However, \sys guarantees that the attacker cannot tell the \emph{identity} of an inactive natural
+%principal correlated with some pseudoprincipal(s) based on the compromised information, since the
+%natural principal has been removed from the application DB and from \sys's metadata.
+
+
+%We note that our threat model puts privilege-escalation and root privilege attacks out of scope:
+%thus, an adversary cannot observe privilege-protected query logs or other database metadata that
+%would potentially leak \xxed data~\cite{grubbs}. While \sys provides no guarantees for
+%root-privilege attacks, \sys increases the difficulty of extracting \xxed data. \lyt{Move
+%this last paragraph somewhere?}
+
+%\textbf{Security of Reveal Credentials.}
+%
+%
+The attacker never has access to a user's private key unless the user actively
+provides their credentials.
+%
+The attacker also cannot access the private key of any pseudoprincipal because
+it is in an encrypted speaks-for record.
+%
+% By induction, the attacker cannot access any private keys.
+%
+If an application uses password-based reveal credentials, \sys
+guarantees security equivalent to the security of the user's password.

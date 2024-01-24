@@ -1,4 +1,4 @@
-Our evaluation seeks to answer \newstuff{five} questions:
+Our evaluation seeks to answer five questions:
 %
 \begin{enumerate}[nosep]
  %
@@ -510,9 +510,6 @@ to do so).
 Compared to accounts in WebSubmit, accounts in HotCRP have more data and
 14--15$\times$ more pseudoprincipals after anonymization, which accounts for the
 larger relative slowdown.
-%\newstuff{11$\times$ more references by other schema tables (which \sys queries
-%to check referential integrity during reveal)}
-%so these slowdowns make sense.
 %
 %HotCRP particularly demonstrates how cryptographic operations grow comparatively
 %more expensive: from 21\% of the cost to 41\% for account removal, and from 8\%
@@ -714,9 +711,6 @@ scenario) has a larger effect, with throughput reduced by up to $7.4$\%
 %expensive user (without transactions) drops by $\le 4.4$\%; and when disguising the
 %%most expensive user with transactions, drops by 17.1\%.
 %
-\oldtext{Under both low and high load, the throughput of normal operations is
-only slightly affected by concurrent \xxing, dropping by at most 5.8\% without
-transactions (and $<17$\% with transactions).}
 %\lyt{XXX Note: drop w/out txn is actually more for low load than high load.}
 %10% low load
 %
@@ -774,12 +768,7 @@ longer to complete~\cite{delf}.
 %exp txn restore 3542 3661 3785
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\oldc{}
-%\subsection{Related Work Comparison}
-%\normalc{}
-
 \input{07-eval-qapla}
 
 \input{07-eval-cryptdb}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
