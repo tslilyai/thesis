@@ -80,7 +80,7 @@ We use MariaDB 10.5 with the InnoDB storage engine atop a local SSD.
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{\sys Developer Effort}
+\section{\sys Developer Effort}
 \label{s:eval-effort}
 
 \begin{comment}
@@ -175,7 +175,7 @@ invoking \sys---is small, even though these applications were not written with
 %specifications follow systematic patterns, and require few lines of code compared to application code.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Performance of \sys Operations}
+\section{Performance of \sys Operations}
 \label{s:eval-ops}
 
 %
@@ -339,7 +339,7 @@ incrementally in the background, as in Lobsters account decay.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\subsubsection{\sys Performance Drill-Down.}
+\subsection{\sys Performance Drill-Down.}
 \label{s:eval-additional}
 %\lyt{made this a subsubsection}
 
@@ -456,7 +456,7 @@ We evaluate this cost next.
 %%
 %
 
-\subsubsection{Composing \Xxing Transformations.}
+\section{Composing \Xxing Transformations.}
 \label{s:eval-composition}
 % \lyt{this is now under \sys op performance}.
 
@@ -546,13 +546,13 @@ data (to one pseudoprincipal per record), as done by HotCRP anonymization.
 % pseudoprincipals touched.
 % %
 
-\subsection{\sys Overheads}
+\section{\sys Overheads}
 \label{s:eval-overheads}
 
 \sys adds both space and compute overheads to the application; we measure the
 impact of these next.
 
-\subsubsection{Space Used By \sys.}
+\subsection{Space Used By \sys.}
 %\begin{figure*}[t]
 %\centering
 %\begin{tabular}{ccc}
@@ -615,7 +615,7 @@ stores encrypted diff records with their information, which uses another 2.2 MB.
 %2.2MB is 0.8\% of the original Lobsters database size of 261 MB.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsubsection{Impact On Concurrent Application Use.}
+\subsection{Impact On Concurrent Application Use.}
 \label{s:eval-conc}
 
 %

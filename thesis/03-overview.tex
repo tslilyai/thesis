@@ -1,4 +1,4 @@
-\subsection{\sys Overview}
+\section{Overview}
 
 \begin{figure}[t!]
   \centering
@@ -12,7 +12,8 @@
 \end{figure}
 %
 \sys helps developers realize new options for users to control their data
-via \emph{\xxing transformations}.
+via \emph{\xxing transformations}; and add support for users to invoke
+\emph{revealing transformations}
 %
 The developer integrates an application with \sys by writing \xx specifications
 and adding hooks to \xx or reveal data using \sys's API
@@ -95,8 +96,6 @@ semantics (\eg revealing makes sure not to overwrite changes made since
 \label{f:spec}
 \end{figure}
 
-
-
 \begin{figure}[h]
   \centering
   \begin{subfigure}[h]{0.5\columnwidth}
@@ -120,7 +119,9 @@ semantics (\eg revealing makes sure not to overwrite changes made since
   \label{f:lobsters_hook}
   \end{figure}
 
-Lobsters~\cite{lobsters} is a link-sharing and discussion platform with 15.4k
+We next describe how \sys's API and \xx specifications work via a \xxing
+transformation for Lobsters~\cite{lobsters}.  Lobsters~\cite{lobsters} is a
+link-sharing and discussion platform with 15.4k
 users.
 %
 Its database schema consists of stories, tags on stories, comments, votes,
@@ -154,10 +155,175 @@ They also add frontend code and UI elements that allow authenticated users to
 trigger the \xxing transformation (Figure~\ref{f:lobsters_hook}).
 %
 When Bea wants to anonymize their contributions on content tagged ``Star Wars'',
-Lobsters invokes \sys with the provided specification .
+Lobsters invokes \sys with the provided specification.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Design}
+
+Developers need to reason only about the semantics of disguising; \sys takes
+care of applying the disguise 
+
+\subsection{Disguise Specifications}
+\label{s:spec}
+
+\begin{figure}[t]
+\centering
+\begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
+// Decorrelate comments on stories w/tag {{TAG}}
+"comments": [{
+  "type": "Decorrelate",
+  "predicate": "tags.tag = {{TAG}}",
+  "from": "comments JOIN stories
+           ON comments.story_id = stories.id
+           JOIN taggings
+           ON stories.id = taggings.story_id
+           JOIN tags ON...",
+  "group_by": "stories.id",
+  "principal_fk": "comments.user_id" } ],
+// Remove votes on stories w/tag {{TAG}}
+"votes": [{
+  "type": "Remove",
+  "predicate": "tags.tag = {{TAG}}",
+  "from": "votes JOIN stories...",
+  "principal_fk": "votes.user_id",
+}, ... ]
+\end{lstlisting}
+    \caption{Lobsters topic-based anonymization \xx specification (JSON
+    pseudocode), which decorrelates comments and removes votes on stories with
+    the specific topic tag.}
+\label{f:spec}
+\end{figure}
+
+%For every \xxing transformation, the developer writes a \xx specification
+%(Figure~\ref{f:spec})
+\noindent
+\Xx specifications tell \sys what application data objects to \xx and how to \xx them.
+%
+A \xx specification identifies objects by database table name, principal, and
+predicate, where a predicate is a SQL \fn{WHERE} clause.
+%
+\sys by default \xxs all objects related to the given principal, as defined by
+a foreign-key relationship provided in the \xx specification (using
+\texttt{principal\_fk}), but predicates can narrow the transformation's scope
+(\eg to stories with specific tags).
+%
+For each selected group of objects, developers choose to
+\emph{remove}, \emph{modify}, or \emph{decorrelate} them.
+%, replacing some or all of their contents with placeholder values;
+%or \three{} \emph{decorrelate} them.
+%where decorrelation removes associations between principals and objects and
+%re-associates the objects with pseudoprincipals. \hmng{this is a pretty verabtim
+%repetition from section 3, remove or condense I'd say?}
+%
+The example specification in Figure~\ref{f:spec} decorrelates all comments and removes all
+votes on stories with a particular tag, specified by the \texttt{TAG} parameter provided
+at invocation time.
+
+%
+%or a custom set of objects specified by the \xxing transformation.
+%\lyt{skipping the ``custom set of objects''; that seems unclear to me.}
+%
+
+To ensure that decorrelation preserves referential integrity, \sys generates
+pseudoprincipals to replace the original principal.  Developers use \sys's set
+of simple generation policies to tell \sys how to create a user object (\eg
+create a constant value, a random string, etc.). 
+%Alternatively, applications can generate pseudoprincipals themselves and
+%provide \sys with these pseudoprincipals' unique IDs.
+\lyt{getting too implementation-heavy?}
+%
+
+Decorrelation can use pseudoprincipals at different granularities.
+In the extreme, the \xx specification may tell \sys to create a unique
+pseudoprincipal for each decorrelated application object.
+In our example, however, all comments by the same user on the same story
+decorrelate to the same pseudoprincipal (\verb+"group_by": "stories.id"+), thus
+keeping same-story comment threads intact.
+%
+The same user's comments on different stories, however, decorrelate to different
+pseudoprincipals; an alternative might group comments by
+\texttt{comments.user\_id}, so a single pseudoprincipal adopts all of a user's
+\fn{TAG}-related comments (effectively creating a ``Star Wars'' throwaway account).
+
+ Developers can inform \sys to, upon revealing, check for any objects
+added after disguising that refer to pseudoprincipals; for example, a
+decorrelated comment might have new responses. This enables \sys to preserve
+referential integrity for data referring to pseudoprincipals. \sys
+provides three options if it finds such objects: \one{} change the object's
+reference to point to the original principal; \two{} delete the object; and
+\three{} continue referring to the pseudoprincipal.
+
+%
+%
+%
+%
+% E: these points do not seem central
+%
+%% Pseudoprincipals may be observably different from \emph{natural
+%% principal}---human application users---at the application level.
+%% %
+%% The application only needs to register natural principals with \sys, since
+%% \sys handles pseudoprincipal creation.
+%
+%
+%
+% In our Lobsters specification, \sys generates pseudoprincipals with random
+% usernames and emails in the \fn{users} table.
+
+
+% Like natural principals, pseudoprincipals have affiliated public keys and
+% credentials that \sys uses to \xx or reveal their data; this
+% supports the composition of \xxing transformations (\S\ref{s:composition}).
+\subsection{User Reveal Credentials}
+%
+\sys supports two forms of reveal credentials: \one{} the principal's private key
+itself; or \two{} the principal's application password or a recovery
+token (in case they forget their password), either of which \sys can use to rederive
+the private key.
+%
+%\begin{enumerate}[nosep]
+%    \item the principal's private key itself; or
+%    \item backup secrets created at principal registration time.
+%\end{enumerate}
+%
+%
+%
+Developers can use either or both of these credentials depending on application needs.
+%
+In our Lobsters example, \sys rederives the user's private key using their password.
+%
+% To support forgetful users, Lobsters could use a backup token.
+% secret stored with a third party as a recovery token;
+%
+% users who forget their passwords would authenticate to this third party to
+% retrieve their Lobsters token, and provide it to \sys to rederive the relevant
+% private key.
+%
+Password or keypair changes require an application to re-register the user with
+\sys, which generates new recovery tokens and re-encrypts the user's \xxed data.
+%
+%Alternatively, the application may keep password-encrypted private keys; users
+%authenticate with their password to the application, but the application provides the decrypted
+%private key to \sys as the reveal credential.
+%\sys can thus flexibly support the various common user authorization protocols used by applications
+%today.
+%
+%Users can use their password (the common case), just as they would need to in order to access the
+%application.
+%
+%The application can give the user the backup credential to store locally, or can send it to a
+%trusted third party that the user can retrieve from if the user forgets their password.
+%
+%Finally, the application can simply let the user use their private key directly if they wish.
+
+%
+%Using passwords as credentials renders the encryption on the users data only as secure as the user's
+%password, but maintains good usability as users can use their application password to reveal data.
+%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Threat Model}
+\section{Threat Model}
 \label{s:threat}
 %
 %\sys assumes well-intentioned developers who follow standard security practices
@@ -170,6 +336,8 @@ Lobsters invokes \sys with the provided specification .
 %\sys cannot protect against statistical correlation attacks.
 %provide information-theoretic privacy guarantees.
 %
+Developers and users can reason about the security properties of disguised data given \sys's
+threat model.
 \sys protects the confidentiality of \xxed data between the time when a user
 disguises their data and the time when they reveal it.
 %
