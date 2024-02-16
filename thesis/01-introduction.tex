@@ -251,15 +251,16 @@ credentials} (\eg a password or a private key).
 While disguised data can help developers to add more flexible user data
 controls, the abstraction and its implementation in \sys have some limitations. 
 %
-First, disguised data is a concept scoped for single applications, and does not tackle the problem of data sharing between services.
+First, disguised data is a concept scoped for single applications, and does not
+tackle the problem of data sharing between services.
 %
 %While \sys enables \xxing and revealing transformations in a broad class of
 %applications, \sys has some limitations.
 %
-Second, \sys assumes bug-free \xx specifications, and that applications use \sys
+\sys also assumes bug-free \xx specifications, and that applications use \sys
 correctly.
 %
-Third, \sys does not aim to protect un\xxed data in the database against compromise;
+Furthermore, \sys does not aim to protect un\xxed data in the database against compromise;
 combining \sys with an encrypted database can add this protection.
 %
 Finally, attacks to identify users from \sys's metadata (\eg the size of
@@ -275,7 +276,7 @@ This thesis makes the following contributions:
         flexible user data privacy in web applications.
 
     \item Disguised data abstractions for developers and users of web
-        applications: \xxing and revealing transformations; \emph{disguise
+        applications, namely \xxing and revealing transformations; \emph{disguise
         specifications} written with a small set of data-anonymizing primitives
         (remove, modify, decorrelate) , which cover a wide range of application
         needs and compose cleanly; and \emph{reveal credentials} to allow users
