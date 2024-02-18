@@ -154,17 +154,21 @@ decorrelate comments and remove votes on ``Star Wars'' stories
 They also add frontend code and UI elements that allow authenticated users to
 trigger the \xxing transformation (Figure~\ref{f:lobsters_hook}).
 %
-When Bea wants to anonymize their contributions on content tagged ``Star Wars'',
+When Bea wants to anonymize their contributions on content tagged ``Star Wars,''
 Lobsters invokes \sys with the provided specification.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Design}
 
-Developers need to reason only about the semantics of disguising; \sys takes
-care of applying the disguise 
-
 \subsection{Disguise Specifications}
 \label{s:spec}
+
+\sys's developer interface is designed so that developers need to reason only
+about the high-level semantics of disguising expressed in the disguise
+specification. \sys takes care of applying disguise transformations, composing
+it with other disguising and revealing transformations, and creating and storing
+disguised data.
+
 
 \begin{figure}[t]
 \centering
@@ -275,18 +279,19 @@ reference to point to the original principal; \two{} delete the object; and
 % credentials that \sys uses to \xx or reveal their data; this
 % supports the composition of \xxing transformations (\S\ref{s:composition}).
 \subsection{User Reveal Credentials}
+\sys provides developers and users
+with the abstraction of \emph{reveal credentials}, which users provide to the
+application to authorize revealing their data.
+%
+Reveal credentials allow applications that use \sys to support familiar user authentication workflows
+when users want to reveal their disguised data. 
+%
+
 %
 \sys supports two forms of reveal credentials: \one{} the principal's private key
 itself; or \two{} the principal's application password or a recovery
 token (in case they forget their password), either of which \sys can use to rederive
 the private key.
-%
-%\begin{enumerate}[nosep]
-%    \item the principal's private key itself; or
-%    \item backup secrets created at principal registration time.
-%\end{enumerate}
-%
-%
 %
 Developers can use either or both of these credentials depending on application needs.
 %
