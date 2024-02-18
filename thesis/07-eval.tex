@@ -3,9 +3,6 @@ Our evaluation seeks to answer five questions:
 \begin{enumerate}[nosep]
  %
  \item How much developer effort and application modification does \sys require? (\S\ref{s:eval-effort})
- %
-%\item Can a policy-enforcement system like Qapla~\cite{qapla} be used to realize
-   %\sys-like functionality? (\S\ref{s:eval:qapla}) %(Qapla) One WS graph
 %
 \item How expensive are common application operations, as well as
   \xxing, revealing, and operations over \xxed data with \sys? (\S\ref{s:eval-ops})
@@ -16,8 +13,6 @@ Our evaluation seeks to answer five questions:
 %
 \item What overheads does \sys impose, and where do they come from?
     (\S\ref{s:eval-overheads})
-%Drill down (storage, impact on concurrent app throughput)
-%Lobsters throughput graph
 
 \item 
     How does the effort required to implement \sys's
@@ -338,8 +333,19 @@ incrementally in the background, as in Lobsters account decay.
 %We next break down these costs.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\subsection{Performance of Reveals with Database Changes}
+\todo{actually measure and put results}
 
-\subsection{\sys Performance Drill-Down.}
+We next look at how \sys's reveal performance changes when operating in the
+presence of schema migrations or other conflicting dataabase changes.  We
+evaluate the latency of reveal operations in Lobsters with a schema change that
+\todo{schema change here}, and a frivolous global developer modification that
+removes all vowels in text.
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{\sys Performance Drill-Down}
 \label{s:eval-additional}
 %\lyt{made this a subsubsection}
 
@@ -456,7 +462,7 @@ We evaluate this cost next.
 %%
 %
 
-\section{Composing \Xxing Transformations.}
+\subsection{Composing \Xxing Transformations.}
 \label{s:eval-composition}
 % \lyt{this is now under \sys op performance}.
 
@@ -553,6 +559,9 @@ data (to one pseudoprincipal per record), as done by HotCRP anonymization.
 impact of these next.
 
 \subsection{Space Used By \sys.}
+
+\todo{Add space overhead of Reveals with Database Changes}
+
 %\begin{figure*}[t]
 %\centering
 %\begin{tabular}{ccc}
@@ -617,6 +626,8 @@ stores encrypted diff records with their information, which uses another 2.2 MB.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Impact On Concurrent Application Use.}
 \label{s:eval-conc}
+
+\todo{Add concurrent impact of Reveals with Database Changes}
 
 %
 %Web applications serve many concurrent users, most of whom are simply using the

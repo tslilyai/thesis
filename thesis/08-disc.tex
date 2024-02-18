@@ -1,0 +1,34 @@
+\sys is a first step towards a world in which web services
+routinely manage, store, and reveal \xxed user data.
+%
+In this setting, new questions and directions for research arise.
+%
+
+\section{Retention of Disguised Data.}
+%
+When a user reveals their data, \sys removes it from the disguise table.
+%
+However, \sys currently retains disguised data until a user reveals it, which
+could be forever if users choose to never reveal data.
+%
+\sys could allow applications to put reasonable,
+coarse-grained time limits (\eg 10 years) on disguised data to eventually clean
+it up, without leaking fine-grained information about which data was disguised
+at the same time.
+%Given the amount of data that applications are willing to
+%store and retain nearly indefinitely, we imagine that long timeouts will not be
+%an issue.
+
+
+\section{Pseudoprincipal references.}
+%
+\sys currently supports a global specification for checking and fixing references to
+pseudoprincipals.
+%
+\sys could also support a menu of options, such
+as per-table checks and fixes (where the developer to specifies per-table
+policies) or per-inserted-object ones (where the developer makes application
+modifications to log all added references to pseudoprincipals).
+
+\todo{More discussion about updates? Potential integration of Edna with industry
+systems?}
