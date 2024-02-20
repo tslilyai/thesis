@@ -1,4 +1,9 @@
-\begin{figure}[t!]
+This section introduces the concept of disguised data, focusing on how
+developers and users would interact with an application that supports 
+data disguising and data revealing.
+%
+
+\begin{figure}[h!]
   \centering
     \includegraphics{figs/edna_overview}
     \caption{Developers write \xx specifications and add hooks to invoke \sys
@@ -65,7 +70,7 @@ semantics (\eg revealing makes sure not to overwrite changes made since
 \xxing).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Example: Lobsters Topic Anonymization}
+\section{Example: Lobsters Topic Anonymization}
 \label{s:design:lobsters}
 
 \begin{figure}[t]
@@ -156,9 +161,9 @@ When Bea wants to anonymize their contributions on content tagged ``Star Wars,''
 Lobsters invokes \sys with the provided specification.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Design}
+%\section{Design}
 
-\subsection{Disguise Specifications}
+\section{Disguise Specifications}
 \label{s:spec}
 
 \sys's developer interface is designed so that developers need to reason only
@@ -276,7 +281,7 @@ reference to point to the original principal; \two{} delete the object; and
 % Like natural principals, pseudoprincipals have affiliated public keys and
 % credentials that \sys uses to \xx or reveal their data; this
 % supports the composition of \xxing transformations (\S\ref{s:composition}).
-\subsection{User Reveal Credentials}
+\section{User Reveal Credentials}
 \sys provides developers and users
 with the abstraction of \emph{reveal credentials}, which users provide to the
 application to authorize revealing their data.
