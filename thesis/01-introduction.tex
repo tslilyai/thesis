@@ -34,9 +34,7 @@ revealing enables the user to restore their data to the application.
 %
 
 %
-\lyt{Not really sure what this first part is for; should we just jump into
-motivation?}
-In this introduction, we motivate the need for data disguising for flexible
+In this chapter, we motivate the need for data disguising for flexible
 privacy; describe the challenges in successfully disguising and revealing data;
 and introduce our approach to achieve data disguising as well as our
 contributions.
@@ -244,9 +242,45 @@ Instead, \sys stores the \xxed data on the server in encrypted form as
 \emph{diff records}, and unlocks
 and restores data to the service only when a user provides their \emph{reveal
 credentials} (\eg a password or a private key).
+
+%
+\section{Contributions}
+%
+The main contribution of this thesis is the identification and exploration of
+\emph{disguised data} for flexible user data privacy in web applications. As
+part of this, this thesis contributes:
+
+\begin{enumerate}[nosep]
+    \item The abstraction of \emph{data disguising via \xxing and revealing
+        transformations}, including 
+        %abstractions for developers and users of web applications, 
+        %including \xxing and revealing transformations;
+        disguise specifications written with a small, composable set of
+        data-anonymizing primitives (remove, modify, and decorrelate to
+        pseudoprincipals), and reveal credentials to allow users
+        to reveal their data (Ch.~\ref{ch:overview}).
+        %, which cover a wide range of application
+        %needs and compose cleanly; 
+
+    \item Design techniques to realize disguised data, including diff records and speaks-for chains.
+        (Ch.~\ref{ch:design})
+
+    \item \sys, a prototype Rust library for MySQL-backed web applications that
+        implements user data control via disguising and revealing, which is
+        open-source at
+        \url{https://github.com/tslilyai/edna} (Ch.~\ref{ch:impl}).
+
+    \item Case studies that integrate \sys with three real-world web
+    applications and demonstrate \sys's ability to enable composable and
+        reversible transformations. (Ch.~\ref{ch:case_studies})
+
+    \item An evaluation of \sys's effectiveness and performance, including how
+    \sys contrasts with and complements related work (Qapla~\cite{qapla} and
+        CryptDB~\cite{cryptdb}) (Ch.~\ref{ch:eval}) 
+\end{enumerate}
 %
 
-\subsection{Limitations}
+%\subsection{Limitations}
 %
 While disguised data can help developers to add more flexible user data
 controls, the abstraction and its implementation in \sys have some limitations. 
@@ -268,37 +302,7 @@ stored \xxed data) or placeholder data left in the database (\eg embedded text)
 are out of scope.
 %
 
-\section{Contributions}
-%
-This thesis makes the following contributions: 
-\begin{enumerate}[nosep]
-    \item The identification and exploration of \emph{disguised data} for
-        flexible user data privacy in web applications.
 
-    \item Disguised data abstractions for developers and users of web
-        applications, namely \xxing and revealing transformations; \emph{disguise
-        specifications} written with a small set of data-anonymizing primitives
-        (remove, modify, decorrelate) , which cover a wide range of application
-        needs and compose cleanly; and \emph{reveal credentials} to allow users
-        to reveal their data (Ch.~\ref{ch:overview}).
-
-    \item Abstractions to implement disguised data, including pseudoprincipals,
-        diff records, and speaks-for chains.
-        (Ch.~\ref{ch:design})
-
-    \item A design and realization of these abstractions in \sys, a prototype
-        library that implements user data control via disguising and revealing.
-        (Ch.~\ref{ch:design})
-
-    \item Case studies that integrate \sys with three real-world web
-    applications and demonstrate \sys's ability to enable composable and
-        reversible transformations. (Ch.~\ref{ch:case_studies})
-
-    \item An evaluation of \sys's effectiveness and performance, including how
-    \sys contrasts with and complements related work (Qapla~\cite{qapla} and
-        CryptDB~\cite{cryptdb}) (Ch.~\ref{ch:eval}) 
-\end{enumerate}
-%
 
 \iffalse
 \section{Remaining Work: Revealing with Schema Migrations and Application
