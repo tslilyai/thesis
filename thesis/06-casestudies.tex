@@ -130,6 +130,25 @@ can later reveal them.
 % shared private messages, and \sys enforces the shared-data semantics in
 % \S\ref{s:shared}.
 
+We also added support for three recent \textbf{schema
+migrations} applied by the Lobsters developers in 2023-2024. 
+%
+The first adds a \texttt{show\_email} attribute to the \texttt{users} table
+automatically set to \texttt{false}. 
+%
+The second performs url normalization~\cite{norm} on the \texttt{url} column of
+all rows in the \texttt{stories} table, and then stores the normalized url text
+in a new \texttt{normalized\_url} column.
+%
+Finally, the third creates a new \texttt{story\_texts} table which stores the
+\texttt{title}, \texttt{description}, and \texttt{story\_cache} attributes of
+rows from \texttt{stories}. This enables search over story contenct. The
+\texttt{story\_cache} column is then removed from \texttt{stories}.
+%
+With \sys, users can still reveal their data disguised prior to any of these
+migrations, as if the migration had occurred with their data present in the
+database.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{WebSubmit}
