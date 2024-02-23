@@ -1,9 +1,3 @@
-\section{Abstractions}
-\todo{Do we need this?}
-Diff records, speaks-for records with speaks-for chains
-
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{\Xxing}
 \label{s:applying}
 
@@ -30,9 +24,6 @@ potentially generating and storing pseudoprincipals.
 changes the disguise made to the original data (\eg the value of any modified
 columns), and the \xx ID.
 %
-
-\todo{speaks-for records are used to talk about links in the speaks-for chain}
-
 For each new pseudoprincipal, \sys generates a public--private keypair and adds
 a \emph{speaks-for record}, which adds a link to the original principal's
 \emph{speaks-for chain}.
@@ -53,7 +44,7 @@ A client can use the \xx ID and the principal's
 credentials to reveal the transformation later.
 %
 
-\begin{figure}[t]
+\begin{figure}[h]
 \centering
 \includegraphics{figs/lobsters_catanon_visual}
 \caption{When \sys applies topic-based anonymization to Bea's comments on
@@ -83,10 +74,10 @@ on, and inserts it as a new user;
 foreign keys to point to the created pseudoprincipals, and
 removing Bea's votes on those stories;
 %
-\four{} creates a new speaks-for record that maps Bea to the created
-pseudoprincipals and creates new links in Bea's speaks-for chain; diff records containing Bea's votes on
-``Star Wars'' stories; and diff records that document Bea's original
-ownership of ``Star Wars''-tagged comments;
+\four{} creates new speaks-for records that map Bea to the created
+pseudoprincipals and create new links in Bea's speaks-for chain; diff records
+containing Bea's votes on ``Star Wars'' stories; and diff records that document
+Bea's original ownership of ``Star Wars''-tagged comments;
 %
 \five{} encrypts the speaks-for and diff records with Bea's public key, stores
 them; and
