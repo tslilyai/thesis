@@ -7,10 +7,7 @@ Our evaluation seeks to answer five questions:
 \item How expensive are common application operations, as well as
   \xxing, revealing, and operations over \xxed data with \sys? (\S\ref{s:eval-ops})
  %
-%Add common operation to Lobsters/HotCRP (Common Read Operation / label explicitly, list papers, frontpage)
-%3-way graph
-%composition
-%
+
 \item What overheads does \sys impose, and where do they come from?
     (\S\ref{s:eval-overheads})
 
@@ -27,15 +24,10 @@ Our evaluation seeks to answer five questions:
 %
 \end{enumerate}
 
-%\paragraph{Methodology.}
-%
-
 We compare Edna to three alternative settings:
 \one{} a manual version
 of each \xxing transformation that directly modifies the database
 (\eg via SQL queries that remove data), which
-%akin to what developers might do today
-%This manual baseline lacks support for revealing, and does not support
 lacks support for revealing and does not support
 composition of multiple transformations;
 \two{} an implementation of disguising and revealing in Qapla~\cite{qapla}
@@ -125,49 +117,25 @@ authorization of anonymous users, and email notifications.
 
 %
 A developer using \sys also writes \xx specifications and invokes \sys.
-%The added effort to use \sys lies in writing \xx specifications.
 Lobsters' \xx specifications are written in 518 LoC, WebSubmit's in 75 LoC, and
 HotCRP's in 357 LoC (all in JSON).  The specification size is proportional to
 schema size and what data each application \xxs.
-%
-%Given \xx specifications, \sys
-%
-%\lyt{
-    %\sout{
-%In comparison, a manual approach must implement (via \eg templated SQL
-%statements) \xxing and revealing database changes that correctly compose, as
-%well as secure ways of storing \xxed data so only authorized users can reveal
-%it.
-%}}
-%%
+
+\todo{check}
+Developers can also notify \sys of application updates and schema migrations
+that may affect disguised data that could be later revealed.  Implementing three
+different application updates and schema migrations for Lobsters required adding
+one line of code per update to register the update with \sys, after the update
+is invoked by the application. The developer would
+already need to write these application updates (\eg Lobsters implements these
+updates as Ruby Active Record Migrations~\cite{ruby_arm}); our Rust/SQL
+implementation of the three updates requires 187 LoC to implement the actual
+updates.
 
 %
-The developer effort required to use \sys---writing \sys specifications, and
+Thus, the developer effort required to use \sys---writing \sys specifications, and
 invoking \sys---is small, even though these applications were not written with
 \sys in mind.
-%\sys also allows developers to add and reason about their
-%transformations in isolation, and enables credential-based revealing
-%of the specified \xxed transformations, and composition with prior or
-%future transformations.
-
-%These three applications were not written with \sys in mind, yet \sys still
-%allows developers to add and reason about their transformations in isolation.
-%\lyt{XXX}
-%These applications satisfy \sys's assumptions (\S\ref{s:impl}) with no
-%modifications.
-%
-%
-
-%And, most importantly, required no debugging.
-%
-%
-%
-%Doing this manually would be much more laborious: it would require writing templated
-%SQL statements, that are condiitonal not only on the subject and are different
-%for every transformation, but also take into consideration other previous transformations,
-%as well as writing similar statements for revealing.
-
-%specifications follow systematic patterns, and require few lines of code compared to application code.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Performance of \sys Operations}
@@ -334,14 +302,25 @@ incrementally in the background, as in Lobsters account decay.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Performance of Reveals with Database Changes}
-\todo{actually measure and put results}
 
 We next look at how \sys's reveal performance changes when operating in the
-presence of schema migrations or other conflicting dataabase changes.  We
-evaluate the latency of reveal operations in Lobsters with a schema change that
-\todo{schema change here}, and a frivolous global developer modification that
-removes all vowels in text.
+presence of schema migrations or conflicting application updates to the database. We
+evaluate the latency of reveal operations in Lobsters when the global database
+changes described in \S\ref{s:casestudies:updates} have been applied after
+reveal.
+
+Applying these changes themselves equates to modifying all 120k stories (\eg url
+normalization) and/or changing the database schema.  The url normalization
+application update takes \todo{xxx}ms, the longest of all updates.
 %
+Adding the \texttt{show\_email} attribute to the \texttt{users} table takes
+\todo{xxx}ms, and 
+%
+creating and populating the \texttt{story\_texts} table takes \todo{xxx}ms.%
+
+\todo{reveal performance afterwards}
+
+\todo{space overheads?}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -560,8 +539,6 @@ impact of these next.
 
 \subsection{Space Used By \sys.}
 
-\todo{Add space overhead of Reveals with Database Changes}
-
 %\begin{figure*}[t]
 %\centering
 %\begin{tabular}{ccc}
@@ -626,8 +603,6 @@ stores encrypted diff records with their information, which uses another 2.2 MB.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Impact On Concurrent Application Use.}
 \label{s:eval-conc}
-
-\todo{Add concurrent impact of Reveals with Database Changes}
 
 %
 %Web applications serve many concurrent users, most of whom are simply using the
