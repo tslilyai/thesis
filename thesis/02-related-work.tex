@@ -94,17 +94,21 @@ homomorphic functions), or restrict combining data with different policies, and
 requires extensive modifications to existing applications to redeploy.
 
 %
-Systems like Pesos~\cite{pesos}, Ironsafe~\cite{ironsafe}, and
-Ryoan~\cite{ryoan} use trusted execution environments (TEEs) to enforce policy
-compliance when cloud services and developers are untrusted with user data. By
-contrast, \sys trusts developers to be well-intentioned.
+Systems like Pesos~\cite{pesos} and Ironsafe~\cite{ironsafe} use trusted
+execution environments (TEEs) to enforce policy compliance in the cloud without
+trusting cloud storage platforms with user data. 
+%
+Ryoan~\cite{ryoan} also runs data processing applications as sandboxed modules
+within TEEs, thus protecting user data against untrusted applications in
+addition to untrusted platforms.
 %
 These systems rely on the security of TEEs, which allows them to protect against
-their stronger threat model. However, this requires applications to be written
-with the systems' specific architecture in mind, making these systems more difficult to
-deploy in today's applications.
-\lyt{Ironsafe is for hetorogenous CSAs, which only applies for certain
-companies?}
+their stronger threat models. However, this requires applications to be written
+with the systems' specific architecture in mind, making these systems more
+difficult to deploy in today's applications.
+%
+By contrast, \sys trusts developers to be well-intentioned, and undisguised data
+can be accessed by the application.
 %
 
 Decentralized platforms such as Solid~\cite{solid}, BSTORE~\cite{bstore},
