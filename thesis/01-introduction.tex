@@ -1,5 +1,14 @@
-Users' privacy requirements for their sensitive data on web applications are
-highly contextual and constantly in flux. For example, a user might wish to hide
+%Users' privacy requirements for their sensitive data on web applications are
+%highly contextual and constantly in flux. 
+Many users today have tens to hundreds of accounts with web services that store
+sensitive data, from social media to tax preparation and e-commerce
+sites~\cite{tens,hundreds,password_life_cycle}.
+%
+And while users now have the right to delete their data (via \eg the
+GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), users want and deserve more nuanced
+controls over their data that don't exist today.
+%
+For example, a user might wish to hide
 and protect data of an e-commerce or dating app profile when inactive, but also
 want their data to be present should they return to use the application. 
 %
@@ -43,15 +52,17 @@ contributions.
 %*********************************************************************************%
 %*********************************************************************************%
 \section{Motivation} 
-Many users today have tens to hundreds of accounts with web services that store
-sensitive data, from social media to tax preparation and e-commerce
-sites~\cite{tens,hundreds,password_life_cycle}.
+%Many users today have tens to hundreds of accounts with web services that store
+%sensitive data, from social media to tax preparation and e-commerce
+%sites~\cite{tens,hundreds,password_life_cycle}.
+%%
+%And while users now have the right to delete their data (via \eg the
+%GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), users want and deserve more nuanced
+%controls over their data that don't exist today.
+%%
+User today lack desirable controls over their personal data stored by web
+applications.
 %
-And while users now have the right to delete their data (via \eg the
-GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), users want and deserve more nuanced
-controls over their data that don't exist today.
-%
-
 Consider Twitter: after a change in management~\cite{musk-twitter}, many users
 wanted to leave the platform and try out alternatives (\eg
 Mastodon~\cite{mastadon}).  But each user faced a tricky question: should they
@@ -195,7 +206,7 @@ them, while maintaining application functionality and referential integrity.
 Our approach for \sys's approach faces three challenges, and we describe each
 challenge and our solution's abstractions next.
 
-\subsection{Disguise Specifications}
+%\head{Disguise Specifications.}
 %
 First, \sys needs to present a simple, yet versatile interface for developers to
 specify \xxing transformations.
@@ -210,7 +221,7 @@ transformations.
 %
 
 %
-\subsection{Pseudoprincipals}
+%\head{Pseudoprincipals.}
 Second, to work with existing applications in practice, \sys's \xxing
 transformations should require minimal application modifications.
 %
@@ -230,7 +241,7 @@ can unlock and modify.
 %
 
 %
-\subsection{Diff Records and Reveal Credentials}
+%\head{Diff Records and Reveal Credentials.}
 Third, \sys needs to have access to the original data for users to be able to
 reveal their data and return to the application, but the whole point is to make
 that data inaccessible to the service.

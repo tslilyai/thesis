@@ -7,17 +7,25 @@ Existing systems aim instead to support data deletion, prevent unauthorized data
 access, or protect against database server compromise---valuable, but
 complementary goals to achieving disguised data.%\sys's.
 
-\section{Data Deletion Tools}
-Data deletion tools such as DELF at
-Meta~\cite{delf} and K9DB~\cite{k9db} help correctly delete data.
+\section{Compliance Tools}
+Compliance tools such as K9db~\cite{k9db} and GDPRizer~\cite{gdprizer} help
+correctly extract or delete data in correspondence to compliance-related
+requests.
 %
-DELF lets developers specify deletion policies via annotations on
-social graph edges and object types, and ensures correct cascading data
-deletion.
+These tools include systems to support wholesale user data extraction or deletion by tracking data
+ownership by modifying the data layout~\cite{usershards, k9db}, tracking
+information flow~\cite{schengendb}, or changing the
+storage hardware~\cite{sdp}.
 %
-Other systems support wholesale user data deletion by tracking
-data ownership by modifying the data layout~\cite{usershards, k9db} or
-tracking information flow~\cite{schengendb}.
+
+%
+Tools like DELF at Meta~\cite{delf} focus on the related problem of data
+deletion, letting developers specify deletion policies via
+annotations on social graph edges and object types. DELF ensures correct
+cascading data deletion, both for compliance-related data deletion requests, and
+for normal application deletions.
+%
+
 %
 While disguising data can provide GDPR-compliant account deletion, disguising
 also supports more nuanced use cases beyond simple deletion: for example, \sys
@@ -51,7 +59,7 @@ systems, which can deny access to sensitive data, but will still retain it in
 the database.
 %
 
-\textbf{Encrypted Storage Systems}
+\section{Encrypted Storage Systems}
 Encrypted storage systems such as CryptDB~\cite{cryptdb} and
 Mylar~\cite{mylar} protect against database server compromise, with some
 limitations~\cite{grubbs}.
