@@ -1348,3 +1348,39 @@ month = {mar},
 pages = {1167–1174},
 numpages = {8}
 }
+
+@inproceedings{pesos,
+author = {Krahn, Robert and Trach, Bohdan and Vahldiek-Oberwagner, Anjo and Knauth, Thomas and Bhatotia, Pramod and Fetzer, Christof},
+title = {Pesos: policy enhanced secure object store},
+year = {2018},
+isbn = {9781450355841},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3190508.3190518},
+doi = {10.1145/3190508.3190518},
+abstract = {Third-party storage services pose the risk of integrity and confidentiality violations as the current storage policy enforcement mechanisms are spread across many layers in the system stack. To mitigate these security vulnerabilities, we present the design and implementation of Pesos, a Policy Enhanced Secure Object [OStore (Pesos) for untrusted third-party storage providers. Pesos allows clients to specify per-object security policies, concisely and separately from the storage stack, and enforces these policies by securely mediating the I/O in the persistence layer through a single unified enforcement layer. More broadly, Pesos exposes a rich set of storage policies ensuring the integrity, confidentiality, and access accounting for data storage through a declarative policy language.Pesos enforces these policies on untrusted commodity platforms by leveraging a combination of two trusted computing technologies: Intel SGX for trusted execution environment (TEE) and Kinetic Open Storage for trusted storage. We have implemented Pesos as a fully-functional storage system supporting many useful end-to-end storage features, and a range of effective performance optimizations. We evaluated Pesos using a range of micro-benchmarks, and real-world use cases. Our evaluation shows that Pesos incurs reasonable performance overheads for the enforcement of policies while keeping the trusted computing base (TCB) small.},
+booktitle = {Proceedings of the Thirteenth EuroSys Conference},
+articleno = {25},
+numpages = {17},
+keywords = {storage security, policy language, kinetic disks, intel SGX},
+location = {Porto, Portugal},
+series = {EuroSys '18}
+}
+
+@inproceedings{ironsafe,
+author = {Unnibhavi, Harshavardhan and Cerdeira, David and Barbalace, Antonio and Santos, Nuno and Bhatotia, Pramod},
+title = {Secure and Policy-Compliant Query Processing on Heterogeneous Computational Storage Architectures},
+year = {2022},
+isbn = {9781450392495},
+publisher = {Association for Computing Machinery},
+address = {New York, NY, USA},
+url = {https://doi.org/10.1145/3514221.3517913},
+doi = {10.1145/3514221.3517913},
+abstract = {Computation Storage Architectures (CSA) are increasingly adopted in the cloud for near data processing, where the underlying storage devices/servers are now equipped with heterogeneous cores which enable computation offloading near to the data. While CSA is a promising high-performance architecture for the cloud, in general data analytics also presents significant data security and policy compliance (e.g., GDPR) challenges in untrusted cloud environments. In this paper, we present IronSafe, a secure and policy-compliant query processing system for heterogeneous computational storage architectures, while preserving the performance advantages of CSA in untrusted cloud environments. To achieve these design properties in a computing environment with heterogeneous host (x86) and storage system (ARM), we design and implement the entire hardware and software system stack from the ground-up leveraging hardware-assisted Trusted Execution Environments (TEEs): namely, Intel SGX and ARM TrustZone. More specifically, IronSafe builds on three core contributions: (1) a heterogeneous confidential computing framework for shielded execution with x86 and ARM TEEs and associated secure storage system for the untrusted storage medium; (2) a policy compliance monitor to provide a unified service for attestation and policy compliance; and (3) a declarative policy language and associated interpreter for concisely specifying and efficiently evaluating a rich set of polices. Our evaluation using the TPC-H SQL benchmark queries and GDPR anti-pattern use-cases shows that IronSafe is faster, on average by 2.3x than a host-only secure system, while providing strong security and policy-compliance properties.},
+booktitle = {Proceedings of the 2022 International Conference on Management of Data},
+pages = {1462–1477},
+numpages = {16},
+keywords = {computational storage, heterogeneous confidential computing, policy compliance, trusted execution},
+location = {Philadelphia, PA, USA},
+series = {SIGMOD '22}
+}
