@@ -230,7 +230,7 @@ can unlock and modify.
 %
 
 %
-\subsection{Disguise Records and Reveal Credentials}
+\subsection{Diff Records and Reveal Credentials}
 Third, \sys needs to have access to the original data for users to be able to
 reveal their data and return to the application, but the whole point is to make
 that data inaccessible to the service.
@@ -239,7 +239,7 @@ While \sys could ask users to store their own \xxed data, this would be
 burdensome.
 %
 Instead, \sys stores the \xxed data on the server in encrypted form as
-\emph{disguise records}, and unlocks
+\emph{diff records}, and unlocks
 and restores data to the service only when a user provides their \emph{reveal
 credentials} (\eg a password or a private key).
 
@@ -262,7 +262,7 @@ part of this, this thesis contributes:
         %, which cover a wide range of application
         %needs and compose cleanly; 
 
-    \item Design techniques to realize disguised data, including disguise records and speaks-for chains.
+    \item Design techniques to realize disguised data, including diff records and speaks-for chains.
         (Ch.~\ref{ch:design})
 
     \item \sys, a prototype Rust library for MySQL-backed web applications that
