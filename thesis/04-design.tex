@@ -58,7 +58,6 @@ credentials to reveal the transformation later.
 
 
 %
-\todo{Check figure caption}
 To perform Bea's topic-based anonymization (Figure~\ref{f:lobsters_visual}),
 \sys thus:
 %
@@ -230,79 +229,113 @@ Bea's \xx records, and filter those records for those with the \xx ID.
 decorrelated comments.
 %
 
-\subsection{Revealing with Conflicting Database Changes}
+\subsection{Revealing in the Presence of Application Updates}
+\sys's revealing as described can reveal data that ignores database changes applied
+since the time of disguise, such as application updates to un\xxed data or
+schema migrations.
 %
-\sys's reveal semantics rely on consistency checks to handle
-database changes (\eg application updates to un\xxed data).
+\sys utilizes developer-provided information about important updates and schema
+migrations to apply them to \xxed data prior to revealing it, ensuring that
+revealed data reflects the current state of the database.
 %
-\sys reveals data only if revealed data: \one{} will still satisfy uniqueness and
-primary key constraints; \two{} will not overwrite modifications that occurred
-while data was \xxed; and \three{} will maintain referential integrity.
+Prior to revealing the udpated data, \sys will also perform consistency checks
+to guarantee adherence to database structural invariants, such as uniqueness
+constraints.
+%
+Here, we describe how developers specify application updates and schema
+migrations; how \sys applies these updates to data to reveal; and \sys's
+consistency checks.
 
-For \one{}, \sys checks that \emph{removed} \xxed data is still removed from the
-database;
 %
-and for \two{}, \sys ensures that \emph{modified} \xxed data is in the same
-modified state and \emph{decorrelated}
-\xxed data is still affiliated with the same pseudoprincipal in the database
-using the new value stored in the diff record.
+\subsubsection{Applying Application Updates}
+In order for revealing to preserve application correctness, \sys must know about
+application updates that alter application invariants.
 %
-To ensure \three{}, \sys checks for the existence of all objects referenced by the data to reveal
-(\eg a post referenced by a to-be-revealed comment).
-%and ensures that any foreign
-%key references to pseudoprincipals to be deleted are rewritten to the original.
-
-\sys is conservative and will never reveal rows for which checks fail; the
-affected data remains \xxed.
-%\sys could flag encountered conflicts, giving the application a chance to fix
-%them so a later reveal can pass the checks.
-%Furthermore, \sys's consistency checks
-%only check static invariants associated with database contents, and
-%may still restore content that violate newly introduced
-%application invariants since the time of disguising.
-%\hmng{This comes a bit out of the blue if you're not anticipating this exact problem, I'd add an example maybe?}
-%, for example if all posts of a social media site had been scrubbed of a selection of swear words.
-
-%\sys today provides basic correctness guarantees when revealing data, but
-%further work might make \sys's current reveal semantics more precise.
+Consider an example where a moderator periodically edits all posts to remove
+swear words, creating an implicit invariant that all posts created prior to the
+last moderation pass should contain no swear words.
 %
-
-\todo{integrate new update design here!}
-Consider an example: a user's disguise modifies posts to scrub their username
-from it, and a moderator later edits posts to remove swear words.
+If a user's disguise removes their posts, then a moderation pass occurs, and
+then the user wants to restore their posts, \sys would not know about these
+moderation updates to posts of the application and incorrectly restore the
+original post content with swear words present upon reveal.
 %
-As the disguise modifies the post, \sys today does not restore the
-original post content upon reveal, since the application has modified the post.
+However, \sys could correctly restore the post if it knew to remove the
+swear words prior to reveal.
 %
-However, \sys could restore the post if it knew how to sequently remove the
-swear words again.
+%Likewise, if \sys removed the post instead of scrubbing its content, the
+%moderator would never see it (and could not edit it), but \sys would reveal the
+%post with swear words still present.
 %
-Likewise, if \sys removed the post instead of scrubbing its content, the
-moderator would never see it (and could not edit it), but \sys would reveal the
-post with swear words still present.
-%
-In the first scenario, \sys knows that an update was applied, and refuses to
-reveal the modified post; in the second, \sys does \emph{not} know that
-moderation happened and reveals the removed post.
-%
-Neither might be what the application desires.
+%In the first scenario, \sys knows that an update was applied, and refuses to
+%reveal the modified post; in the second, \sys does \emph{not} know that
+%moderation happened and reveals the removed post.
+%%
+%Neither might be what the application desires.
 %
 
-\sys handles this situation by tracking applied operations in a replay log.
+\sys handles this situation by tracking applied application updates in a
+\emph{application updates replay log}.
 %
 The application would invoke \sys when it performs operations that need to hold
-over revealed data---\eg moderations or schema changes---to log these updates
-(as functions from database objects to new database objects\todo{Check!}) in \sys's replay log.
+over revealed data---\eg moderations---to log these updates in \sys's replay
+log.
 %
-When revealing data, \sys would apply, in order, every entry since the time of disguise 
-in the replay log to the data about to be restored into the database.
+When revealing data, \sys would apply, in order, every entry since the time of
+disguise in the replay log to the disguise's diff records.  
+%
+
+%
+Log entries map the original and new database objects in diff records to
+corresponding sets of updated-original and updated-new database objects. 
+%
+After applying all updates, \sys uses the updated database objects to remove the
+updated-new placeholder data from the database and restore the updated-original
+disguised data.
+
 %
 This approach faces some limitations, such as assuming deterministic changes
 and requiring additional application changes, and would need to ensure that
 the replay log can be stored and applied efficiently.
 %
+In addition, replay logs only apply to diff records, which contain the actual data
+changes; \sys assumes that the identifiers for principals in speaks-for records
+that encode the speaks-for chain remain consistent as the database changes.
+%
+
+\subsubsection{Applying Schema Migrations}
 
 
+\subsubsection{Checking for Structural Invariants} 
+After applying any developer-specified migrations or updates since the time of
+disguising, \sys still needs to perform consistency checks on the data to reveal
+to ensure that revealing will not violate the database's structural integrity.
+%
+These checks only allow revealing if the revealed data: \one{} will still
+satisfy uniqueness and primary key constraints; \two{} will not overwrite
+modifications that occurred while data was \xxed; and \three{} will maintain
+referential integrity.
+
+For \one{}, \sys checks that \emph{removed} \xxed data is still removed from the
+database;
+%
+and for \two{}, \sys ensures that \emph{modified} \xxed data is in the same
+modified state and \emph{decorrelated} \xxed data is still affiliated with the
+same pseudoprincipal in the database using the new value stored in the diff
+record.
+%
+To ensure \three{}, \sys checks for the existence of all objects referenced by
+the data to reveal (\eg a post referenced by a to-be-revealed comment).
+%and ensures that any foreign key references to pseudoprincipals to be deleted
+%are rewritten to the original.
+
+\sys is conservative and will never reveal rows for which checks fail; the
+affected data remains \xxed.  For example, if a developer chooses not to
+register conflicting application updates or schema migrations, \sys's checks may
+fail, preventing disguised data from being revealed.
+%
+\sys could flag encountered conflicts, giving the application a chance to fix
+them so a later reveal can pass the checks.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Shared Data}
