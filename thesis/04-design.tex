@@ -32,8 +32,7 @@ pseudoprincipal) IDs and the pseudoprincipal’s
 private key. \sys registers the pseudoprincipal with its public key to enable
 composition of disguises (\S\ref{s:composition}).
 %
-\sys then encrypts the diff and speaks-for records---collectively
-referred to as \emph{\xx records}---with the principal's key,
+\sys then encrypts the diff and speaks-for records with the principal's key,
 and stores them in the database.
 %
 %
@@ -100,7 +99,7 @@ them; and
 \sys adds a \emph{\xx table} and a \emph{principal table} to the application
 database to store principals' \xxed data.
 %
-The \xx table contains lists of per-principal \xx records encrypted with the
+The \xx table contains lists of per-principal diff and speaks-for records encrypted with the
 principal's public key.
 %(Recall that private keys are not stored in the database.)
 %; for instance, \verb+\xx_table[1]+ might be a list of \xx records
@@ -114,7 +113,7 @@ The principal table is indexed by application user ID; each row contains the
 principal's public key, and a list of \xx table indexes encrypted with the
 public key.
 %
-To store \xx records for principal $p$, \sys \one{} encrypts the records with
+To store records for principal $p$, \sys \one{} encrypts the records with
 $p$'s public key; \two{} stores the ciphertext in the \xx table under index
 \fn{idx}; \three{} encrypts \fn{idx} (salted to
 prevent rainbow table attacks) with $p$'s public key; and \four{} appends the
@@ -127,7 +126,7 @@ in the principal table.
 %
 This allows \sys to store records without needing access to the principal's
 private key, and to do so securely: the principal table adds a layer of
-indirection from user ID to encrypted \xx records, so an attacker cannot link
+indirection from user ID to encrypted records, so an attacker cannot link
 principals to their records.
 %
 At reveal time, \sys can efficiently find \xxed data for a given user
@@ -156,7 +155,7 @@ operations by the principal to find their \xx table indexes.
 
 %
 To apply a reveal transformation, \sys first locates and decrypts the
-corresponding \xx records using a \xx ID and the user’s reveal
+corresponding diff and speaks-for records using a \xx ID and the user’s reveal
 credentials.
 %
 
@@ -214,7 +213,7 @@ prior to removing them, and depending on the application's needs, configure \sys
 to delete, rewrite, or leave the references in place.
 %
 After revealing, the \xxed data is no longer needed, so \sys clears the
-corresponding \xx records.
+corresponding diff and speaks-for records.
 %
 
 %
@@ -223,7 +222,7 @@ Lobsters invokes \sys with the \xx ID and Bea's password as reveal credentials.
 %to reveal their Star Wars \xxing transformation.
 %
 \sys uses the password to reconstruct Bea's private key, retrieve and decrypt
-Bea's \xx records, and filter those records for those with the \xx ID.
+Bea's records, and filter those records for those with the \xx ID.
 %
 \sys then restores deleted votes and Bea's ownership of
 decorrelated comments.
@@ -384,7 +383,6 @@ To support this, an application accepts reveal credentials along with a
 modification request. \sys uses these credentials to validate that the
 user speaks-for a specific pseudoprincipal, and updates the
 database with the modification.
-%its \xx records
 %
 %previous diff records to reflect the newly modified state.
 %

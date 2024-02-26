@@ -387,7 +387,7 @@ Encryption and decryption incur baseline costs of 0.1ms and 0.02ms respectively;
 their cost grows linearly with data size.
 %
 In the common case, \xxing or revealing data performs two cryptographic
-operations: one to encrypt/decrypt the \xx records, and one to
+operations: one to encrypt/decrypt the diff and speaks-for records, and one to
 encrypt/decrypt the ID at which they are stored.
 %
 
@@ -574,7 +574,7 @@ encrypted records.
 
 
 %
-\sys's \xx record storage uses 12 MB, which grows to
+\sys's record storage uses 12 MB, which grows to
 58.5 MB after the users remove their accounts, and the application database
 size increases from 261 MB to 290 MB (+11\%).
 %
