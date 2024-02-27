@@ -302,6 +302,7 @@ incrementally in the background, as in Lobsters account decay.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Performance of Reveals with Database Changes}
+\label{s:eval:updates}
 
 We next look at how \sys's reveal performance changes when operating in the
 presence of schema migrations or conflicting application updates to the database. We
@@ -603,8 +604,6 @@ stores encrypted diff records with their information, which uses another 2.2 MB.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Impact On Concurrent Application Use.}
 \label{s:eval-conc}
-
-\todo{Currently don't have any reveal with updates here}
 
 %
 %Web applications serve many concurrent users, most of whom are simply using the

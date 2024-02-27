@@ -1,3 +1,12 @@
+This chapter describes the design of \sys and the techniques \sys uses to
+support disguising and revealing. We first look at how \sys performs disguising
+transformations, and then dive into the details of how \sys reveals disguised
+data.
+We then describe the more complicated scenarios possible with \sys, namely disguise composition, shared
+data, and action as pseudoprincipals.
+This chapter concludes with an analysis of the security of \sys's design with
+respect to the threat model described in \S\ref{s:threat}.
+
 \section{\Xxing}
 \label{s:applying}
 
@@ -20,9 +29,10 @@ potentially generating and storing pseudoprincipals.
 %
 
 %
-\sys next generates \emph{diff records} that contain the original data, the
-changes the disguise made to the original data (\eg the value of any modified
-columns), and the \xx ID.
+\sys next generates \emph{diff records} that contain \one{} the original data,
+\two{} new placeholder data the disguise inserted or rewote in the application
+(\eg pseudoprincipals or the value of any modified columns), and \three{} the
+\xx ID.
 %
 For each new pseudoprincipal, \sys generates a public--private keypair and adds
 a \emph{speaks-for record}, which adds a link to the original principal's
@@ -229,16 +239,28 @@ decorrelated comments.
 %
 
 \subsection{Revealing in the Presence of Application Updates}
-\sys's revealing as described can reveal data that ignores database changes applied
-since the time of disguise, such as application updates to un\xxed data or
-schema migrations.
+
+\begin{figure}[h]
+\centering
+    \includegraphics[width=\textwidth]{figs/updates}
+\caption{When the application applies updates like schema migrations, it can
+    invoke \sys to log the migration, which then is applied to disguised data in
+    diff records prior to reveal.}
+\label{f:updates}
+\end{figure}
+
+
+
+\sys's revealing as described thus far may accidentally reveal data that ignores
+database changes applied since the time of disguise, such as application updates
+to un\xxed data or schema migrations.
 %
-\sys utilizes developer-provided information about important updates and schema
-migrations to apply them to \xxed data prior to revealing it, ensuring that
-revealed data reflects the current state of the database.
+To prevent this, \sys utilizes developer-provided information about important
+updates and schema migrations to apply them to \xxed data prior to revealing it,
+ensuring that revealed data reflects the current state of the database.
 %
 Prior to revealing the udpated data, \sys will also perform consistency checks
-to guarantee adherence to database structural invariants, such as uniqueness
+to guarantee adherence to internal database invariants, such as uniqueness
 constraints.
 %
 Here, we describe how developers specify application updates and schema
@@ -259,8 +281,8 @@ then the user wants to restore their posts, \sys would not know about these
 moderation updates to posts of the application and incorrectly restore the
 original post content with swear words present upon reveal.
 %
-However, \sys could correctly restore the post if it knew to remove the
-swear words prior to reveal.
+However, \sys could correctly restore the post if it knew to remove the swear
+words prior to reveal.
 %
 %Likewise, if \sys removed the post instead of scrubbing its content, the
 %moderator would never see it (and could not edit it), but \sys would reveal the
@@ -274,41 +296,71 @@ swear words prior to reveal.
 %
 
 \sys handles this situation by tracking applied application updates in a
-\emph{application updates replay log}.
+\emph{replay log} of application updates.
 %
 The application would invoke \sys when it performs operations that need to hold
 over revealed data---\eg moderations---to log these updates in \sys's replay
 log.
 %
-When revealing data, \sys would apply, in order, every entry since the time of
-disguise in the replay log to the disguise's diff records.  
+When revealing data, \sys would apply, in order, every entry in the replay log
+added since the time of
+disguise to the disguise's diff records.  
 %
 
 %
-Log entries map the original and new database objects in diff records to
-corresponding sets of updated-original and updated-new database objects. 
+Log entries map the original data and the new placeholder data in diff records to
+corresponding updated-original and updated-placeholder data. 
 %
-After applying all updates, \sys uses the updated database objects to remove the
-updated-new placeholder data from the database and restore the updated-original
-disguised data.
+After applying all updates to placeholder data, \sys takes the
+updated-placeholder data and removes it from the database.
+%
+Similarly, After applying all updates to the original data, \sys takes the updated-original
+data and restores it to the database.
 
 %
-This approach faces some limitations, such as assuming deterministic changes
-and requiring additional application changes, and would need to ensure that
-the replay log can be stored and applied efficiently.
-%
-In addition, replay logs only apply to diff records, which contain the actual data
-changes; \sys assumes that the identifiers for principals in speaks-for records
-that encode the speaks-for chain remain consistent as the database changes.
-%
+In the swear words moderation example, \sys queries the replay log, sees
+the swear words moderation entry, and then applies the swear words moderation to
+the removed post data in the diff record. (Note that in this example, the diff
+record contains no new placeholder data that replaced the removed post; in other
+scenarios such as decorrelation or modification, \sys would apply the logged
+update to new placeholder data as well). Only then does \sys restore the post
+with no swear words (and had new placeholder data existed, \sys would remove the
+updated placeholder data).
+\lyt{Too confusing?}
 
 \subsubsection{Applying Schema Migrations}
+Applications also constantly undergo schema migrations to reorganize data or
+add new application features. When these occur, \sys must know how to manipulate
+any disguised data structured in the old database layout to match that of the
+current database.
+%
+\sys allows applications to invoke \sys with a replay log entry
+encoding the schema migration after the migration is performed.
+%
+As with application updates, schema migration entries map diff
+record data to migrated-original data and migrated-placeholder data, which \sys
+then respectively restores and removes.
 
+For example, as shown in Figure~\ref{f:updates}, a developer of an application with a \texttt{users} table that
+contains rows with \texttt{username}s, \texttt{addr}s, and \texttt{email}s may choose to allow users multiple addresses.
+They would create a new \texttt{addrs} table, with a foreign key to the users
+table, and populate \texttt{addrs} using the address data in \texttt{users}.
+Finally, they would remove the \texttt{addr} column from \texttt{users}.
+%
+The corresponding replay log entry would map an original \texttt{users} data row in
+a diff record to both a row in \texttt{users} with username \texttt{uid} and a
+row in
+\texttt{addrs} that has a foreign key of \texttt{uid} to \texttt{users}. These
+rows would be restored to the database.
+%
+It would also generate two rows for any placeholder \texttt{users} data row in a
+diff record and remove these from the database.
+%
 
-\subsubsection{Checking for Structural Invariants} 
+\subsubsection{Consistency Checks for Internal Invariants} 
 After applying any developer-specified migrations or updates since the time of
 disguising, \sys still needs to perform consistency checks on the data to reveal
-to ensure that revealing will not violate the database's structural integrity.
+to ensure that revealing will not violate the database's integrity.
 %
 These checks only allow revealing if the revealed data: \one{} will still
 satisfy uniqueness and primary key constraints; \two{} will not overwrite
@@ -335,6 +387,23 @@ fail, preventing disguised data from being revealed.
 %
 \sys could flag encountered conflicts, giving the application a chance to fix
 them so a later reveal can pass the checks.
+
+\subsubsection{Limitations}
+\sys's replay log approach faces some limitations. First, it assumes that either
+updates perform deterministic changes based on (at most) the disguised data, or
+that any nondeterminism performed during an update will not violate application
+invariants or expose which data had been disguised.
+%
+Furthermore, developers must do additional work to add hooks to invoke \sys when
+any major application change or schema migration occurs. Invoking these hooks
+and applying these updates during reveal also adds additional computation work;
+we measure these costs in \S\ref{s:eval:updates}.
+%
+Finally, replay logs only apply to diff records, which contain the actual data
+changes, and not speaks-for records; \sys assumes that the identifiers for principals in speaks-for records
+that encode the speaks-for chain remain consistent as the database changes.
+%
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Shared Data}
