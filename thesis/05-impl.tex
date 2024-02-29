@@ -234,16 +234,6 @@ delete-insert for that row.
 Speaks-for records contains a pair of (original principal, pseudoprincipal) IDs
 encoded as MySQL values, and the pseudoprincipal’s private key encoded as bytes. 
 %
-The \sys prototype removes links in the speaks-for chain by 
-%
-In particular, when \sys reveals a diff record owned by pseudoprincipal $P_1$, 
-
-
-\sys will check whether $P_1$ still exists in the speaks-for chain.
-
-
-
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 \section{Joint Ownership for Shared Data}
 

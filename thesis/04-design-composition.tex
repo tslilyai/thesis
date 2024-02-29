@@ -73,7 +73,8 @@ credentials to recursively find pseudoprincipals from multiple decorrelations.
 %and include them in the query to the application database.
 %
 
-Finally, \sys must handle reveals of transformations in any order.  As before,
+\subsection{Out-of-Order Reveals}
+\sys must also handle reveals of transformations in any order.  As before,
 many scenarios are straightforward: revealing removals is trivial (data can
 only be removed and restored once), and revealing modified data simply restores
 the original (subject to consistency checks).
@@ -105,9 +106,71 @@ To support this, \sys maintains a chain of speaks-for records that represent
 speaks-for relationships between pseudoprincipals.
 %
 All reveal operations walk the full speaks-for chain to reveal
-all necessary records (cf.\ Figure~\ref{f:revealpseudo}), and if reveal
-operations happen out of order, \sys removes an intermediate link in the
-speaks-for chain.
+all necessary records (cf.\ Figure~\ref{f:revealpseudo}).
+
+Furthermore, if reveal operations perform recorrelations out of order, \sys
+removes an intermediate link in the speaks-for chain.
+%
+To describe how this works, take the example of two disguises that decorrelate
+comments on ``bears'' and ``Star Wars'' posts respectively. The ``bears''
+decorrelation rewrites Ewok posts to pseudoprincipal $P_1$; and the ``Star
+Wars'' decorrelation composed on top decorrelates Ewok posts from $P_1$ to
+pseudoprincipal $P_2$.  At this point, \sys has speaks-for records for Bea that
+encode a speaks-for chain from Bea$ \to P_1 \to P_2$.
+%
+
+If Bea first reveals the ``bears'' anonymization---the first applied
+disguise---on their data, \sys finds all accessible speaks-for records given
+Bea's reveal credentials (Figure~\ref{f:reveal-pseudo}), and constructs Bea's
+speaks-for chain as a graph of principal-to-principal edges (namely Bea$\to
+P_1\to P_2$).
+%
+\sys finds that $P_1$'s ``Ewok'' posts no longer exist in the database (they belong to
+$P_2$ due to the composed ``Star Wars'' disguise), and thus does not restore 
+``Ewok'' posts to Bea. \sys does still remove pseudoprincipal $P_1$ in the process
+of restoring ``bear'' diff records, and once done, clears all ``bear'' 'diff
+records from its encrypted disguise table. 
+%
+Importantly, however, \sys still retains the speaks-for record for Bea$\to P_1$,
+since $P_1$ still has associated disguised data (namely a speaks-for record to $P_2$)!
+%
+
+%
+Now, if Bea reveals the second applied disguise---``Star Wars''---\sys
+finds diff records for decorrelated ``Ewok'' posts whose original rows have $P_1$ as
+owner. 
+%
+However, \sys cannot reveal the diff record directly and restore the
+decorrelated posts to $P_1$, as this will fail referential integrity consistency
+checks, and also result in incorrect composition semantics. Instead, \sys checks
+the speaks-for chain (Bea$\to P_1 \to P_2$) to determine the \emph{next valid}
+user in the chain who speaks-for $P_2$, which in this case is Bea.
+%
+Validity is determined by whether the user is a natural principal or a
+pseudoprincipal yet to be recorrelated. If a pseudoprincipal has a decorrelate
+diff record from any disguise still present in Bea's disguised data, \sys knows
+the pseudoprincipal has not yet been recorrelated.
+%
+
+%
+After determining Bea is the next valid user in the speaks-for chain to $P_2$,
+\sys rewrites the ``Ewok`` diff record to reference Bea instead of $P_1$,
+and then restores the diff record like normal.
+%
+Finally, \sys deletes the diff records for the ``Star Wars'' disguise, the
+speaks-for records for $P_2$ (which no longer has any associated disguised
+data), and the speaks-for records for $P_1$ (which also has no associated
+disguised data after $P_2$ is removed).
+%
+This implicitly truncates the speaks-for chain to simply be Bea.
+%
+%This design works even in the presence of multiple recursive decorrelations and
+%many-link speaks-for chains. 
+In general, \sys enforces the invariant that the chain only truncates at link
+$L$ once all pseudoprincipals recursively generated in the chain beyond $L$ have
+been recorrelated.
+%
+
 %
 %(in which case,
 %an earlier link in the speaks-for chain may be removed).
