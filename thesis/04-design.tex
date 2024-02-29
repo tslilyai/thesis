@@ -390,15 +390,35 @@ them so a later reveal can pass the checks.
 
 \subsubsection{Limitations}
 \label{s:design:updates:limitations}
-\sys's replay log approach faces some limitations. First, it assumes that either
-\one{} updates applied to a row rely on at most that row's data, and not the
-data of other disguised rows or external database state; or \two{} that any
-external dependencies of an update will not violate application invariants or
-expose which data had been disguised.
+\sys's replay log approach faces some limitations.
 %
-For example, take an update that calculates the current vote count of a post to store
-as a post's \texttt{vote\_count} attribute, and say that 
-a disguise has removed both a user's post and its votes.
+First, developers must do additional work to add hooks to invoke \sys when any
+major application change or schema migration occurs. Invoking these hooks and
+applying these updates during reveal also adds additional computation work; we
+measure these costs in \S\ref{s:eval:updates}.
+%
+
+%
+Furthermore, replay logs only apply to diff records, which contain the actual data
+changes, and not speaks-for records; \sys assumes that the identifiers for
+principals in speaks-for records that encode the speaks-for chain remain
+consistent as the database changes.
+%
+
+%
+Finally, \sys assumes that either \one{} updates applied to a row rely on at
+most that row's data, and not the data of other disguised rows or external
+database state; or \two{} changes to other disguised rows or external database
+state will not cause an update to violate application invariants or expose which
+data had been disguised.
+%
+For a counterexample, take an update that calculates the current vote count of a
+post to
+store as a post's \texttt{vote\_count} attribute, and say that a disguise has
+removed both a user's post and its votes.
+%
+The update thus depends on other disguised rows, namely \texttt{vote}
+rows.
 %
 When \sys reveals the disguise, \sys will first reveal the diff records for
 posts before revealing those for votes in order to maintain referential
@@ -406,6 +426,8 @@ integrity. But when applying the \texttt{vote\_count} update to post diff
 records, \sys will find 0 votes for the post, because the votes have not yet
 been restored.
 %
+If this is correct application behavior (scenario \two{}), then \sys's
+assumptions hold; otherwise, \sys currently cannot correctly support this update.
 
 %
 One potential solution would be for developers to indicate the data dependencies
@@ -416,20 +438,6 @@ inadvertently leave dangling pointers. Or perhaps developers could schedule cron
 jobs to habitually perform the update to ``fix up'' any rows that have been
 revealed since the update; however, this only works for an idempotent update, as
 it should not modify already-modified rows again.
-%
-
-%
-Furthermore, developers must do additional work to add hooks to invoke \sys when
-any major application change or schema migration occurs. Invoking these hooks
-and applying these updates during reveal also adds additional computation work;
-we measure these costs in \S\ref{s:eval:updates}.
-%
-
-%
-Finally, replay logs only apply to diff records, which contain the actual data
-changes, and not speaks-for records; \sys assumes that the identifiers for
-principals in speaks-for records that encode the speaks-for chain remain
-consistent as the database changes.
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
