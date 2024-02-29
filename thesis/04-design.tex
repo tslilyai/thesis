@@ -298,24 +298,23 @@ words prior to reveal.
 \sys handles this situation by tracking applied application updates in a
 \emph{replay log} of application updates.
 %
-The application would invoke \sys when it performs operations that need to hold
-over revealed data---\eg moderations---to log these updates in \sys's replay
+The application invokes \sys when it performs operations that need to hold
+over revealed data---\eg moderations---and \sys records these updates in its replay
 log.
 %
-When revealing data, \sys would apply, in order, every entry in the replay log
-added since the time of
-disguise to the disguise's diff records.  
+When revealing data, \sys applies, in order, every entry in the replay log
+added since the time of disguise to the disguise's diff records.  
 %
 
 %
-Log entries map the original data and the new placeholder data in diff records to
-corresponding updated-original and updated-placeholder data. 
+Log entries map the original data and the new placeholder data in diff records
+to corresponding updated-original and updated-placeholder data. 
 %
 After applying all updates to placeholder data, \sys takes the
 updated-placeholder data and removes it from the database.
 %
-Similarly, After applying all updates to the original data, \sys takes the updated-original
-data and restores it to the database.
+Similarly, after applying all updates to the original data, \sys takes the
+updated-original data and restores it to the database.
 
 %
 In the swear words moderation example, \sys queries the replay log, sees
@@ -329,29 +328,30 @@ updated placeholder data).
 \lyt{Too confusing?}
 
 \subsubsection{Applying Schema Migrations}
-Applications also constantly undergo schema migrations to reorganize data or
-add new application features. When these occur, \sys must know how to manipulate
-any disguised data structured in the old database layout to match that of the
+Applications also constantly undergo schema migrations to reorganize data or add
+new application features. When these occur, \sys must know how to manipulate any
+disguised data structured in the old database layout to match that of the
 current database.
 %
-\sys allows applications to invoke \sys with a replay log entry
-encoding the schema migration after the migration is performed.
+\sys allows applications to invoke \sys with a replay log entry encoding the
+schema migration after the migration is performed.
 %
-As with application updates, schema migration entries map diff
-record data to migrated-original data and migrated-placeholder data, which \sys
-then respectively restores and removes.
+As with application updates, schema migration entries map diff record data to
+migrated-original data and migrated-placeholder data, which \sys then
+respectively restores and removes.
 
-For example, as shown in Figure~\ref{f:updates}, a developer of an application with a \texttt{users} table that
-contains rows with \texttt{username}s, \texttt{addr}s, and \texttt{email}s may choose to allow users multiple addresses.
-They would create a new \texttt{addrs} table, with a foreign key to the users
-table, and populate \texttt{addrs} using the address data in \texttt{users}.
-Finally, they would remove the \texttt{addr} column from \texttt{users}.
+For example, as shown in Figure~\ref{f:updates}, a developer of an application
+with a \texttt{users} table that contains rows with \texttt{username}s,
+\texttt{addr}s, and \texttt{email}s may choose to allow users multiple
+addresses.  They would create a new \texttt{addrs} table, with a foreign key to
+the users table, and populate \texttt{addrs} using the address data in
+\texttt{users}.  Finally, they would remove the \texttt{addr} column from
+\texttt{users}.
 %
-The corresponding replay log entry would map an original \texttt{users} data row in
-a diff record to both a row in \texttt{users} with username \texttt{uid} and a
-row in
-\texttt{addrs} that has a foreign key of \texttt{uid} to \texttt{users}. These
-rows would be restored to the database.
+The corresponding replay log entry would map an original \texttt{users} data row
+in a diff record to both a row in \texttt{users} with username \texttt{uid} and
+a row in \texttt{addrs} that has a foreign key of \texttt{uid} to
+\texttt{users}. These rows would be restored to the database.
 %
 It would also generate two rows for any placeholder \texttt{users} data row in a
 diff record and remove these from the database.
@@ -389,10 +389,33 @@ fail, preventing disguised data from being revealed.
 them so a later reveal can pass the checks.
 
 \subsubsection{Limitations}
+\label{s:design:updates:limitations}
 \sys's replay log approach faces some limitations. First, it assumes that either
-updates perform deterministic changes based on (at most) the disguised data, or
-that any nondeterminism performed during an update will not violate application
-invariants or expose which data had been disguised.
+\one{} updates applied to a row rely on at most that row's data, and not the
+data of other disguised rows or external database state; or \two{} that any
+external dependencies of an update will not violate application invariants or
+expose which data had been disguised.
+%
+For example, take an update that calculates the current vote count of a post to store
+as a post's \texttt{vote\_count} attribute, and say that 
+a disguise has removed both a user's post and its votes.
+%
+When \sys reveals the disguise, \sys will first reveal the diff records for
+posts before revealing those for votes in order to maintain referential
+integrity. But when applying the \texttt{vote\_count} update to post diff
+records, \sys will find 0 votes for the post, because the votes have not yet
+been restored.
+%
+One potential solution would be for developers to indicate the data dependencies
+of each update, so \sys could know to restore votes before posts; however, this
+requires \sys to disable foreign key checks and carefully check for referential
+integrity after restoring posts, since restoring votes first can now
+inadvertently leave dangling pointers. Or perhaps developers could schedule cron
+jobs to habitually perform the update to ``fix up'' any rows that have been
+revealed since the update; however, this only works for an idempotent update, as
+it should not modify already-modified rows again.
+%
+
 %
 Furthermore, developers must do additional work to add hooks to invoke \sys when
 any major application change or schema migration occurs. Invoking these hooks
@@ -400,10 +423,10 @@ and applying these updates during reveal also adds additional computation work;
 we measure these costs in \S\ref{s:eval:updates}.
 %
 Finally, replay logs only apply to diff records, which contain the actual data
-changes, and not speaks-for records; \sys assumes that the identifiers for principals in speaks-for records
-that encode the speaks-for chain remain consistent as the database changes.
+changes, and not speaks-for records; \sys assumes that the identifiers for
+principals in speaks-for records that encode the speaks-for chain remain
+consistent as the database changes.
 %
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Shared Data}
@@ -414,7 +437,7 @@ between users are owned by both users.
 %or co-authored papers in HotCRP.
 %
 \sys's default semantics for shared data implement an ownership model inspired
-by a common treatment of messages.
+by a common treatment of messages as jointly owned.
 %
 When a user \xxs shared data, \sys decorrelates the data from the \xxing user,
 but preserves the data and its association with other owners.
@@ -427,7 +450,8 @@ the message, the message is owned by Chris and a pseudoprincipal; if Chris then
 \xxs the message, \sys removes it.
 %
 Either owner can reveal the message, which restores the message to the database
-and recorrelates the revealing user.
+and recorrelates the revealing user; the other owner remains decorrelated as a
+pseudoprincipal until they also choose to reveal the message.
 %
 Regardless of the reveal order, if all owners reveal the message, \sys returns
 the message to its original state.
@@ -445,13 +469,13 @@ As described so far, if Bea wanted to modify a decorrelated ``Star Wars''
 comment, they would have to reveal the comment, edit it using their normal
 credentials, and then re\xx the comment.
 %
-\sys applications can also let users modify decorrelated records without
-the reveal step.
+\sys applications can also let users modify decorrelated records without the
+reveal step.
 %
 To support this, an application accepts reveal credentials along with a
-modification request. \sys uses these credentials to validate that the
-user speaks-for a specific pseudoprincipal, and updates the
-database with the modification.
+modification request. \sys uses these credentials to validate that the user
+speaks-for a specific pseudoprincipal, and updates the database with the
+modification.
 %
 %previous diff records to reflect the newly modified state.
 %

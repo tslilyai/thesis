@@ -164,11 +164,21 @@ secrets; \sys could also support password-based backup secrets by \eg storing an
 version of the private key encrypted with the user's password.
 %
 
-\section{Application Updates Replay Log}
-In the \sys prototype, updates are represented as pure functions from database
-objects (represented as $<$table, column, value$>$ tuples in Rust) to new database
-objects.
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
+\section{Diff Records}
 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
+\section{Speaks-for Chains}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
+\section{Joint Ownership for Shared Data}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
+\section{Application Updates Replay Log}
+\sys represents updates as pure functions from database objects (represented as
+$<$table, column, value$>$ tuples in Rust) to new database objects.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 %
 \section{Concurrency.}
 %

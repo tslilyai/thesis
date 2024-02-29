@@ -131,7 +131,7 @@ can later reveal them.
 % \S\ref{s:shared}.
 
 \subsection{Application Updates and Schema Migrations}
-\ref{s:casestudies:updates}
+\label{s:casestudies:updates}
 We also added support for three recent application updates and schema
 migrations applied by the Lobsters developers in 2023-2024. 
 
@@ -150,6 +150,32 @@ Finally, the third creates a new \texttt{story\_texts} table which stores the
 \texttt{title}, \texttt{description}, and \texttt{story\_cache} attributes of
 rows from \texttt{stories}. This enables search over story contenct. The
 \texttt{story\_cache} column is then removed from \texttt{stories}.
+
+%
+In addition to these updates, we inspected 20 other updates/migrations from the past
+three years broadly classified into:
+\begin{itemize}[nosep]
+\item creating tables; 
+\item removing, adding, or renaming table columns;
+\item removing or adding indexes on new (or old) table columns; 
+\item setting column constraints (\eg \texttt{NOT NULL}); 
+\item modifying column content based on deterministic functions (\eg URL normalization); 
+\item generating new rows for various tables based on existing table rows (\eg adding \texttt{story\_texts}  
+when restructuring \texttt{stories}); and
+\item updating a row based on the current state of other database tables (\eg updating
+the \texttt{vote\_count} of comments based on the number of votes).
+\end{itemize}
+%
+\sys can support all but the last category of updates, unless the update is
+independent of the currency of the database state. As described in
+\S\ref{s:design:updates:limitations}, unless it is valid application behavior for \eg
+\texttt{vote\_count} to be 0 regardless of the number of votes, 
+\sys currently will not correctly apply an update that sets the count of votes
+for comments.  This last category represented 2 of the 20 inspected updates.
+    However, we observe that these particular updates happen to be idempotent
+    for any rows affected, and thus could also be reapplied after all data is
+        revealed.
+%
 
 %
 With \sys, users can still reveal their data disguised prior to any of these
