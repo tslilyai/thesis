@@ -165,18 +165,87 @@ version of the private key encrypted with the user's password.
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
+\section{Application Updates Replay Log}
+\sys represents updates as pure Rust functions from database objects (represented as
+$<$table, row$>$ pairs) to a new set of database objects. \sys stores the log as
+a vector of updates with timestamps; this log is currently not persisted, and
+updates will have to be reregistered with \sys if the application server fails.
+\todo{should we persist?}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 \section{Diff Records}
+Diff records store a pair of $<$oldRows, newRows$>$ database objects.  Each
+object is represented as a $<$table, row$>$ pair.  Each diff record also encodes
+the type of disguise operation (remove, modify, decorrelate), the current
+timestamp, and the relevant
+disguise ID.
+
+\begin{itemize}[nosep]
+    \item Remove diff records contain only the removed row and no 
+        new row;
+    \item Modify diff records contain the row with the original value, and the
+        row with the updated value; and
+    \item Decorrelate diff records contain the referencing row with the original
+        foreign key value, the referencing row with the new foreign key value,
+        and the new pseudoprincipal row.
+\end{itemize}
+
+\sys also stores a special type of remove diff record that contains the
+principal's ID and the principal's public key when removing a principal object.
+This allows \sys to restore the principal to \sys's principal table when revealing
+a disguise that removed the principal.
+
+To disguise and reveal removals without violating referential integrity, \sys
+constructs a dependency graph between tables based on foreign key relations
+(assuming no circularity), and removes or restores rows from tables in
+topologically-sorted order.
+%
+
+%
+For efficiency, \sys batches the deletion of rows from the same table, and the
+creation of pseudoprincipals upon disguise. 
+%
+\sys also batches the deletion of pseudoprincipals during reveal. However, \sys
+does not batch insertion of other table rows during reveal, as each row's
+foreign key dependencies and relevant application updates need to be applied to
+each row; however, with careful implementation, \sys could support batching of
+all insertions.  \todo{TODO should we batch other tables? it's much more
+complex}.
+%
+\sys performs decorrelation and modification operations individually for each
+row during both disguise and reveal, as different rows are updated to different
+values.
+%
+
+%
+When revealing a diff record, \sys applies all updates in the replay log with
+timestamps greater than that of the diff record to the diff record's oldRows and
+newRows.  \sys then removes the updated newRows and restores the updated
+oldRows, if all consistency checks pass.
+%
+For efficiency, \sys will check to see if any new row matches the identifiers
+(\eg a primary key) of an old row, and perform an update instead of a
+delete-insert for that row.
+%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 \section{Speaks-for Chains}
 
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
-\section{Joint Ownership for Shared Data}
+Speaks-for records contains a pair of (original principal, pseudoprincipal) IDs
+encoded as MySQL values, and the pseudoprincipal’s private key encoded as bytes. 
+%
+The \sys prototype removes links in the speaks-for chain by 
+%
+In particular, when \sys reveals a diff record owned by pseudoprincipal $P_1$, 
+
+
+\sys will check whether $P_1$ still exists in the speaks-for chain.
+
+
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
-\section{Application Updates Replay Log}
-\sys represents updates as pure functions from database objects (represented as
-$<$table, column, value$>$ tuples in Rust) to new database objects.
+\section{Joint Ownership for Shared Data}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 %
