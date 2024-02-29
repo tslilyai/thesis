@@ -406,6 +406,8 @@ integrity. But when applying the \texttt{vote\_count} update to post diff
 records, \sys will find 0 votes for the post, because the votes have not yet
 been restored.
 %
+
+%
 One potential solution would be for developers to indicate the data dependencies
 of each update, so \sys could know to restore votes before posts; however, this
 requires \sys to disable foreign key checks and carefully check for referential
@@ -421,6 +423,8 @@ Furthermore, developers must do additional work to add hooks to invoke \sys when
 any major application change or schema migration occurs. Invoking these hooks
 and applying these updates during reveal also adds additional computation work;
 we measure these costs in \S\ref{s:eval:updates}.
+%
+
 %
 Finally, replay logs only apply to diff records, which contain the actual data
 changes, and not speaks-for records; \sys assumes that the identifiers for
