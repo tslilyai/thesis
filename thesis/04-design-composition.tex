@@ -95,6 +95,7 @@ credentials to recursively find pseudoprincipals from multiple decorrelations.
 %
 
 \subsection{Out-of-Order Reveals}
+\label{s:design:oooreveals}
 \todo{check}
 \sys must also handle reveals of transformations in any order.  As before,
 many scenarios are straightforward: revealing removals is trivial (data can
@@ -192,6 +193,8 @@ In general, \sys enforces the invariant that the chain only truncates at link
 $L$ once all pseudoprincipals recursively generated in the chain beyond $L$ have
 been recorrelated.
 %
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %
 %(in which case,

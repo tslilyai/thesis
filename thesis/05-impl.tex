@@ -223,9 +223,17 @@ timestamps greater than that of the diff record to the diff record's oldRows and
 newRows.  \sys then removes the updated newRows and restores the updated
 oldRows, if all consistency checks pass.
 %
+\todo{Is this impl or design?}
 For efficiency, \sys will check to see if any new row matches the identifiers
-(\eg a primary key) of an old row, and perform an update instead of a
-delete-insert for that row.
+(\eg a primary key) of an old row, and perform an update to the row instead of a
+delete-insert for that row. \sys will by default only update row columns in the
+database that still match that of the saved \emph{new} diff record row state.
+This is because if a column does not match the new state of the diff record,
+then there have been other application modifications other than \sys's
+disguising that modified the column since the time of disguise, and \sys cannot
+correctly reveal the column to its old value. Developers can optionally specify
+that rows must be completely revealed, \ie if any column fails the check, \sys
+should not reveal \emph{any} column in the row.
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i

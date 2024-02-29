@@ -402,7 +402,8 @@ measure these costs in \S\ref{s:eval:updates}.
 Furthermore, replay logs only apply to diff records, which contain the actual data
 changes, and not speaks-for records; \sys assumes that the identifiers for
 principals in speaks-for records that encode the speaks-for chain remain
-consistent as the database changes.
+consistent as the database changes, allowing \sys to use its composition
+techniques with speaks-for chains (\S\ref{s:design:oooreveals}) to reveal multiple disguises in any order.
 %
 
 %
