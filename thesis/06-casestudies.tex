@@ -132,6 +132,7 @@ can later reveal them.
 
 \subsection{Application Updates and Schema Migrations}
 \label{s:casestudies:updates}
+\todo{check}
 We also added support for three recent application updates and schema
 migrations applied by the Lobsters developers in 2023-2024. 
 
@@ -166,15 +167,15 @@ when restructuring \texttt{stories}); and
 the \texttt{vote\_count} of comments based on the number of votes).
 \end{itemize}
 %
-\sys can support all but the last category of updates, unless the update is
-independent of the currency of the database state. As described in
-\S\ref{s:design:updates:limitations}, unless it is valid application behavior for \eg
-\texttt{vote\_count} to be 0 regardless of the number of votes, 
-\sys currently will not correctly apply an update that sets the count of votes
-for comments.  This last category represented 2 of the 20 inspected updates.
-    However, we observe that these particular updates happen to be idempotent
-    for any rows affected, and thus could also be reapplied after all data is
-        revealed.
+\sys can support all but the last category of updates, unless the correctness of
+the update's output is independent of the recency of the database state. As
+described in \S\ref{s:design:updates:limitations}, unless it is valid
+application behavior for \eg \texttt{vote\_count} to be 0 regardless of the
+number of votes, \sys currently will not correctly apply an update that sets the
+count of votes for comments.  This last category represented 2 of the 20
+inspected updates.  However, we observe that these particular updates happen to
+be idempotent for any rows affected, and thus could also be reapplied after all
+data is revealed.
 %
 
 %

@@ -486,10 +486,11 @@ reveal step.
 %
 To support this, an application accepts reveal credentials along with a
 modification request. \sys uses these credentials to validate that the user
-speaks-for a specific pseudoprincipal by walking the speaks-for chain
-(cf.\ Figure~\ref{f:revealpseudo}) and ensuring that the user can access a speaks-for record to the
-pseudoprincipal. After validating the user's request, \sys updates the database with the
-modification.
+speaks-for a specific pseudoprincipal by walking the speaks-for chain (cf.\
+Figure~\ref{f:revealpseudo}) and ensuring that the user can access a speaks-for
+record to the pseudoprincipal. After validating the user's request, \sys updates
+the database with the modification.
+\todo{check}
 %
 %previous diff records to reflect the newly modified state.
 %
