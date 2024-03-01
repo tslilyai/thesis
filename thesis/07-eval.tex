@@ -363,7 +363,7 @@ operations and the cost of cryptographic operations.
 %\sys's high-level API additionally performs queries on the application database.
 %
 \lyt{Each disguise and reveal operation requires decoding of JSON specifications
-into \sys-specific Rust datatypes; this takes $\approx1$ms on average. This
+into \sys-specific Rust datatypes; this takes $\approx0.1$ms on average. This
 could be offloaded to registering each specification with \sys when the
 application starts, allowing \sys to decode them in advance.}
 %

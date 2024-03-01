@@ -19,9 +19,11 @@ As mentioned throughout, opportunities remain to optimize \sys's prototype
 (\eg adding support for batching of queries) and implement useful features 
 (\eg support for non-MySQL databases). 
 %
-\sys also currently has no plan to garbage collect disguised data.
-Until a user reveals their disguised data, \sys currently retains the data in
-its disguise table, which could be forever if users choose to never reveal data.
+
+One such area for exploration could investigate a plan for \sys to garbage
+collect disguised data.  Until a user reveals their disguised data, \sys
+currently retains the data in its disguise table, which could be forever if
+users choose to never reveal data.
 %
 \sys could allow applications to put reasonable, coarse-grained time limits (\eg
 10 years) on disguised data to eventually clean it up, without leaking
@@ -30,43 +32,74 @@ fine-grained information about which data was disguised at the same time.
 %store and retain nearly indefinitely, we imagine that long timeouts will not be
 %an issue.
 
+%
+Futhermore, services currently hold lots of disguised data, but cannot derive
+value from it because it remains confidential. But perhaps with some initial
+setup and some clever cryptography such as \todo{homomorphic encryption stufff},
+Edna could allow some limited computation over disguised data.
+%
+Edna can allow computation over disguised data, such as aggregates (we
+experimented with additive homomorphic encryption, and found it limited but
+potentially promising) Needed to know computation groups in advance.
+
 \section{Disguising Beyond \sys}
+Zooming out beyond, we can contemplate completely different directions in which
+disguising for flexible privacy could be applied. One example I’ll dive into
+here is the direction of flexible access control, where the application itself
+needs to control user data exposure to insiders.
 
-Futhermore, services currently hold lots of disguised data, but can’t derive value from it because it remains confidential. But perhaps with some initial setup and some clever cryptography, Edna could allow some limited computation over disguised data.
+Today, thousands of insiders at companies have access to sensitive user data,
+and this access can lead to devastating data leaks.
 
-Or data could simply time out, and services could put policies in place to garbage collect this data after some number of years.
-
-
-Edna can allow computation over disguised data, such as aggregates (we experimented with additive homomorphic encryption, and found it limited but potentially promising)
-Needed to know computation groups in advance
-
-And if we zoom out, we see completely different directions in which flexible privacy can be applied. One example I’ll dive into here is the direction of flexible access control, where the application itself needs to control user data exposure to insiders.
-
-Today, thousands of insiders at companies have access to sensitive user data, and this access can lead to devastating data leaks.
-
-One important part of this problem stems from the fact that today, employees have access to all the data that they need for their job at any point in time. For example, a hotel employee might be given authorization to see the full room booking and customer database because they need this information to perform their job, such as performing aggregates to determine room occupancy; or helping customers manage their bookings
+One important part of this problem stems from the fact that today, employees
+have access to all the data that they need for their job at any point in time.
+For example, a hotel employee might be given authorization to see the full room
+booking and customer database because they need this information to perform
+their job, such as performing aggregates to determine room occupancy; or helping
+customers manage their bookings
 
 But they do not need all this information all the time!
 
 
-We envision a world where every employee operates atop a personalized redacted database that contains the minimum amount of data they need continuously. So in this simplified example, when not actively helping a customer, a hotel customer service representative might only need to be able to look at room occupancy and see free rooms.
+We envision a world where every employee operates atop a personalized redacted
+database that contains the minimum amount of data they need continuously. So in
+this simplified example, when not actively helping a customer, a hotel customer
+service representative might only need to be able to look at room occupancy and
+see free rooms.
 
-And a business intelligence analyst needs to be able to compute aggregates and other statistics about where customers come from and where marketing should focus, but not need to see user identifiers like usernames or precise phone numbers.
+And a business intelligence analyst needs to be able to compute aggregates and
+other statistics about where customers come from and where marketing should
+focus, but not need to see user identifiers like usernames or precise phone
+numbers.
 
 
-But clearly these redactions are only the minimal amount of data the employee needs for common, daily operations; when, for example, a particular customer needs assistance, the employee currently helping the customer can change their redactions temporarily and dynamically to expose only that user’s data (and even then, perhaps only parts of it).
+But clearly these redactions are only the minimal amount of data the employee
+needs for common, daily operations; when, for example, a particular customer
+needs assistance, the employee currently helping the customer can change their
+redactions temporarily and dynamically to expose only that user’s data (and even
+then, perhaps only parts of it).
 
-And another employee might simultaneously be helping another customer with another booking, and apply a different upgrade to get a different partially redacted view of the database.
+And another employee might simultaneously be helping another customer with
+another booking, and apply a different upgrade to get a different partially
+redacted view of the database.
 
-And as soon as this data is no longer needed the employee’s access returns back to its original, minimally exposing state.
+And as soon as this data is no longer needed the employee’s access returns back
+to its original, minimally exposing state.
 
-To achieve this, we need a database system that can dynamically change redactions that apply to each employee, but present a consistent view of the redacted database to each employee.
-And we can’t do this with unique database views, because that would require an enormous number of views (one for each need to upgrade data, and at a per-employee basis).
+To achieve this, we need a database system that can dynamically change
+redactions that apply to each employee, but present a consistent view of the
+redacted database to each employee.  And we can’t do this with unique database
+views, because that would require an enormous number of views (one for each need
+to upgrade data, and at a per-employee basis).
 
-Redactions would need to handle referential integrity, work even in the presence of indexes and database views, and work with existing query optimizations without overly affecting performance.
+Redactions would need to handle referential integrity, work even in the presence
+of indexes and database views, and work with existing query optimizations
+without overly affecting performance.
 
-Employees must also have the ability to flexibly perform fine-grained upgrades of their access, without compromising security.
+Employees must also have the ability to flexibly perform fine-grained upgrades
+of their access, without compromising security.
 
-So clearly there’s a lot of exciting research here into solving the different challenges posed by a redaction-based approach would require.
+So clearly there’s a lot of exciting research here into solving the different
+challenges posed by a redaction-based approach would require.
 
 
