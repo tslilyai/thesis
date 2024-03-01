@@ -195,12 +195,6 @@ principal's ID and the principal's public key when removing a principal object.
 This allows \sys to restore the principal to \sys's principal table when revealing
 a disguise that removed the principal.
 
-To disguise and reveal removals without violating referential integrity, \sys
-constructs a dependency graph between tables based on foreign key relations
-(assuming no circularity), and removes or restores rows from tables in
-topologically-sorted order.
-%
-
 %
 For efficiency, \sys batches the deletion of rows from the same table, and the
 creation of pseudoprincipals upon disguise. 
@@ -220,20 +214,16 @@ values.
 %
 When revealing a diff record, \sys applies all updates in the replay log with
 timestamps greater than that of the diff record to the diff record's oldRows and
-newRows.  \sys then removes the updated newRows and restores the updated
-oldRows, if all consistency checks pass.
+newRows. 
 %
-\todo{Is this impl or design?}
+\sys then performs consistency checks to ensure that it can reveal the updated
+diff record rows.
+%
 For efficiency, \sys will check to see if any new row matches the identifiers
-(\eg a primary key) of an old row, and perform an update to the row instead of a
-delete-insert for that row. \sys will by default only update row columns in the
-database that still match that of the saved \emph{new} diff record row state.
-This is because if a column does not match the new state of the diff record,
-then there have been other application modifications other than \sys's
-disguising that modified the column since the time of disguise, and \sys cannot
-correctly reveal the column to its old value. Developers can optionally specify
-that rows must be completely revealed, \ie if any column fails the check, \sys
-should not reveal \emph{any} column in the row.
+(\eg a primary key) of an old row, and update the relevant columns of the new
+row instead of removing the new row and restoring the old row.
+%
+Otherwise, \sys will remove the updated newRows and restore the updated oldRows.
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i

@@ -1,4 +1,7 @@
-\todo{Better conclusion, more broad about disguised data}
+\section{Takeaways from \sys}
+%
+\sys is a first step towards a world in which web services
+routinely manage, store, and reveal \xxed user data.
 %
 \sys enables developers to provide data \xxing and revealing
 transformations that give users control over their data in web applications.
@@ -8,44 +11,26 @@ personal data from public profiles, and remove a web service's access to their
 data without permanently losing their accounts.
 %
 
-\todo{write}
-
-\sys is a first step towards a world in which web services
-routinely manage, store, and reveal \xxed user data.
+\section{Extensions to \sys}
+While \sys's design presents a basic system for disguising and revealing, \sys
+itself has limitations that can be improved. 
 %
-In this setting, new questions and directions for research arise.
+As mentioned throughout, opportunities remain to optimize \sys's prototype
+(\eg adding support for batching of queries) and implement useful features 
+(\eg support for non-MySQL databases). 
 %
-
-\section{Retention of Disguised Data.}
+\sys also currently has no plan to garbage collect disguised data.
+Until a user reveals their disguised data, \sys currently retains the data in
+its disguise table, which could be forever if users choose to never reveal data.
 %
-When a user reveals their data, \sys removes it from the disguise table.
-%
-However, \sys currently retains disguised data until a user reveals it, which
-could be forever if users choose to never reveal data.
-%
-\sys could allow applications to put reasonable,
-coarse-grained time limits (\eg 10 years) on disguised data to eventually clean
-it up, without leaking fine-grained information about which data was disguised
-at the same time.
+\sys could allow applications to put reasonable, coarse-grained time limits (\eg
+10 years) on disguised data to eventually clean it up, without leaking
+fine-grained information about which data was disguised at the same time.
 %Given the amount of data that applications are willing to
 %store and retain nearly indefinitely, we imagine that long timeouts will not be
 %an issue.
 
-
-\section{Pseudoprincipal references.}
-%
-\sys currently supports a global specification for checking and fixing references to
-pseudoprincipals.
-%
-\sys could also support a menu of options, such
-as per-table checks and fixes (where the developer to specifies per-table
-policies) or per-inserted-object ones (where the developer makes application
-modifications to log all added references to pseudoprincipals).
-
-\todo{More discussion about updates? Potential integration of Edna with
-industry}
-
-
+\section{Disguising Beyond \sys}
 
 Futhermore, services currently hold lots of disguised data, but can’t derive value from it because it remains confidential. But perhaps with some initial setup and some clever cryptography, Edna could allow some limited computation over disguised data.
 

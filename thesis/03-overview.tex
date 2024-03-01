@@ -259,6 +259,12 @@ referential integrity for data referring to pseudoprincipals. \sys
 provides three options if it finds such objects: \one{} change the object's
 reference to point to the original principal; \two{} delete the object; and
 \three{} continue referring to the pseudoprincipal.
+%
+This option is global; another design for \sys could also support a menu of
+options, such as per-table checks and fixes (where the developer to specifies
+per-table policies) or per-inserted-object ones (where the developer makes
+application modifications to log all added references to pseudoprincipals).
+
 
 %
 %

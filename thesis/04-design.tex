@@ -17,9 +17,13 @@ queries for the data to \xx based on the \xx specification predicates.
 %any updates during \xxing do not affect what data to \xx. (put as footnote?
 %cut? dunno)}
 %
-\sys then performs the specified database changes by first applying all
-removals, and then decorrelations and modifications in specification order,
+To preserve referential integrity, \sys constructs a dependency graph between
+tables based on foreign key relations (assuming no circularity), and first
+performs removes from tables in topologically-sorted order.
+\sys then performs decorrelations and modifications in specification order,
 potentially generating and storing pseudoprincipals.
+%
+
 %If \sys must apply more than one change to the same selected data object
 %attribute (\eg because the object satisfies multiple predicates), \sys applies
 %the changes in the order specified in the spec.
@@ -208,8 +212,9 @@ application objects to their pre-\xxed state.
 % their previously-anonymized contributions (\S\ref{s:composition}).
 
 %
-To preserve referential integrity, \sys first restores \xxed data that was
-removed.
+To preserve referential integrity, \sys restores
+\xxed data that was removed from tables in topologically-sorted order (again
+constructing the dependency graph).
 %
 \sys then reveals any modifications, and finally performs recorrelations. 
 %using decrypted speaks-for records.
@@ -368,12 +373,24 @@ modifications that occurred while data was \xxed; and \three{} will maintain
 referential integrity.
 
 For \one{}, \sys checks that \emph{removed} \xxed data is still removed from the
-database;
+database.
 %
-and for \two{}, \sys ensures that \emph{modified} \xxed data is in the same
-modified state and \emph{decorrelated} \xxed data is still affiliated with the
-same pseudoprincipal in the database using the new value stored in the diff
-record.
+
+%
+For \two{}, \sys ensures that \emph{modified} \xxed data is in the same modified
+state and \emph{decorrelated} \xxed data is still affiliated with the same
+pseudoprincipal in the database using the new value stored in the diff record.
+%
+By default, \sys performs checks at column-granularity. For example, an application
+database row can have two modified columns, but at the time of reveal, \sys
+finds that only one column still is at the modified state that \sys expects. The
+other column must have been updated since the time of the disguise.  \sys will
+then only reveal the one matching column that passed the check in order to avoid
+overwriting application updates, thus partially restoring the modified row.
+Developers can optionally specify that rows must be completely revealed, \ie if
+any column fails the check, \sys should not reveal \emph{any} column in the row.
+%
+
 %
 To ensure \three{}, \sys checks for the existence of all objects referenced by
 the data to reveal (\eg a post referenced by a to-be-revealed comment).
@@ -429,7 +446,6 @@ been restored.
 %
 If this is correct application behavior (scenario \two{}), then \sys's
 assumptions hold; otherwise, \sys currently cannot correctly support this update.
-
 %
 One potential solution would be for developers to indicate the data dependencies
 of each update, so \sys could know to restore votes before posts; however, this
@@ -439,6 +455,7 @@ inadvertently leave dangling pointers. Or perhaps developers could schedule cron
 jobs to habitually perform the update to ``fix up'' any rows that have been
 revealed since the update; however, this only works for an idempotent update, as
 it should not modify already-modified rows again.
+\todo{should this be discussion or here? it works better here, i think...}
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
