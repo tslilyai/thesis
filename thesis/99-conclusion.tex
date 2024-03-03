@@ -1,14 +1,14 @@
 \section{Takeaways from \sys}
 %
-\sys is a first step towards a world in which web services
-routinely manage, store, and reveal \xxed user data.
+\sys is a first step towards a world in which web services routinely manage,
+store, and reveal \xxed user data.
 %
-\sys enables developers to provide data \xxing and revealing
-transformations that give users control over their data in web applications.
+\sys enables developers to provide data \xxing and revealing transformations
+that give users control over their data in web applications.
 %
-These transformations help users protect inactive accounts, selectively dissociate
-personal data from public profiles, and remove a web service's access to their
-data without permanently losing their accounts.
+These transformations help users protect inactive accounts, selectively
+dissociate personal data from public profiles, and remove a web service's access
+to their data without permanently losing their accounts.
 %
 
 \section{Extensions to \sys}
@@ -20,6 +20,7 @@ As mentioned throughout, opportunities remain to optimize \sys's prototype
 (\eg support for non-MySQL databases). 
 %
 
+%
 One such area for exploration could investigate a plan for \sys to garbage
 collect disguised data.  Until a user reveals their disguised data, \sys
 currently retains the data in its disguise table, which could be forever if
@@ -43,6 +44,11 @@ experimented with additive homomorphic encryption, and found it limited but
 potentially promising) Needed to know computation groups in advance.
 
 \section{Disguising Beyond \sys}
+
+\subsection{\sys in the Real World}
+\todo{Distributed \sys, parallel \sys, what else is needed to make \sys real?}
+
+\subsection{Funhouse: Disguised Database Views}
 Zooming out beyond, we can contemplate completely different directions in which
 disguising for flexible privacy could be applied. One example I’ll dive into
 here is the direction of flexible access control, where the application itself
