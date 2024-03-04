@@ -17,7 +17,7 @@ broadly present several opportunities that \sys leaves unsolved.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Extensions to \sys}
 While \sys's design performs disguising and revealing, our \sys prototype has
-limitations that can be improved, many of which we've mentioned throughout. 
+limitations that can be improved.
 %
 For example, \sys could add support for batching of queries in order to improve
 performance,and implement useful features such as support for non-MySQL
@@ -27,28 +27,48 @@ databases.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{\sys in the Real World}
-%
-Garbage collection of disguised data represents one important unexplored area of
-\sys' design necessary to make \sys practical. Until a user reveals their
-disguised data, \sys currently retains the data in its disguise table, which
-could be forever if users choose to never reveal data.
-%
-\sys could allow applications to put reasonable, coarse-grained time limits (\eg
-10 years) on disguised data to eventually clean it up, without leaking
-fine-grained information about which data was disguised at the same time.
-%Given the amount of data that applications are willing to
-%store and retain nearly indefinitely, we imagine that long timeouts will not be
-%an issue.
+
+While \sys enables disguised data in many web applications, supporting disguised
+data in all web applications---particularly those at scale---raises several
+open questions. 
 
 %
-Futhermore, services currently hold lots of disguised data, but cannot derive
-value from it because it remains confidential. But perhaps with some initial
-setup and some clever cryptography such as \todo{homomorphic encryption stufff},
-Edna could allow some limited computation over disguised data.
+First, what happens when disguised data becomes too much for applications
+to store, if \eg millions of users disguise their data at a time?  
 %
-Edna can allow computation over disguised data, such as aggregates (we
-experimented with additive homomorphic encryption, and found it limited but
-potentially promising) Needed to know computation groups in advance.
+Even though storage is historically cheap, and applications today willingly
+store and retain user data nearly indefinitely, eventually disguised data
+(particularly since it cannot be sold or processed) may burden the application.
+%
+\sys currently retains disguised data in its disguised table until a user reveals
+their disguised data, which could be forever if users choose to never reveal
+data.
+%
+Instead, \sys could allow applications to put reasonable, coarse-grained time
+limits (\eg 10 years) on disguised data to eventually clean it up, without
+leaking fine-grained information about which data was disguised at the same
+time.
+%
+
+%
+Second, is there a way to better incentive applications to store disguised data?
+As mentioned, even if applications \emph{do} store disguised data, the cost of
+doing so may not pay off, since applications cannot derive value from it because
+it remains confidential. 
+%
+From our preliminary explorations with clever cryptography such as additive
+homomorphic secret sharing as done in Zeph~\cite{zeph}, \sys could potentially
+support limited computation such as aggregations over disguised data from which
+an application can derive value.
+%
+However, such cryptographic approaches require some initial setup to determine
+whose data can be aggregated with whose (in order to split the secrets
+appropriately) and who should be able to reveal the result (can individual users
+also perform aggregates, or just the application?)
+Futhermore, defining groups of users whose data can be combined requires more thought into what these groups may reveal about their constituents.
+%
+Homomorphic encryption techniques also come with performance overheads, but
+perhaps such processing could be done offline.
 
 \todo{Distributed \sys, parallel \sys, what else is needed to make \sys real?}
 
