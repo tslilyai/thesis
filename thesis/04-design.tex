@@ -469,8 +469,8 @@ the message to its original state.
 %
 
 %
-\todo{design or impl?}
-\todo{figure?}
+\paragraph{\sys's Solution.}
+\todo{figure}
 \sys supports these joint ownership semantics with the following design.
 %
 The first time any owner removes the data, \sys generates pseudoprincipals for
@@ -546,19 +546,31 @@ the database with the modification.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Design Limitations}
+\label{s:design:limits}
 \todo{XXX moved api here?}
 
-\paragraph{Disguise Specifications.}
+\paragraph{Disguises.}
 \sys assumes that all desired disguises are captured with the three primitive
-operations (remove, modify, and decorrelate). 
+operations (remove, modify, and decorrelate), and that \sys's generation
+specifications cover all desired values for modifications or pseudoprincipals. 
+%
+However, this means that placeholder data values cannot take as input external
+state (\eg the current state of the database), to, for example, add noise
+dependent on the number of rows in the database.
+%
+We can imagine expanding \sys's generation specifications to take as input a
+database query to generate new values.
+%
 
-However, this means that certain
-operations such as adding 
-
-limited in type of operations supported
+%
+Furthermore, disguising transformations may affect results of data processing on
+the database (\eg aggregates over the number of users). \sys currently expects
+the developer to correctly handle these scenarios, and ensure that any aggregate
+results or placeholder data does not violate application correctness.
+%
 
 \paragraph{API.}
-The API that \sys exposes assumes that:
+\sys's API assumes that:
 \begin{enumerate}[nosep]
     \item the application uses a relational database;
     \item rows to \xx have direct foreign key relationships to a users table,
@@ -569,10 +581,22 @@ The API that \sys exposes assumes that:
 %
 Applications that do not satisfy these assumptions---\eg because they have
 complex ownership chains or use a NoSQL database---could be supported with
-extensions as follows.
-
-\sys can utilize 
-\todo{k9db strategy for owernship chains, entity relationship graph in FB, etc.}
+extensions to \sys's design. 
+%
+Like in DELF~\cite{delf}, \sys could support multiple data models by requiring
+developers to provide \one{} a model of data as objects with dependency edges to other objects,
+and \two{} instantiations for update/delete/insert operations on these objects.
+%
+To handle indirect data ownership, \sys can use an approach similar to
+K9DB's data ownership graph~\cite{k9db}. And if no user owns a data item, \sys
+could perhaps refuse to disguise it, and flag the developer to review the
+disguise specification.
+\todo{hmm better idea here?}
+%
+To address the unique identification requirement, \sys could add unique IDs for every
+data object, so \sys can refind the object when revealing. However, this method
+requires more invasive changes to application data. 
+%
 
 \paragraph{\sys's Replay Log.}
 \label{s:design:updates:limitations}
@@ -580,13 +604,13 @@ extensions as follows.
 %
 First, developers must do additional work to add hooks to invoke \sys when any
 major application change or schema migration occurs. 
-Invoking these hooks and
-applying these updates during reveal also adds additional computation work; we
-measure these costs in \S\ref{s:eval:updates}.
+%
+Invoking these hooks and applying these updates during reveal also adds
+additional computation work; we measure these costs in \S\ref{s:eval:updates}.
 %
 
 %
-Furthermore, replay logs only apply to diff records, which contain the actual
+Furthermore, updates in replay logs only apply to diff records, which contain the actual
 data changes, and not speaks-for records; \sys assumes that the identifiers for
 principals in speaks-for records that encode the speaks-for chain remain
 consistent as the database changes, allowing \sys to use its composition
@@ -595,11 +619,11 @@ multiple disguises in any order.
 %
 
 %
-Finally, \sys assumes that either \one{} updates applied to a row rely on at
-most that row's data, and not the data of other disguised rows or external
-database state; or \two{} changes to other disguised rows or external database
-state will not cause an update to violate application invariants or expose which
-data had been disguised.
+\todo{should this be here or part of spec in \S3?}
+Finally, \sys assumes that either \one{} update executables are pure functions
+deterministic in their input (placeholder or disguised rows), and do not have
+side effects; or \two{} any nondeterministim or side effects of an update
+executable will maintain application correctness.
 %
 For a counterexample, take an update that calculates the current vote count of a
 post to store as a post's \texttt{vote\_count} attribute, and say that a
@@ -613,9 +637,10 @@ integrity. But when applying the \texttt{vote\_count} update to post diff
 records, \sys will find 0 votes for the post, because the votes have not yet
 been restored.
 %
-If this is correct application behavior (scenario \two{}), then \sys's
-assumptions hold; otherwise, \sys currently cannot correctly support this
-update.
+\sys only supports this update if this is correct application behavior (scenario
+\two{}).
+%
+
 %
 One potential solution would be for developers to indicate the data dependencies
 of each update, so \sys could know to restore votes before posts; however, this
@@ -626,8 +651,6 @@ jobs to habitually perform the update to ``fix up'' any rows that have been
 revealed since the update; however, this only works for an idempotent update, as
 it should not modify already-modified rows again.  
 %
-
-\todo{go and find other mentions of limitations within design section?}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 

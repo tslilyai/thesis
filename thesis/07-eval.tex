@@ -1,6 +1,6 @@
 \todo{Get numbers from Google Cloud}
 
-Our evaluation seeks to answer five questions:
+Our evaluation seeks to answer six questions:
 %
 \begin{enumerate}[nosep]
  %
@@ -23,6 +23,10 @@ Our evaluation seeks to answer five questions:
     What is the performance impact of composing \sys's guarantees
     with those of encrypted databases?
         (\S\ref{s:eval-cryptdb})
+
+\item 
+    Which categories of application updates and schema migrations can \sys
+        support? (\S\ref{s:eval-updates})
 %
 \end{enumerate}
 
@@ -808,45 +812,44 @@ longer to complete~\cite{delf}.
 \input{07-eval-cryptdb}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Application Updates and Schema Migrations}
-\label{s:eval:updates}
+\section{Support for Application Updates and Schema Migrations}
+\label{s:eval-updates}
 %
 In addition to the updates described and implemented in
-\S\ref{s:casestudies:updates}, we inspected 20 other updates/migrations from the
-past three years broadly classified into: 
+\S\ref{s:casestudies:updates}, we inspected 20 other updates/migrations in
+Lobsters from the
+past three years, and classified them broadly as follows: 
 \begin{itemize}[nosep] 
-    \item creating
-        tables; 
+    \item creating tables; 
     \item removing, adding, or renaming table columns; 
-        \item
-        removing or adding indexes on new (or old) table columns; 
-    \item setting
-        column constraints (\eg \texttt{NOT NULL}); 
-    \item modifying column
-            content based on deterministic functions (\eg URL normalization);
-    \item generating new rows for various tables based on existing table
-        rows (\eg adding \texttt{story\_texts}  when restructuring \texttt{stories}); and 
-    \item updating a row based on the current state of other database tables
-        (\eg updating the \texttt{vote\_count} of comments based on the number
-        of votes).  
+    \item removing or adding table indexes;
+    \item setting column constraints (\eg \texttt{NOT NULL}); 
+    \item modifying column content based on deterministic functions (\eg URL normalization);
+    \item generating rows for new tables based on existing table rows (\eg adding \texttt{story\_texts} when restructuring \texttt{stories}); and 
+    \item updating a row based on the current state of other database tables (\eg updating the \texttt{vote\_count} of comments based on the number of votes).  
 \end{itemize}
 %
-\sys can support all but the last category of updates, unless the correctness of
-the update's output is independent of the recency of the database state. As
-described in \S\ref{s:design:updates:limitations}, unless it is valid
-application behavior for \eg \texttt{vote\_count} to be 0 regardless of the
-number of votes, \sys currently will not correctly apply an update that sets the
-count of votes for comments. This last category represented 2 of the 20
-inspected updates. However, we observe that these particular updates happen to
-be idempotent for any rows affected, and thus could also be reapplied after all
-data is revealed.
+\sys can support all but the last category of updates, unless the 
+update's output is correct no matter the state of other database tables.
+%
+This last category represents 2 of the 20 inspected updates.
+%
+%As described in \S\ref{s:design:limits}, unless it is valid application behavior
+%for \eg \texttt{vote\_count} to be 0 regardless of the number of votes, \sys
+%will not correctly apply an update that sets the count of votes for comments.
+%
+We note that these types of updates occur in applications that optimize for
+performance by denormalizing their database schema; we hypothesize that this
+category of update would not exist with a normalized schema.
+%
+These particular updates also happen to be idempotent for any rows affected, and thus
+could be reapplied via \eg a cron job regularly to update revealed data.
 %
 
 %
-With \sys, users can still reveal their data disguised prior to any of these
-migrations, as if the migration had occurred with their data present in the
-database.
-
+With the exception of this last category of updates, users can still reveal
+their data disguised prior to these migrations, as if the migration had occurred
+with their data present in the database.
 
 %
 \section{Summary}

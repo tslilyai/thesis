@@ -15,16 +15,16 @@ broadly present several opportunities that \sys leaves unsolved.
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{\sys in the Real World}
 
 While \sys enables disguised data in many web applications, supporting disguised
 data in all web applications---particularly those at scale---raises several
-open questions. 
+open questions, which we discuss here. 
 
 %
-First, what happens when disguised data becomes too much for applications
-to store, if \eg millions of users disguise their data at a time?  
+\paragraph{Disguised Data Storage.}
+If \eg millions of users disguise their data over time, disguised data may
+become too much for applications to store.
 %
 Even though storage is historically cheap, and applications today willingly
 store and retain user data nearly indefinitely, eventually disguised data
@@ -41,86 +41,95 @@ time.
 %
 
 %
-Second, is there a way to better incentive applications to store disguised data?
+\paragraph{Deriving Value from Disguised Data.}
 As mentioned, even if applications \emph{do} store disguised data, the cost of
 doing so may not pay off, since applications cannot derive value from it because
 it remains confidential. 
 %
-From our preliminary explorations with clever cryptography such as additive
-homomorphic secret sharing as done in Zeph~\cite{zeph}, \sys could potentially
-support limited computation such as aggregations over disguised data from which
-an application can derive value.
+We believe that with clever cryptography such as additive homomorphic secret
+sharing as done in Zeph~\cite{zeph}, \sys could potentially support limited
+computation such as aggregations over disguised data from which an application
+can derive value.
 %
 However, such cryptographic approaches require some initial setup to determine
 whose data can be aggregated with whose (in order to split the secrets
 appropriately) and who should be able to reveal the result (can individual users
-also perform aggregates, or just the application?)
-Futhermore, defining groups of users whose data can be combined requires more thought into what these groups may reveal about their constituents.
+also perform aggregates, or just the application?) Futhermore, defining groups
+of users whose data can be combined requires more thought into what these groups
+may reveal about their constituents.
 %
-Homomorphic encryption techniques also come with performance overheads, but
-perhaps such processing could be done offline.
+Homomorphic encryption techniques are also historically regarded as impractical
+due to their performance overheads.
 
+
+\paragraph{\sys in a Distributed System}
 \todo{Distributed \sys, parallel \sys, what else is needed to make \sys real?}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Disguising Beyond \sys: Disguised Database Views}
-Zooming out beyond, we can contemplate completely different directions in which
-disguising for flexible privacy could be applied. One example I’ll dive into
-here is the direction of flexible access control, where the application itself
-needs to control user data exposure to insiders.
+\section{Disguising Beyond \sys: Flexible Access Control}
+
+Zooming out beyond disguised user data for web applications, we can imagine
+completely different directions in which disguising for flexible privacy could
+be applied. We describe here using many of the same disguising abstractions to
+provide flexible access control, where the application itself needs to control
+user data exposure to insiders.
 
 Today, thousands of insiders at companies have access to sensitive user data,
 and this access can lead to devastating data leaks.
-
+\todo{cite?}
+%
 One important part of this problem stems from the fact that today, employees
 have access to all the data that they need for their job at any point in time.
 For example, a hotel employee might be given authorization to see the full room
 booking and customer database because they need this information to perform
 their job, such as performing aggregates to determine room occupancy; or helping
 customers manage their bookings
+%
+However, we make the key observation that these employees do not \emph{always} need
+\emph{all} of this information.
 
-But they do not need all this information all the time!
+Instead, we envision a world where every employee operates atop a personalized
+redacted database that contains the minimum amount of data they need
+continuously. For example, a hotel customer service representative might only
+need to be able to look at room occupancy and see free rooms when not actively
+helping a customer.
+%
+Similarly, a business intelligence analyst might need to be able to compute
+aggregates and statistics using coarse-grained data like area codes, but not
+need to see unique user identifiers like usernames or precise phone numbers.
+%
 
+%
+However, redacted databases would present only the minimal amount of data the
+employee needs for common, daily operations. If, for example, a particular
+customer needs assistance, the employee currently helping the customer should be
+able to change their redactions temporarily and dynamically to expose only the
+necessary parts of that user's data.
+%
+Different employees simultaneously helping different customers can apply
+different upgrades to get a partially redacted view of the database
+individualized for that employee.
+%
+As soon as the employee no longer needs the user's data, the employee’s access
+returns back to its original, minimally exposing state.
 
-We envision a world where every employee operates atop a personalized redacted
-database that contains the minimum amount of data they need continuously. So in
-this simplified example, when not actively helping a customer, a hotel customer
-service representative might only need to be able to look at room occupancy and
-see free rooms.
-
-And a business intelligence analyst needs to be able to compute aggregates and
-other statistics about where customers come from and where marketing should
-focus, but not need to see user identifiers like usernames or precise phone
-numbers.
-
-
-But clearly these redactions are only the minimal amount of data the employee
-needs for common, daily operations; when, for example, a particular customer
-needs assistance, the employee currently helping the customer can change their
-redactions temporarily and dynamically to expose only that user’s data (and even
-then, perhaps only parts of it).
-
-And another employee might simultaneously be helping another customer with
-another booking, and apply a different upgrade to get a different partially
-redacted view of the database.
-
-And as soon as this data is no longer needed the employee’s access returns back
-to its original, minimally exposing state.
-
-To achieve this, we need a database system that can dynamically change
-redactions that apply to each employee, but present a consistent view of the
-redacted database to each employee.  And we can’t do this with unique database
-views, because that would require an enormous number of views (one for each need
-to upgrade data, and at a per-employee basis).
-
-Redactions would need to handle referential integrity, work even in the presence
-of indexes and database views, and work with existing query optimizations
-without overly affecting performance.
-
+%
+To achieve this world of flexible, minimalist access control, we need a database
+system that can dynamically change redactions that apply to each employee, but
+present a consistent view of the redacted database to each employee. A strawman
+solution might attempt to do so with personalized database views (similar to the
+proposal in Multiverse DB~\cite{multiverse}), but this would require an enormous
+number of views (potentially one for each employee, and for each upgrade the
+employee applies).
+%
+Furthermore, redactions would need to handle referential integrity, work even in
+the presence of indexes and database views, and work with existing query
+optimizations without overly affecting performance.
+%
 Employees must also have the ability to flexibly perform fine-grained upgrades
-of their access, without compromising security.
-
-So clearly there’s a lot of exciting research here into solving the different
-challenges posed by a redaction-based approach would require.
-
-
+of their access without compromising security.
+%
+While disguising and revealing abstractions can help address some of these
+challenges (\eg handling referential integrity when performing redactions, and
+providing ways to specify redactions and upgrades), achieving a database system
+for flexible access control requires solving many new challenges.
