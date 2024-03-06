@@ -124,16 +124,24 @@ HotCRP's in 357 LoC (all in JSON).  The specification size is proportional to
 schema size and what data each application \xxs.
 
 \todo{check}
-Developers can also notify \sys of application updates and schema migrations
-that may affect disguised data that could be later revealed.  Implementing three
+Developers also notify \sys of application updates and schema migrations that
+may affect disguised data that could be later revealed.  Notifying \sys of three
 different application updates and schema migrations for Lobsters required adding
-one line of code per update to register the update with \sys, after the update
-is invoked by the application. Developers today already need to write these
-application updates (\eg Lobsters implements these updates as Ruby Active Record
-Migrations~\cite{ruby_arm}); our Rust/SQL implementation of the three updates
-requires 187 LoC to implement the actual updates.
+one line of code per update to register the update executable with \sys, after
+the bulk update is performed. 
+%
+Developers already write these bulk application updates (\eg Lobsters
+implements these updates as Ruby Active Record Migrations~\cite{ruby_arm}). 
+%
+Our Rust/SQL implementation of the three bulk updates required \todo{xxx} LoC,
+and the corresponding update executables for disguised data required \todo{xxx}
+LoC. The bulk update for URL normalization reuses the update executable which
+performs URL-normalization as a subroutine. The bulk updates for the other two
+schema migrations required writing separate update executables that operate on
+individual rows, instead of on entire tables.
 
 %
+\todo{xxxx what conclusion?}
 Thus, the developer effort required to use \sys---writing \sys specifications, and
 invoking \sys---is small, even though these applications were not written with
 \sys in mind.
@@ -314,8 +322,8 @@ reveal performance.
 First, we look at the cost of invoking \sys to record updates when the
 application performs updates or schema migrations in Lobsters.
 %
-Applying these changes themselves equates to modifying all 120k stories (\eg url
-normalization) and/or changing the database schema.  The url normalization
+Applying these changes themselves equates to modifying all 120k stories (\eg URL 
+normalization) and/or changing the database schema.  The URL normalization
 application update takes \todo{xxx}ms, the longest of all updates.
 %
 Adding the \texttt{show\_email} attribute to the \texttt{users} table takes
@@ -328,9 +336,9 @@ Invoking \sys's hook to insert a new application update in \sys's replay log
 takes \todo{xxx}ms, a negligible amount compared to the time to perform the
 update/migration.
 %
-Each entry in the replay log requires \todo{XXX} bytes of memory (and disk, if
-persisted). \lyt{Not persisted? They're also function pointers, so I'm not sure
-*how* to encode them / find the size of the actual code block?}
+%Each entry in the replay log requires \todo{XXX} bytes of memory (and disk, if
+%persisted). \lyt{Not persisted? They're also function pointers, so I'm not sure
+%*how* to encode them / find the size of the actual code block?}
 %
 
 %
@@ -339,7 +347,7 @@ database changes described in \S\ref{s:casestudies:updates} have been applied
 after reveal.
 %
 Our chosen updates and schema migrations either affect diff records containing 
-\texttt{users} or \texttt{stories} data. Url normalization and reorganizing into
+\texttt{users} or \texttt{stories} data. URL normalization and reorganizing into
 \texttt{story\_texts} both affect \texttt{stories}, and take \todo{xxx}ms and
 \todo{xxx}ms respectively when applied to an individual \texttt{stories} diff
 record.
@@ -799,6 +807,46 @@ longer to complete~\cite{delf}.
 
 \input{07-eval-cryptdb}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Application Updates and Schema Migrations}
+\label{s:eval:updates}
+%
+In addition to the updates described and implemented in
+\S\ref{s:casestudies:updates}, we inspected 20 other updates/migrations from the
+past three years broadly classified into: 
+\begin{itemize}[nosep] 
+    \item creating
+        tables; 
+    \item removing, adding, or renaming table columns; 
+        \item
+        removing or adding indexes on new (or old) table columns; 
+    \item setting
+        column constraints (\eg \texttt{NOT NULL}); 
+    \item modifying column
+            content based on deterministic functions (\eg URL normalization);
+    \item generating new rows for various tables based on existing table
+        rows (\eg adding \texttt{story\_texts}  when restructuring \texttt{stories}); and 
+    \item updating a row based on the current state of other database tables
+        (\eg updating the \texttt{vote\_count} of comments based on the number
+        of votes).  
+\end{itemize}
+%
+\sys can support all but the last category of updates, unless the correctness of
+the update's output is independent of the recency of the database state. As
+described in \S\ref{s:design:updates:limitations}, unless it is valid
+application behavior for \eg \texttt{vote\_count} to be 0 regardless of the
+number of votes, \sys currently will not correctly apply an update that sets the
+count of votes for comments. This last category represented 2 of the 20
+inspected updates. However, we observe that these particular updates happen to
+be idempotent for any rows affected, and thus could also be reapplied after all
+data is revealed.
+%
+
+%
+With \sys, users can still reveal their data disguised prior to any of these
+migrations, as if the migration had occurred with their data present in the
+database.
+
 
 %
 \section{Summary}

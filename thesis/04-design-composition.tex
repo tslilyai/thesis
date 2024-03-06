@@ -1,9 +1,9 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Composing \Xxing Transformations}
 \label{s:composition}
-\todo{Figure? Check for clarity of OOO reveals and SFC. Table doesn't seem
-helpful either.}
+\todo{Figure}
 
+\begin{comment}
 \begin{figure}[h]
     \centering
     \small
@@ -23,6 +23,7 @@ helpful either.}
     disguise them.}
     \label{tab:composition}
 \end{figure}
+\end{comment}
 
 \sys supports composition of \xxing transformations, which occurs when a
 transformation applies to data that \sys had previously \xxed in
@@ -95,9 +96,9 @@ credentials to recursively find pseudoprincipals from multiple decorrelations.
 %and include them in the query to the application database.
 %
 
-\subsection{Out-of-Order Reveals}
+\paragraph{Out-of-Order Reveals.}
+\todo{figure}
 \label{s:design:oooreveals}
-\todo{check}
 \sys must also handle reveals of transformations in any order.  As before,
 many scenarios are straightforward: revealing removals is trivial (data can
 only be removed and restored once), and revealing modified data simply restores

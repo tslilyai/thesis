@@ -55,7 +55,19 @@ private key.
 %
 
 %
-(3) When a user wishes to reveal their \xxed data, they pass credentials
+\todo{check} 
+(3) Application contents constantly change due to developer
+updates (\eg moderations) or schema migrations (\eg adding new columns or
+tables).  In order for \sys to reveal disguised data without overwriting these
+changes or invalidating structural invariants, developers write
+\emph{application update executables} that encapsulate these changes applied to
+a single user's data. Developers then invoke \sys's API to record this update
+(and the time of the update), so \sys can apply changes as needed to user data
+upon reveal.
+%
+
+%
+(4) When a user wishes to reveal their \xxed data, they pass credentials
 to the application, which calls into \sys to reveal the data.
 %
 Credentials are application-specific: users may either provide their private
@@ -63,11 +75,13 @@ key or other credentials sufficient for \sys to re-derive the private key.
 %
 \sys reads the \xxed data and decrypts it, undoing the changes to the
 application database that \xxing introduced.
+%
 
 %
 \sys provides the developer with sensible default \xxing and revealing
 semantics (\eg revealing makes sure not to overwrite changes made since
 \xxing).
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Example: Lobsters Topic Anonymization}
@@ -160,6 +174,21 @@ trigger the \xxing transformation (Figure~\ref{f:lobsters_hook}).
 When Bea wants to anonymize their contributions on content tagged ``Star Wars,''
 Lobsters invokes \sys with the provided specification.
 
+\todo{xxx}
+If the developer updates stories (\eg by normalizing any URLs), the developer
+performs a bulk update in the Lobsters applications. The developer also writes
+an update executable encoding how to update individual user's stories' URLs as
+well. Then the developer invokes \sys's \texttt{record\_update} API call with
+the update executable.
+%
+
+%
+When Bea wants to deanonymize their ``Star Wars'' contributions, Lobsters
+invokes \sys with Bea's reveal credentials and the disguise ID, and \sys reveals
+Bea's associations with ``Star Wars'' posts, applying application updates and
+schema migrations while doing so.
+%
+
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %\section{Design}
 
@@ -203,7 +232,6 @@ disguised data.
 
 %For every \xxing transformation, the developer writes a \xx specification
 %(Figure~\ref{f:spec})
-\noindent
 \Xx specifications tell \sys what application data objects to \xx and how to \xx them.
 %
 A \xx specification identifies objects by database table name, principal, and
@@ -225,21 +253,32 @@ For each selected group of objects, developers choose to
 The example specification in Figure~\ref{f:spec} decorrelates all comments and removes all
 votes on stories with a particular tag, specified by the \texttt{TAG} parameter provided
 at invocation time.
-
 %
 %or a custom set of objects specified by the \xxing transformation.
 %\lyt{skipping the ``custom set of objects''; that seems unclear to me.}
 %
 
-To ensure that decorrelation preserves referential integrity, \sys generates
-pseudoprincipals to replace the original principal.  Developers use \sys's set
-of simple generation policies to tell \sys how to create a user object (\eg
-create a constant value, a random string, etc.). 
-%Alternatively, applications can generate pseudoprincipals themselves and
-%provide \sys with these pseudoprincipals' unique IDs.
-\todo{getting too implementation-heavy?}
-%
+\todo{does this flow?}
+Modification and decorrelation require \sys to generate placeholder content for
+modified columns and/or new pseudoprincipals.  Developers use one of \sys's
+simple generation policies to tell \sys how to generate per-column placeholder
+values. \sys can generate:
+\begin{itemize}[nosep]
+    \item a specified constant number,
+    \item a specified constant string,
+    \item a random number between some lower and upper bounds,
+    \item a random string of specified length,
+    \item a random email address,
+    \item a random phone number,
+    \item a random timestamp,
+    \item a specified constant boolean, and
+    \item NULL.
+\end{itemize}
 
+%
+To ensure that decorrelation preserves referential integrity, \sys generates
+pseudoprincipals to replace the original principal. 
+%
 Decorrelation can use pseudoprincipals at different granularities.
 In the extreme, the \xx specification may tell \sys to create a unique
 pseudoprincipal for each decorrelated application object.
@@ -252,7 +291,7 @@ pseudoprincipals; an alternative might group comments by
 \texttt{comments.user\_id}, so a single pseudoprincipal adopts all of a user's
 \fn{TAG}-related comments (effectively creating a ``Star Wars'' throwaway account).
 
- Developers can inform \sys to, upon revealing, check for any objects
+Developers can inform \sys to, upon revealing, check for any objects
 added after disguising that refer to pseudoprincipals; for example, a
 decorrelated comment might have new responses. This enables \sys to preserve
 referential integrity for data referring to pseudoprincipals. \sys
@@ -287,6 +326,43 @@ application modifications to log all added references to pseudoprincipals).
 % Like natural principals, pseudoprincipals have affiliated public keys and
 % credentials that \sys uses to \xx or reveal their data; this
 % supports the composition of \xxing transformations (\S\ref{s:composition}).
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Application Update Executables}
+%
+Developers provide \sys with information about application updates or schema
+migrations to allow \sys to reveal data without overwriting or conflicting with
+these changes.
+%
+When the developer performs operations that need to hold over revealed
+data---\eg moderations---they will additionally invoke \sys's API, allowing \sys
+to record and appropriately apply application updates.
+%
+
+%
+\sys expects developers to provide application update executables that takes a
+user's disguised data rows and produces updated-disguised data rows.
+%
+Oftentimes, these executables may be a subroutine of the bulk update that performs the
+whole application change. 
+%
+For example, a developer may want to normalize all URLs in \texttt{posts}; 
+they would \one{} read all posts, \two{} normalize the URL in each post
+individually, and then \three{} \texttt{INSERT...UPDATE} the normalized posts. 
+%
+An application update executable would simply capture step \two{}, producing
+normalized URL posts for the posts in a user's disguised data.
+
+However, the bulk update may use queries that apply to entire database tables
+instead of rows. In these scenarios, the developer should write a separate
+update executable for updating disguised data rows.
+%
+For example, a developer may want to add a column to the \texttt{posts} table.
+The bulk update simply performs an \texttt{ALTER TABLE} query, while the
+update executable receives post rows without the column as input, and
+outputs post rows with the column.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{User Reveal Credentials}
 \sys provides developers and users
 with the abstraction of \emph{reveal credentials}, which users provide to the

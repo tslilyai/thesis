@@ -3,27 +3,28 @@
 %(1.6k LoC specifically added for \syscrypt).
 %
 \sys also provides an API server that exposes a JSON-HTTP API that applications
-can use to invoke \sys.
+can use to invoke \sys. Our \sys prototype supports MySQL.
+\todo{check}.
 %
 %In the following, we discuss key implementation details that \sys relies for
 %security and performance.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{API.}
-\label{s:api}
+%\section{API}
+%\label{s:api}
+%%
+%An application can use the prototype if:
+%\one{} it uses a MySQL database;
+%\two{} rows to \xx have direct foreign key relationships to a users table,
+%where each user corresponds to a row of that table;
+%\three{} all rows to \xx are owned by one or more principals; and
+%\four{} all rows can be uniquely identified (\eg via primary key).
+%%
+%Applications that do not satisfy these assumptions---\eg because they have
+%complex ownership chains or use a NoSQL database---could be supported with
+%extensions to the prototype.
 %
-An application can use the prototype if:
-\one{} it uses a MySQL database;
-\two{} rows to \xx have direct foreign key relationships to a users table,
-where each user corresponds to a row of that table;
-\three{} all rows to \xx are owned by one or more principals; and
-\four{} all rows can be uniquely identified (\eg via primary key).
-%
-Applications that do not satisfy these assumptions---\eg because they have
-complex ownership chains or use a NoSQL database---could be supported with
-extensions to the prototype.
-
 \iffalse
 \begin{figure}[t]
 \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
@@ -56,7 +57,7 @@ extensions to the prototype.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Secure Record Storage.}
+\section{Secure Record Storage}
 %\sys stores the \xx and principal tables in the database.
 %
 When encrypting diff and speaks-for records, \sys appends a random nonce to
@@ -84,7 +85,7 @@ fundamental~\cite{anonymous-keys}.
 %to a principal's \xxed data to \eg reveal it (\S\ref{s:reveal}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
-\section{Reveal Credentials.}
+\section{Reveal Credentials}
 %
 Our prototype supports two forms of reveal credentials: \one{} private keys; or
 \two{} principals' passwords, and recovery
@@ -166,35 +167,18 @@ version of the private key encrypted with the user's password.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 \section{Application Updates Replay Log}
-\sys represents updates as pure Rust functions from database objects (represented as
-$<$table, row$>$ pairs) to a new set of database objects. \sys stores the log as
-a vector of updates with timestamps; this log is currently not persisted, and
-updates will have to be reregistered with \sys if the application server fails.
-\todo{should we persist?}
+
+\sys represents application update executables as Rust functions from database objects
+($<$table, row$>$ pairs) to a new set of database objects. \sys stores the log
+as a vector of updates function pointers with timestamps, and persists the
+pointers to disk. This approach requires recompiling \sys to add new update
+functions; an alternative approach could put the functions into separate
+executables (and \sys would store executable names instead of function
+pointers). In this alternative, \sys would invoke these executables upon reveal
+with serialized input rows, and deserialize the output.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
-\section{Diff Records}
-Diff records store a pair of $<$oldRows, newRows$>$ database objects.  Each
-object is represented as a $<$table, row$>$ pair.  Each diff record also encodes
-the type of disguise operation (remove, modify, decorrelate), the current
-timestamp, and the relevant
-disguise ID.
-
-\begin{itemize}[nosep]
-    \item Remove diff records contain only the removed row and no 
-        new row;
-    \item Modify diff records contain the row with the original value, and the
-        row with the updated value; and
-    \item Decorrelate diff records contain the referencing row with the original
-        foreign key value, the referencing row with the new foreign key value,
-        and the new pseudoprincipal row.
-\end{itemize}
-
-\sys also stores a special type of remove diff record that contains the
-principal's ID and the principal's public key when removing a principal object.
-This allows \sys to restore the principal to \sys's principal table when revealing
-a disguise that removed the principal.
-
+\section{Batching}
 %
 For efficiency, \sys batches the deletion of rows from the same table, and the
 creation of pseudoprincipals upon disguise. 
@@ -209,34 +193,11 @@ complex}.
 \sys performs decorrelation and modification operations individually for each
 row during both disguise and reveal, as different rows are updated to different
 values.
-%
-
-%
-When revealing a diff record, \sys applies all updates in the replay log with
-timestamps greater than that of the diff record to the diff record's oldRows and
-newRows. 
-%
-\sys then performs consistency checks to ensure that it can reveal the updated
-diff record rows.
-%
-For efficiency, \sys will check to see if any new row matches the identifiers
-(\eg a primary key) of an old row, and update the relevant columns of the new
-row instead of removing the new row and restoring the old row.
-%
-Otherwise, \sys will remove the updated newRows and restore the updated oldRows.
-%
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
-\section{Speaks-for Chains}
-
-\todo{not necessary?}
-Speaks-for records contains a pair of (original principal, pseudoprincipal) IDs
-encoded as MySQL values, and the pseudoprincipal’s private key encoded as bytes. 
-%
+%%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 %
-\section{Concurrency.}
+\section{Concurrency}
 %
 \sys runs \xxing and revealing transformations in transactions, providing
 serializable isolation to application users.

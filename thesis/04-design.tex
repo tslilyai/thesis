@@ -19,10 +19,9 @@ queries for the data to \xx based on the \xx specification predicates.
 %
 To preserve referential integrity, \sys constructs a dependency graph between
 tables based on foreign key relations (assuming no circularity), and first
-performs removes from tables in topologically-sorted order.
-\sys then performs decorrelations and modifications in specification order,
-potentially generating and storing pseudoprincipals.
-\lyt{check}
+performs removes from tables in topologically-sorted order.  \sys then performs
+decorrelations and modifications in specification order, potentially generating
+and storing pseudoprincipals.
 %
 
 %If \sys must apply more than one change to the same selected data object
@@ -34,10 +33,23 @@ potentially generating and storing pseudoprincipals.
 %
 
 %
-\sys next generates \emph{diff records} that contain \one{} the original data,
-\two{} new placeholder data the disguise inserted or rewote in the application
-(\eg pseudoprincipals or the value of any modified columns), and \three{} the
-\xx ID.
+Next, to record disguised data, \sys generates \emph{diff records} that contain \one{}
+the original data row(s), and \two{} placeholder data rows the disguise inserted
+or rewote in the application (\eg pseudoprincipals or the value of any modified
+columns).
+%
+All types of diff records contain the \xx ID, but contain various original and
+placeholder rows as follows:
+\begin{itemize}[nosep]
+    \item Remove diff records contain \one{} the removed original row, and \two{} no
+        placeholder rows;
+    \item Modify diff records contain \one{} the unmodified row, and \two{} the
+        row with the modified value;
+    \item Decorrelate diff records contain \one{} the referencing row with the original
+        foreign key value, and \two{} the referencing row with the placeholder
+        foreign key value pointing to a pseudoprincipal, and the pseudoprincipal's row.
+\end{itemize}
+
 %
 For each new pseudoprincipal, \sys generates a public--private keypair and adds
 a \emph{speaks-for record}, which adds a link to the original principal's
@@ -163,6 +175,11 @@ opaquely, \eg by the public key.
 This removes the user ID from the database while allowing future reveal
 operations by the principal to find their \xx table indexes.
 %
+\sys also stores a special type of remove diff record that contains the
+principal's ID and the principal's public key when a disguise removes a principal.  This
+allows \sys to restore the principal to \sys's principal table if a user later
+reveals the disguise.
+%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Revealing}
@@ -218,7 +235,15 @@ To preserve referential integrity, \sys restores
 constructing the dependency graph).
 %
 \sys then reveals any modifications, and finally performs recorrelations. 
-%using decrypted speaks-for records.
+%
+In general, to reveal a diff record, \sys removes the placeholder row
+and inserts the original row (both of which are recorded in the diff record).
+%
+However, for efficiency, \sys first checks if a placeholder row in diff records
+has the same identifiers (\eg a primary key) as an original data row in the diff
+record, and if so, will update the relevant columns of the placeholder row instead.
+%
+
 %
 Finally, \sys de-registers any pseudoprincipal who no longer has any associated
 disguised data, removing them from the principal table and the application's
@@ -255,8 +280,6 @@ decorrelated comments.
 \label{f:updates}
 \end{figure}
 
-
-
 \sys's revealing as described thus far may accidentally reveal data that ignores
 database changes applied since the time of disguise, such as application updates
 to un\xxed data or schema migrations.
@@ -265,7 +288,7 @@ To prevent this, \sys utilizes developer-provided information about important
 updates and schema migrations to apply them to \xxed data prior to revealing it,
 ensuring that revealed data reflects the current state of the database.
 %
-Prior to revealing the udpated data, \sys will also perform consistency checks
+Prior to revealing the updated data, \sys will also perform consistency checks
 to guarantee adherence to internal database invariants, such as uniqueness
 constraints.
 %
@@ -313,25 +336,30 @@ added since the time of disguise to the disguise's diff records.
 %
 
 %
-Log entries map the original data and the new placeholder data in diff records
+Log entries map the original data and the placeholder data in diff records
 to corresponding updated-original and updated-placeholder data. 
 %
-After applying all updates to placeholder data, \sys takes the
-updated-placeholder data and removes it from the database.
+After applying all updates to placeholder data, \sys reveals the updated rows in
+the diff record like normal.
 %
-Similarly, after applying all updates to the original data, \sys takes the
-updated-original data and restores it to the database.
+%Similarly, after applying all updates to the original data, \sys takes the
+%updated-original data and restores it to the database.
+%%
+%As before for efficiency, \sys will first check if an updated-placeholder row has
+%the same identifiers as an updated-original data row, and if so, will update the
+%relevant columns of the placeholder row instead.
+%
 
 %
 In the swear words moderation example, \sys queries the replay log, sees
 the swear words moderation entry, and then applies the swear words moderation to
 the removed post data in the diff record. (Note that in this example, the diff
-record contains no new placeholder data that replaced the removed post; in other
+record contains no placeholder data that replaced the removed post; in other
 scenarios such as decorrelation or modification, \sys would apply the logged
-update to new placeholder data as well). Only then does \sys restore the post
-with no swear words (and had new placeholder data existed, \sys would remove the
+update to placeholder data as well). Only then does \sys restore the post
+with no swear words (and had placeholder data existed, \sys would remove the
 updated placeholder data).
-\lyt{Too confusing?}
+\todo{figure}
 
 \subsubsection{Applying Schema Migrations}
 Applications also constantly undergo schema migrations to reorganize data or add
@@ -361,6 +389,7 @@ a row in \texttt{addrs} that has a foreign key of \texttt{uid} to
 %
 It would also generate two rows for any placeholder \texttt{users} data row in a
 diff record and remove these from the database.
+\todo{figure}
 %
 
 \subsubsection{Consistency Checks for Internal Invariants} 
@@ -406,58 +435,7 @@ fail, preventing disguised data from being revealed.
 \sys could flag encountered conflicts, giving the application a chance to fix
 them so a later reveal can pass the checks.
 
-\subsubsection{Limitations}
-\label{s:design:updates:limitations}
-\sys's replay log approach faces some limitations.
-%
-First, developers must do additional work to add hooks to invoke \sys when any
-major application change or schema migration occurs. Invoking these hooks and
-applying these updates during reveal also adds additional computation work; we
-measure these costs in \S\ref{s:eval:updates}.
-%
 
-%
-Furthermore, replay logs only apply to diff records, which contain the actual data
-changes, and not speaks-for records; \sys assumes that the identifiers for
-principals in speaks-for records that encode the speaks-for chain remain
-consistent as the database changes, allowing \sys to use its composition
-techniques with speaks-for chains (\S\ref{s:design:oooreveals}) to reveal multiple disguises in any order.
-%
-
-%
-Finally, \sys assumes that either \one{} updates applied to a row rely on at
-most that row's data, and not the data of other disguised rows or external
-database state; or \two{} changes to other disguised rows or external database
-state will not cause an update to violate application invariants or expose which
-data had been disguised.
-%
-For a counterexample, take an update that calculates the current vote count of a
-post to
-store as a post's \texttt{vote\_count} attribute, and say that a disguise has
-removed both a user's post and its votes.
-%
-The update thus depends on other disguised rows, namely \texttt{vote}
-rows.
-%
-When \sys reveals the disguise, \sys will first reveal the diff records for
-posts before revealing those for votes in order to maintain referential
-integrity. But when applying the \texttt{vote\_count} update to post diff
-records, \sys will find 0 votes for the post, because the votes have not yet
-been restored.
-%
-If this is correct application behavior (scenario \two{}), then \sys's
-assumptions hold; otherwise, \sys currently cannot correctly support this update.
-%
-One potential solution would be for developers to indicate the data dependencies
-of each update, so \sys could know to restore votes before posts; however, this
-requires \sys to disable foreign key checks and carefully check for referential
-integrity after restoring posts, since restoring votes first can now
-inadvertently leave dangling pointers. Or perhaps developers could schedule cron
-jobs to habitually perform the update to ``fix up'' any rows that have been
-revealed since the update; however, this only works for an idempotent update, as
-it should not modify already-modified rows again.
-\todo{should this be discussion or here? it works better here, i think...}
-%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Shared Data}
@@ -565,6 +543,90 @@ the database with the modification.
 %
 %previous diff records to reflect the newly modified state.
 %
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Design Limitations}
+
+\paragraph{Disguise Specifications.}
+\sys assumes that all desired disguises are captured with the three primitive
+operations (remove, modify, and decorrelate). 
+
+However, this means that certain
+operations such as adding 
+
+limited in type of operations supported
+
+\paragraph{API.}
+The API that \sys exposes assumes that:
+\begin{enumerate}[nosep]
+    \item the application uses a relational database;
+    \item rows to \xx have direct foreign key relationships to a users table,
+    where each user corresponds to a row of that table;
+    \item all rows to \xx are owned by one or more principals; and
+    \item all rows can be uniquely identified (\eg via primary key).
+\end{enumerate}
+%
+Applications that do not satisfy these assumptions---\eg because they have
+complex ownership chains or use a NoSQL database---could be supported with
+extensions as follows.
+
+\sys can utilize 
+\todo{k9db strategy for owernship chains, entity relationship graph in FB, etc.}
+
+\paragraph{\sys's Replay Log.}
+\label{s:design:updates:limitations}
+\sys's replay log also faces some limitations.
+%
+First, developers must do additional work to add hooks to invoke \sys when any
+major application change or schema migration occurs. 
+Invoking these hooks and
+applying these updates during reveal also adds additional computation work; we
+measure these costs in \S\ref{s:eval:updates}.
+%
+
+%
+Furthermore, replay logs only apply to diff records, which contain the actual
+data changes, and not speaks-for records; \sys assumes that the identifiers for
+principals in speaks-for records that encode the speaks-for chain remain
+consistent as the database changes, allowing \sys to use its composition
+techniques with speaks-for chains (\S\ref{s:design:oooreveals}) to reveal
+multiple disguises in any order.
+%
+
+%
+Finally, \sys assumes that either \one{} updates applied to a row rely on at
+most that row's data, and not the data of other disguised rows or external
+database state; or \two{} changes to other disguised rows or external database
+state will not cause an update to violate application invariants or expose which
+data had been disguised.
+%
+For a counterexample, take an update that calculates the current vote count of a
+post to store as a post's \texttt{vote\_count} attribute, and say that a
+disguise has removed both a user's post and its votes.
+%
+The update thus depends on other disguised rows, namely \texttt{vote} rows.
+%
+When \sys reveals the disguise, \sys will first reveal the diff records for
+posts before revealing those for votes in order to maintain referential
+integrity. But when applying the \texttt{vote\_count} update to post diff
+records, \sys will find 0 votes for the post, because the votes have not yet
+been restored.
+%
+If this is correct application behavior (scenario \two{}), then \sys's
+assumptions hold; otherwise, \sys currently cannot correctly support this
+update.
+%
+One potential solution would be for developers to indicate the data dependencies
+of each update, so \sys could know to restore votes before posts; however, this
+requires \sys to disable foreign key checks and carefully check for referential
+integrity after restoring posts, since restoring votes first can now
+inadvertently leave dangling pointers. Or perhaps developers could schedule cron
+jobs to habitually perform the update to ``fix up'' any rows that have been
+revealed since the update; however, this only works for an idempotent update, as
+it should not modify already-modified rows again.  
+%
+
+\todo{go and find other mentions of limitations within design section?}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -700,3 +762,5 @@ it is in an encrypted speaks-for record.
 %
 If an application uses password-based reveal credentials, \sys
 guarantees security equivalent to the security of the user's password.
+
+
