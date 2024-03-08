@@ -1,4 +1,5 @@
-\todo{Get numbers from Google Cloud}
+\todo{Update with numbers from Google Cloud}
+\todo{Fix figures}
 
 Our evaluation seeks to answer six questions:
 %
@@ -328,17 +329,25 @@ application performs updates or schema migrations in Lobsters.
 %
 Applying these changes themselves equates to modifying all 120k stories (\eg URL 
 normalization) and/or changing the database schema.  The URL normalization
-application update takes \todo{xxx}ms, the longest of all updates.
+application update takes 5.63s, the longest of all updates.
+%
+This matches the optimized bulk update time of 6s in the deployed Lobsters
+application, which batch updates all stories with the normalized URL. The
+unoptimized version that updates stories one-by-one takes 1789s.
+%
+
 %
 Adding the \texttt{show\_email} attribute to the \texttt{users} table takes
-\todo{xxx}ms, and 
+82ms, and 
 %
 creating and populating the \texttt{story\_texts} table, and removing a column
-from the \texttt{stories} table takes \todo{xxx}ms.
+from the \texttt{stories} table takes 4.93s.
+
 %
 Invoking \sys's hook to insert a new application update in \sys's replay log
-takes \todo{xxx}ms, a negligible amount compared to the time to perform the
-update/migration.
+takes on average 0.58ms, a negligible amount compared to the time to perform the
+update/migration. This includes the time to persist the update (one database
+insert query) and add it to \sys's in-memory update replay log.
 %
 %Each entry in the replay log requires \todo{XXX} bytes of memory (and disk, if
 %persisted). \lyt{Not persisted? They're also function pointers, so I'm not sure
@@ -350,25 +359,39 @@ We next evaluate the latency of reveal operations in Lobsters when the global
 database changes described in \S\ref{s:casestudies:updates} have been applied
 after reveal.
 %
-Our chosen updates and schema migrations either affect diff records containing 
-\texttt{users} or \texttt{stories} data. URL normalization and reorganizing into
-\texttt{story\_texts} both affect \texttt{stories}, and take \todo{xxx}ms and
-\todo{xxx}ms respectively when applied to an individual \texttt{stories} diff
-record.
+The effects of performing updates increases with the amount of disguised data a
+user wants to reveal. For our support updates, the main overheads come from
+revealing disguised stories, which increases by $\approx$0.8ms per disguised
+story.
 %
-Restoring a stories diff record also requires an additional \texttt{INSERT}
-query to insert into the \texttt{story\_texts} table.
+Our chosen updates either affect diff records containing \texttt{users} or
+\texttt{stories} data. URL normalization and reorganizing into
+\texttt{story\_texts} both affect \texttt{stories}, and take on average
+0.4--0.5ms and 0.02ms respectively when applied to the original and placeholder
+rows for a single \texttt{stories} diff record. 
 %
-Adding \texttt{show\_email} to \texttt{users} takes \todo{xxx}ms per user, but
-does not affect the number of queries performed during diff record reveal.
+The main cost of URL normalization comes from initializing a URL normalizer
+object ($\approx$0.3ms).
+\todo{we could amortize this by putting the normalizer in Edna or something, but
+this would be cheating... or batching all story diff records into one update}
+%
+Restoring a stories diff record also requires an additional query to reveal a
+\texttt{story\_texts} table row, incurring a 0.2--0.3ms cost per story.
+%
+(Revealing other table diff records adds only the cost of checking whether to
+apply the updates, which takes 0.01--0.02ms per diff record).   
 %
 
+\todo{there's extra overheads for the updates test simply because db queries take 0.1ms longer for
+every table... not really sure what to do about this (could this be because the
+database has been globally updated?)}
+
 %
-The effects of performing updates increases with the amount of disguised data
-a user wants to reveal; the cost to revealing an average user in Lobsters with \todo{xxx}
-stories and \todo{xxx} comments increases by \todo{xxx}ms total, while the cost
-to reveal the most expensive user with the most data (\todo{xxx} stories and
-\todo{xxx} comments) increases by \todo{xxx}ms.
+Adding \texttt{show\_email} to \texttt{users} adds negligible overheads
+($<0.01$ms per user), as this simply appends a column to the in-memory row.
+This update also does not increase the number of queries to reveal a user
+record.
+%
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
