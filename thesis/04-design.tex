@@ -38,18 +38,19 @@ the original data row(s), and \two{} placeholder data rows the disguise inserted
 or rewote in the application (\eg pseudoprincipals or the value of any modified
 columns).
 %
-All types of diff records contain the \xx ID, but contain various original and
-placeholder rows as follows:
+All types of diff records also contain the \xx ID. 
+%
+The original and placeholder rows contained by a diff record varies by disguise
+operation as follows:
 \begin{itemize}[nosep]
     \item Remove diff records contain \one{} the removed original row, and \two{} no
         placeholder rows;
     \item Modify diff records contain \one{} the unmodified row, and \two{} the
-        row with the modified value;
+        row with the modified value; and
     \item Decorrelate diff records contain \one{} the referencing row with the original
         foreign key value, and \two{} the referencing row with the placeholder
         foreign key value pointing to a pseudoprincipal, and the pseudoprincipal's row.
 \end{itemize}
-
 %
 For each new pseudoprincipal, \sys generates a public--private keypair and adds
 a \emph{speaks-for record}, which adds a link to the original principal's
@@ -70,7 +71,7 @@ A client can use the \xx ID and the principal's
 credentials to reveal the transformation later.
 %
 
-\begin{figure}[h]
+\begin{figure}[!t]
 \centering
 \includegraphics{figs/lobsters_catanon_visual}
 \caption{When \sys applies topic-based anonymization to Bea's comments on
@@ -102,7 +103,8 @@ removing Bea's votes on those stories;
 \four{} creates new speaks-for records that map Bea to the created
 pseudoprincipals and create new links in Bea's speaks-for chain; diff records
 containing Bea's votes on ``Star Wars'' stories; and diff records that document
-Bea's original ownership of ``Star Wars''-tagged comments;
+Bea's original ownership of ``Star Wars''-tagged comments and the placeholder
+pseudoprincipal data;
 %
 \five{} encrypts the speaks-for and diff records with Bea's public key, stores
 them; and
@@ -271,7 +273,7 @@ decorrelated comments.
 
 \subsection{Revealing in the Presence of Application Updates}
 
-\begin{figure}[h]
+\begin{figure}[t!]
 \centering
     \includegraphics[width=\textwidth]{figs/updates}
 \caption{When the application applies updates like schema migrations, it can
