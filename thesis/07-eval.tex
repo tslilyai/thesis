@@ -361,7 +361,7 @@ after reveal.
 %
 The effects of performing updates increases with the amount of disguised data a
 user wants to reveal. For our support updates, the main overheads come from
-revealing disguised stories, which increases by $\approx$0.8ms per disguised
+revealing disguised stories, which increases by 0.5--0.8ms per disguised
 story.
 %
 Our chosen updates either affect diff records containing \texttt{users} or
@@ -373,14 +373,19 @@ rows for a single \texttt{stories} diff record.
 The main cost of URL normalization comes from initializing a URL normalizer
 object ($\approx$0.3ms).
 \todo{we could amortize this by putting the normalizer in Edna or something, but
-this would be cheating... or batching all story diff records into one update}
+this would be cheating... or batching all story diff records into one update.}
 %
 Restoring a stories diff record also requires an additional query to reveal a
-\texttt{story\_texts} table row, incurring a 0.2--0.3ms cost per story.
+\texttt{story\_texts} table row, incurring a 0.1--0.3ms cost per story.
 %
 (Revealing other table diff records adds only the cost of checking whether to
-apply the updates, which takes 0.01--0.02ms per diff record).   
+apply the updates, which takes 0.01--0.02ms per diff record).
 %
+In total, we observe that users with very few (\eg $<5$ posted stories) incur
+negligible additional overheads , but users with lots of data incur moderate
+overheads proportional to the number of their stories (\eg $\approx$400ms to reveal
+an account with 600-700 stories).
+%\eg 673 stories and 1971 comments
 
 \todo{there's extra overheads for the updates test simply because db queries take 0.1ms longer for
 every table... not really sure what to do about this (could this be because the
