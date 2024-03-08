@@ -389,21 +389,21 @@ remove the \texttt{addr} column from \texttt{users}.
 
 %
 Figure~\ref{f:update:schema} illustrates how applications performing this schema
-migration can invoke \sys with an update executable encoding this schema
+migration invoke \sys with an update executable encoding this schema
 migration to store in its replay log (2).
 %
 As with application updates, schema migration executables map diff record data
 to migrated-original data and migrated-placeholder data (3), which \sys then
 respectively restores and removes (4).
 %
-The migration update executable would map an original \texttt{users} data row
+The migration update executable maps an original \texttt{users} data row
 in a diff record to both a row in \texttt{users} with username \texttt{uid} and
 a row in \texttt{addrs} that has a foreign key of \texttt{uid} to
-\texttt{users}, as shown in step (3). These rows would be restored to the
-database (4).
+\texttt{users}, as shown in step (3). After applying the migration, \sys then
+restores these rows to the database (4).
 %
-The executable would also generate two rows for any placeholder \texttt{users} data row in a
-diff record and remove these from the database (4).
+The executable also generates two rows for any placeholder \texttt{users}
+data row in a diff record and remove these from the database (4).
 %
 
 \subsubsection{Consistency Checks for Internal Invariants} 
@@ -469,22 +469,35 @@ but preserves the data and its association with other owners.
 to pseudoprincipals.
 %
 
+\begin{figure}
+    \centering
+    \includegraphics[width=.6\textwidth]{figs/shared_hl}
+  \caption{\sys supports joint ownership semantics, where shared data is not
+    removed until all users hae disguised their accounts. Owners can return in
+    any order, and the message remains decorrelated from unrevealed owners.}
+\label{f:shared:hl}
+\end{figure}
+
+
 %
-For instance, consider a Lobsters message between Bea and Chris: after Bea \xxs
-the message, the message is owned by Chris and a pseudoprincipal; if Chris then
-\xxs the message, \sys removes it.
+For instance, consider a Lobsters message between Bea and Chris as shown in
+Figure~\ref{f:shared:hl}: after Bea \xxs the message, the message is owned by
+Chris and a pseudoprincipal (1); if Chris then \xxs the message, \sys removes it
+(2).
 %
 Either owner can reveal the message, which restores the message to the database
-and recorrelates the revealing user; the other owner remains decorrelated as a
+and recorrelates the revealing user (3); the other owner remains decorrelated as a
 pseudoprincipal until they also choose to reveal the message.
 %
 Regardless of the reveal order, if all owners reveal the message, \sys returns
-the message to its original state.
+the message to its original state (4).
 %
+
 
 %
 \paragraph{\sys's Solution.}
 \todo{figure}
+
 \sys supports these joint ownership semantics with the following design.
 %
 The first time any owner removes the data, \sys generates pseudoprincipals for
