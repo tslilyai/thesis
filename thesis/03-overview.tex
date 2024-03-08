@@ -56,14 +56,12 @@ private key.
 
 %
 \todo{check} 
-(3) Application contents constantly change due to developer
-updates (\eg moderations) or schema migrations (\eg adding new columns or
-tables).  In order for \sys to reveal disguised data without overwriting these
-changes or invalidating structural invariants, developers write
-\emph{application update executables} that encapsulate these changes applied to
-a single user's data. Developers then invoke \sys's API to record this update
-(and the time of the update), so \sys can apply changes as needed to user data
-upon reveal.
+(3) If the developer decides to update application contents (\eg by performin a
+global moderation or a schema migration), then the developer writes
+an \emph{application update executable} that encapsulate these changes applied to
+a single user's data, and invokes \sys's API to record this update. \sys then
+uses these executables to reveal disguised data without overwriting the
+associated application changes.
 %
 
 %
@@ -175,11 +173,11 @@ When Bea wants to anonymize their contributions on content tagged ``Star Wars,''
 Lobsters invokes \sys with the provided specification.
 
 \todo{xxx}
-If the developer updates stories (\eg by normalizing any URLs), the developer
-performs a bulk update in the Lobsters applications. The developer also writes
-an update executable encoding how to update individual user's stories' URLs as
-well. Then the developer invokes \sys's \texttt{record\_update} API call with
-the update executable.
+If the developer performs a global application change that \eg normalizes the
+URLs of stories, the developer performs a bulk update in the Lobsters
+applications. The developer also writes an update executable encoding how to
+update individual user's stories' URLs as well. Then the developer invokes
+\sys's \texttt{record\_update} API call with the update executable.
 %
 
 %
@@ -274,7 +272,6 @@ values. \sys can generate:
     \item a specified constant boolean, and
     \item NULL.
 \end{itemize}
-
 %
 To ensure that decorrelation preserves referential integrity, \sys generates
 pseudoprincipals to replace the original principal. 
