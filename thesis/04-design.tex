@@ -273,15 +273,6 @@ decorrelated comments.
 
 \subsection{Revealing in the Presence of Application Updates}
 
-\begin{figure}[t!]
-\centering
-    \includegraphics[width=\textwidth]{figs/updates}
-\caption{When the application applies updates like schema migrations, it can
-    invoke \sys to log the migration, which then is applied to disguised data in
-    diff records prior to reveal.}
-\label{f:updates}
-\end{figure}
-
 \sys's revealing as described thus far may accidentally reveal data that ignores
 database changes applied since the time of disguise, such as application updates
 to un\xxed data or schema migrations.
@@ -300,6 +291,26 @@ consistency checks.
 
 %
 \subsubsection{Applying Application Updates}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{figs/update-moderation}
+    \caption{When the application applies updates like moderations of explicit
+    words, it can invoke \sys to log the update. \sys then applies the
+    update to disguised data in diff records prior to reveal. Yellow 
+    highlights changes to the application data or \sys's data.}
+\label{f:update:mod}
+\end{figure}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{figs/update-migration}
+  \caption{Similar to a moderations update, the application can notify \sys of a
+    schema migration to apply to diff records prior to reveal. Yellow 
+    highlights changes to the application data or \sys's data.}
+\label{f:update:schema}
+\end{figure}
+
 In order for revealing to preserve application correctness, \sys must know about
 application updates that alter application invariants.
 %
@@ -327,22 +338,21 @@ words prior to reveal.
 %
 
 \sys handles this situation by tracking applied application updates in a
-\emph{replay log} of application updates.
+\emph{replay log} of application update executables.
 %
-The application invokes \sys when it performs operations that need to hold
-over revealed data---\eg moderations---and \sys records these updates in its replay
-log.
+As shown in Figure~\ref{f:update:mod}, the application invokes \sys when it
+performs operations that need to hold over disguised data when it is
+revealed---\eg moderations---and \sys records these updates in its replay log
+(2).
 %
 When revealing data, \sys applies, in order, every entry in the replay log
-added since the time of disguise to the disguise's diff records.  
+added since the time of disguise to the disguise's diff records (3).  
 %
-
-%
-Log entries map the original data and the placeholder data in diff records
+Update executables map the original data and the placeholder data in diff records
 to corresponding updated-original and updated-placeholder data. 
 %
 After applying all updates to placeholder data, \sys reveals the updated rows in
-the diff record like normal.
+the diff record like normal (4).
 %
 %Similarly, after applying all updates to the original data, \sys takes the
 %updated-original data and restores it to the database.
@@ -355,43 +365,45 @@ the diff record like normal.
 %
 In the swear words moderation example, \sys queries the replay log, sees
 the swear words moderation entry, and then applies the swear words moderation to
-the removed post data in the diff record. (Note that in this example, the diff
+the removed post data in the diff record. Only then does \sys restore the post
+with no swear words.\footnote{Note that in this example, the diff
 record contains no placeholder data that replaced the removed post; in other
 scenarios such as decorrelation or modification, \sys would apply the logged
-update to placeholder data as well). Only then does \sys restore the post
-with no swear words (and had placeholder data existed, \sys would remove the
-updated placeholder data).
-\todo{figure}
+update to placeholder data as well. The updated placeholder data would then be
+removed.}
 
 \subsubsection{Applying Schema Migrations}
 Applications also constantly undergo schema migrations to reorganize data or add
 new application features. When these occur, \sys must know how to manipulate any
 disguised data structured in the old database layout to match that of the
 current database.
-%
-\sys allows applications to invoke \sys with a replay log entry encoding the
-schema migration after the migration is performed.
-%
-As with application updates, schema migration entries map diff record data to
-migrated-original data and migrated-placeholder data, which \sys then
-respectively restores and removes.
 
-For example, as shown in Figure~\ref{f:updates}, a developer of an application
-with a \texttt{users} table that contains rows with \texttt{username}s,
-\texttt{addr}s, and \texttt{email}s may choose to allow users multiple
-addresses.  They would create a new \texttt{addrs} table, with a foreign key to
-the users table, and populate \texttt{addrs} using the address data in
-\texttt{users}.  Finally, they would remove the \texttt{addr} column from
-\texttt{users}.
 %
-The corresponding replay log entry would map an original \texttt{users} data row
+For example, a developer of an application with a \texttt{users} table that
+contains rows with \texttt{username}s, \texttt{addr}s, and \texttt{email}s may
+choose to allow users multiple addresses. To do so, they would create a new
+\texttt{addrs} table, with a foreign key to the users table, and populate
+\texttt{addrs} using the address data in \texttt{users}.  Finally, they would
+remove the \texttt{addr} column from \texttt{users}.
+%
+
+%
+Figure~\ref{f:update:schema} illustrates how applications performing this schema
+migration can invoke \sys with an update executable encoding this schema
+migration to store in its replay log (2).
+%
+As with application updates, schema migration executables map diff record data
+to migrated-original data and migrated-placeholder data (3), which \sys then
+respectively restores and removes (4).
+%
+The migration update executable would map an original \texttt{users} data row
 in a diff record to both a row in \texttt{users} with username \texttt{uid} and
 a row in \texttt{addrs} that has a foreign key of \texttt{uid} to
-\texttt{users}. These rows would be restored to the database.
+\texttt{users}, as shown in step (3). These rows would be restored to the
+database (4).
 %
-It would also generate two rows for any placeholder \texttt{users} data row in a
-diff record and remove these from the database.
-\todo{figure}
+The executable would also generate two rows for any placeholder \texttt{users} data row in a
+diff record and remove these from the database (4).
 %
 
 \subsubsection{Consistency Checks for Internal Invariants} 
