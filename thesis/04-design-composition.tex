@@ -1,7 +1,23 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Composing \Xxing Transformations}
 \label{s:composition}
-\todo{Figure}
+
+\begin{figure}
+\centering
+    \includegraphics[width=0.83\textwidth]{figs/composition}
+\caption{\sys allows multiple decorrelations to compose, and can reveal them in
+    any order such that the data remains decorrelated until the user reveals \emph{all}
+    applied decorrelations. \sys enables this via the speaks-for chain encoded in
+    speaks-for records: when AnonPig is recorrelated by revealing ``Star Wars''
+    (3), \sys removes the link and links the principal prior (Bea) to the
+    principal after (AnonFox). Later, when Bea reqests reveal of their ``Bear''
+    posts (4), \sys determines that the principal to recorrelate
+    to---AnonPig---no longer exists, and finds the principal preceding AnonFox
+    in the speaks-for chain,
+    which is Bea.}
+\label{f:lobsters_visual}
+\end{figure}
+
 
 \begin{comment}
 \begin{figure}[h]
@@ -97,7 +113,6 @@ credentials to recursively find pseudoprincipals from multiple decorrelations.
 %
 
 \paragraph{Out-of-Order Reveals.}
-\todo{figure}
 \label{s:design:oooreveals}
 \sys must also handle reveals of transformations in any order.  As before,
 many scenarios are straightforward: revealing removals is trivial (data can

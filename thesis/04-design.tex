@@ -294,7 +294,7 @@ consistency checks.
 
 \begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{figs/update-moderation}
+    \includegraphics[width=.8\textwidth]{figs/update-moderation}
     \caption{When the application applies updates like moderations of explicit
     words, it can invoke \sys to log the update. \sys then applies the
     update to disguised data in diff records prior to reveal. Yellow 
@@ -304,10 +304,12 @@ consistency checks.
 
 \begin{figure}
     \centering
-    \includegraphics[width=\textwidth]{figs/update-migration}
+    \includegraphics[width=.8\textwidth]{figs/update-migration}
   \caption{Similar to a moderations update, the application can notify \sys of a
     schema migration to apply to diff records prior to reveal. Yellow 
-    highlights changes to the application data or \sys's data.}
+    highlights changes to the application data or \sys's data. For simplicity,
+    only the placeholder data of a pseudoprincipal row is shown; in reality,
+    placeholder data exists as part of \eg a decorrelation diff record.}
 \label{f:update:schema}
 \end{figure}
 
@@ -454,6 +456,18 @@ them so a later reveal can pass the checks.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Shared Data}
 \label{s:shared}
+
+
+\begin{figure}
+    \centering
+    \includegraphics[width=.4\textwidth]{figs/shared_hl}
+  \caption{\sys supports joint ownership semantics, where shared data is not
+    removed until all users have disguised their accounts. Owners can return in
+    any order, and the message remains decorrelated from unrevealed owners.}
+\label{f:shared:hl}
+\end{figure}
+
+
 %
 Many applications support shared data; in Lobsters, for example, messages
 between users are owned by both users.
@@ -468,16 +482,6 @@ but preserves the data and its association with other owners.
 \sys removes the data once all users have \xxed it and all ownership links are
 to pseudoprincipals.
 %
-
-\begin{figure}
-    \centering
-    \includegraphics[width=.6\textwidth]{figs/shared_hl}
-  \caption{\sys supports joint ownership semantics, where shared data is not
-    removed until all users hae disguised their accounts. Owners can return in
-    any order, and the message remains decorrelated from unrevealed owners.}
-\label{f:shared:hl}
-\end{figure}
-
 
 %
 For instance, consider a Lobsters message between Bea and Chris as shown in
@@ -496,40 +500,53 @@ the message to its original state (4).
 
 %
 \paragraph{\sys's Solution.}
-\todo{figure}
 
-\sys supports these joint ownership semantics with the following design.
+\begin{figure}
+    \centering
+    \includegraphics[width=\textwidth]{figs/shared_data}
+  \caption{\sys implements joint ownership semantics by storing a fully
+    decorrelated REMOVE diff for the shared data (modifications to the shared
+    message data are depicted using 
+    [owner$\to$pseudoprincipal] notation). Owners can only see
+    pseudoprincipals for the other owners in their disguised data. This allows
+    \sys to disguise and reveal in any order.}
+\label{f:shared:data}
+\end{figure}
+
+\sys supports these joint ownership semantics with the following design,
+depicted in Figure~\ref{f:shared:data}.
 %
 The first time any owner removes the data, \sys generates pseudoprincipals for
-each owner of the data, and creates a fully-decorrelated version of the shared data row. 
+each owner of the data, and creates a fully-decorrelated version of the shared
+data row (1). 
 %
 This decorrelated row is stored as a (plaintext) remove diff record in a
 \emph{partially-removed} table created by \sys, indexed by the row's unique
 identifier columns (\eg a primary key id).
 
 %
-When an owner's disguise removes the data, \sys stores a copy of the
+When another owner's disguise removes the data (2), \sys stores a copy of the
 fully-decorrelated diff record for the disguise, diff records recording the
 associated pseudoprincipal row and foreign key rewrite for the owner, and a
 speaks-for record recording which pseudoprincipal the owner can speaks-for.
 %
 
 %
-If the owner also happens to be the last remaining owner (all other owners are
-pseudoprincipals, \ie all other owners have removed the data), \sys removes the
-shared data row from the application database, and the fully-decorrelated diff
-record from \sys's partially-removed table.
+As shown in (2), if the owner also happens to be the last remaining owner (all
+other owners are pseudoprincipals, \ie all other owners have removed the data),
+\sys removes the shared data row from the application database, and the
+fully-decorrelated diff record from \sys's partially-removed table.
 %
 
 %
-Now, when \emph{any} owner chooses to return, \sys first restores the
+Now, when \emph{any} owner chooses to return (3), \sys first restores the
 fully-decorrelated row from the copy of the fully-decorrelated diff record in
 the owners's disguised data.  \sys then rewrites the foreign key for the
 pseudoprincipal who currently owns the shared data to recorrelate with the
 owner, and removes that pseudoprincipal, revealing the other diff records like
 normal.
 %
-If a subsequent owner reveals the shared data, \sys's consistency checks will
+If a subsequent owner reveals the shared data (4), \sys's consistency checks will
 prevent the reveal of the fully-decorrelated row (inserting the row will cause a
 duplicate row in the table). However, \sys will still rewrite the foreign key
 for that owner's pseudoprincipal to the original owner, and remove the
