@@ -104,7 +104,7 @@ credentials to recursively find pseudoprincipals from multiple decorrelations.
 \caption{\sys allows multiple decorrelations to compose, and can reveal them in
     any order such that the data remains decorrelated until the user reveals \emph{all}
     applied decorrelations. The speaks-for chain encoded in
-    speaks-for records allows \sys to handle recorrelation of intermediate
+    speaks-for records (shown in blue) allows \sys to handle recorrelation of intermediate
     pseudoprincipals. When Bea reqests reveal of their ``Star Wars''
     posts (4) after revealing ``bears'' posts (3), \sys walks the speaks-for chain
     backwards from $P_2$ to find the latest principal that can speak-for $P_2$
@@ -154,8 +154,13 @@ removes an intermediate link in the speaks-for chain.
 %
 To describe how this works, take the example of two disguises that decorrelate
 comments on ``bears'' and ``Star Wars'' posts respectively
-(Figure~\ref{f:composition}). (1) The ``bears''
-decorrelation rewrites Ewok posts to pseudoprincipal $P_1$; and (2) the ``Star
+(Figure~\ref{f:composition}). 
+
+%
+(1) First, the ``bears''
+decorrelation rewrites Ewok posts to pseudoprincipal $P_1$.
+
+(2) Next, the ``Star
 Wars'' decorrelation composed on top decorrelates Ewok posts from $P_1$ to
 pseudoprincipal $P_2$.  At this point, \sys has speaks-for records for Bea that
 encode a speaks-for chain from Bea$ \to P_1 \to P_2$.
