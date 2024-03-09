@@ -608,9 +608,11 @@ database query to generate new values.
 
 %
 Furthermore, disguising transformations may affect results of data processing on
-the database (\eg aggregates over the number of users). \sys currently expects
-the developer to correctly handle these scenarios, and ensure that any aggregate
-results or placeholder data does not violate application correctness.
+the database (\eg aggregates over the number of users). They may also affect
+data that the application reads or has read to send notifications or perform
+other side affects.  \sys currently expects the developer to correctly handle
+these scenarios, and ensure that any aggregate results or placeholder data does
+not violate application correctness.
 %
 
 \paragraph{API.}
