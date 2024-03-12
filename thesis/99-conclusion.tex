@@ -22,7 +22,7 @@ opportunities for research.
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{\sys in the Real World}
+\section{Deploying Disguised Data}
 
 Supporting disguised data in web applications that have millions or more users,
 operate with low cost margins, and/or distribute their compute and storage
@@ -47,10 +47,15 @@ time.
 %
 
 %
-\paragraph{Deriving Value from Disguised Data.} As mentioned, even if
-applications \emph{do} store disguised data, the cost of doing so may not pay
-off, since applications cannot derive value from it because it remains
-confidential. 
+\paragraph{Deriving Value from Disguised Data.} 
+\sys enables an application to keep as much data as possible if users exercise
+their data protection rights, and to allow users to return to the application.
+For many applications, this provides a better solution than handling user data
+deletion requests via permanent user deletion, or decentralized approaches that
+move all user data out of the application.
+
+However, with \sys, applications store disguised data, but cannot derive value
+from the now-confidential data.
 %
 Potentially some clever cryptography such as additive homomorphic secret sharing
 as done in Zeph~\cite{zeph}, may allow \sys to support limited computation such
@@ -58,67 +63,50 @@ as aggregations over disguised data from which an application can derive value.
 %
 However, such cryptographic approaches require some initial setup to determine
 whose data can be aggregated with whose (in order to split the secrets
-appropriately) and who should be able to reveal the result (can individual users
-also perform aggregates, or just the application?) Futhermore, defining groups
-of users whose data can be combined requires more thought into what these groups
-may reveal about their constituents.
-%
-Homomorphic encryption techniques are also historically regarded as impractical
-due to their performance overheads.
+appropriately) and who should be able to reveal the result. Futhermore, defining
+groups of users whose data can be combined requires more thought into what these
+groups may reveal about their constituents.
 %
 
-\paragraph{\sys in Large-Scale Applications}
+\paragraph{\sys in Large-Scale Applications.}
 Many web services, particularly those at scale, run on machines in various
 regions and datacenters, and replicate and shard their database.
 %
-In such applications, \sys may need to handle thousands or more disguising (or
-revealing) requests per second.
+While distributed databases used by these applications (\eg
+Spanner~\cite{spanner}) already implement parallel, distributed, and large-scale
+transactions, \sys's disguising and revealing transactions may potentially
+impose high burdens on distributed databases due to the size and frequency of
+these transactions.
 %
-\sys currently runs disguising and revealing transformations in transactions on
-a single database server sequentially. 
-%
-\sys's reliance on transactions for correct disguising and reveal semantics do
-affect the ability for applications to run disguises in parallel with many
-application operations.
-%
-We evaluated the cost of constantly performing a single such transaction and
-showed it to be moderate, but running several such disguise transactions in
-parallel could lead to performance failure (\eg it may resulting in the same
-application operation throughput when running a single disguise at once, but
-drastically increase the latency of a disguise/reveal transformations; or
-greatly reduce application operation throughput).
-%
-Handling this problem may require significant redesign: for example, perhaps
-large disguise and reveal transactions must split into multiple, per-table
-transactions, so as to not lock all tables at once. In doing so, however, \sys
-makes weaker guarantees about inter-table dependencies. Finding the right
-tradeoff between consistency and performance---a classic problem---then
-becomes the main challenge.
+For example, \sys may need to handle thousands or more disguising (or
+revealing) requests per second, and a disguise could touch all database tables.
 %
 
 %
-To support distributed services, \sys will also need to support disguises that
-affect data sharded across multiple database servers.
+Today, many applications will already break down large transactions into smaller
+pieces (at the cost of transactional consistency) or run large transactions in
+batches overnight to reduce their impact on database performance.
 %
-Again, the challenge here is trading off consistency and performance.  If
-developers wish to maintain \sys's transactional guarantees for disguises and
-reveals, they must support distributed transactions and maintain consistency
-between replicas potentially disguised at different points. While most web
-applications already implement these for their normal application operations,
-\sys's large transactions may overly affect performance and \eg need to be
-broken into per-shard-server transactions.
+Similarly, we can imagine \sys breaking down large disguise and reveal transactions
+into multiple, per-table transactions, so as to not lock all tables at once; or
+delaying their execution until night and notifying the user once their
+disguise or reveal has completed. 
 %
-\todo{distributed transactions citation? other ways to distribute databases?}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Disguising Beyond \sys: Flexible Access Control}
 
 Zooming out beyond disguised user data for web applications, we can imagine
 completely different directions in which disguising for flexible privacy could
-be applied. We describe here using many of the same disguising abstractions to
+be applied. 
+%
+As part of a collaboration led by Hannah
+Gross~\cite{funhouse}, we investigated using the same disguising abstractions to
 provide flexible access control, where the application itself needs to control
 user data exposure to insiders.
+%
 
+%
 Today, thousands of insiders at companies have access to sensitive user data,
 and this access can lead to devastating data leaks.
 \todo{cite?}

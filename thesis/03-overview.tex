@@ -54,15 +54,6 @@ private key.
 %The application's database now no longer contains the \xxed data.
 %
 
-%
-\todo{check} 
-(3) If the developer decides to update application contents (\eg by performin a
-global moderation or a schema migration), then the developer writes
-an \emph{application update executable} that encapsulate these changes applied to
-a single user's data, and invokes \sys's API to record this update. \sys then
-uses these executables to reveal disguised data without overwriting the
-associated application changes.
-%
 
 %
 (4) When a user wishes to reveal their \xxed data, they pass credentials
@@ -172,19 +163,10 @@ trigger the \xxing transformation (Figure~\ref{f:lobsters_hook}).
 When Bea wants to anonymize their contributions on content tagged ``Star Wars,''
 Lobsters invokes \sys with the provided specification.
 
-\todo{xxx}
-If the developer performs a global application change that \eg normalizes the
-URLs of stories, the developer performs a bulk update in the Lobsters
-applications. The developer also writes an update executable encoding how to
-update individual user's stories' URLs as well. Then the developer invokes
-\sys's \texttt{record\_update} API call with the update executable.
-%
-
 %
 When Bea wants to deanonymize their ``Star Wars'' contributions, Lobsters
 invokes \sys with Bea's reveal credentials and the disguise ID, and \sys reveals
-Bea's associations with ``Star Wars'' posts, applying application updates and
-schema migrations while doing so.
+Bea's associations with ``Star Wars'' posts.
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -256,22 +238,19 @@ at invocation time.
 %\lyt{skipping the ``custom set of objects''; that seems unclear to me.}
 %
 
-\todo{does this flow?}
 Modification and decorrelation require \sys to generate placeholder content for
 modified columns and/or new pseudoprincipals.  Developers use one of \sys's
-simple generation policies to tell \sys how to generate per-column placeholder
-values. \sys can generate:
-\begin{itemize}[nosep]
-    \item a specified constant number,
-    \item a specified constant string,
-    \item a random number between some lower and upper bounds,
-    \item a random string of specified length,
-    \item a random email address,
-    \item a random phone number,
-    \item a random timestamp,
-    \item a specified constant boolean, and
-    \item NULL.
-\end{itemize}
+generation policies to tell \sys how to generate per-column placeholder values.
+%
+The current prototype supports constants (\eg "removed"), random values (\eg a
+random email address), and values derived from the prior value (\eg a redacted
+phone number with only area code visible); 
+%
+We can imagine expanding \sys's generation specifications to take as input a
+database query dependent on external state to generate new values.
+%
+
+
 %
 To ensure that decorrelation preserves referential integrity, \sys generates
 pseudoprincipals to replace the original principal. 
@@ -325,41 +304,6 @@ application modifications to log all added references to pseudoprincipals).
 % supports the composition of \xxing transformations (\S\ref{s:composition}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Application Update Executables}
-%
-Developers provide \sys with information about application updates or schema
-migrations to allow \sys to reveal data without overwriting or conflicting with
-these changes.
-%
-When the developer performs operations that need to hold over revealed
-data---\eg moderations---they will additionally invoke \sys's API, allowing \sys
-to record and appropriately apply application updates.
-%
-
-%
-\sys expects developers to provide application update executables that takes a
-user's disguised data rows and produces updated-disguised data rows.
-%
-Oftentimes, these executables may be a subroutine of the bulk update that
-performs the whole application change. 
-%
-For example, a developer may want to normalize all URLs in \texttt{posts}; 
-they would \one{} read all posts, \two{} normalize the URL in each post
-individually, and then \three{} \texttt{INSERT...UPDATE} the normalized posts. 
-%
-An application update executable would simply capture step \two{}, producing
-normalized URL posts for the posts in a user's disguised data.
-
-However, the bulk update may use queries that apply to entire database tables
-instead of rows. In these scenarios, the developer should write a separate
-update executable for updating disguised data rows.
-%
-For example, a developer may want to add a column to the \texttt{posts} table.
-The bulk update simply performs an \texttt{ALTER TABLE} query, while the
-update executable receives post rows without the column as input, and
-outputs post rows with the column.
-
-%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{User Reveal Credentials}
 \sys provides developers and users
 with the abstraction of \emph{reveal credentials}, which users provide to the
@@ -406,6 +350,83 @@ Password or keypair changes require an application to re-register the user with
 %
 %Using passwords as credentials renders the encryption on the users data only as secure as the user's
 %password, but maintains good usability as users can use their application password to reveal data.
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Database Management Operations} 
+\label{s:overview:updates}
+
+Databases constantly undergo management operations initiated by an admin or
+developer, like schema changes or global updates (\eg normalizing URLs of all
+posts). When one such operation is performed, the developer writes a
+corresponding application update specification that captures the effects of the
+operation and invokes \sys's \texttt{record\_update} API call with the
+specification. \sys stores these updates in a replay log, which lets \sys reveal
+disguised data without overwriting the associated application changes.
+%
+%If the developer performs a global application change that \eg normalizes the
+%URLs of stories, the developer performs a bulk update in the Lobsters
+%applications. The developer also writes an update specification encoding how to
+%update individual user's stories' URLs as well. Then the developer invokes
+%\sys's \texttt{record\_update} API call with the update.
+%
+
+%
+%Developers provide \sys with information about application updates or schema
+%migrations to allow \sys to reveal data without overwriting or conflicting with
+%these changes.
+%%
+%When the developer performs operations that need to hold over revealed
+%data---\eg moderations---they will additionally invoke \sys's API, allowing \sys
+%to record and appropriately apply application updates.
+%%
+
+%
+\sys expects developers to provide application update specifications that takes
+a user's disguised data rows and produces updated-disguised data rows.
+%
+Oftentimes, these updates may be a subroutine of the bulk management operation. 
+%
+For example, if a developer wants to normalize all URLs in \texttt{posts}, they
+might first read all posts, then normalize the URL in each post individually,
+and finally \texttt{INSERT...UPDATE} the normalized posts. 
+%
+An application update given to \sys could just capture step \two{}, producing
+normalized URL posts for the posts in a user's disguised data.
+%
+
+%
+In other situations, no such update exists as a subroutine of the bulk operation
+because the bulk operation uses queries that apply to entire database tables
+instead of rows. In these scenarios, the developer should write a separate
+update specification for updating disguised data rows.
+%
+For example, a developer may want to add a column to the \texttt{posts} table.
+The bulk operation simply performs an \texttt{ALTER TABLE} query, while the
+update given to \sys receives post rows without the column as input, and outputs
+post rows with the column.
+%
+
+%
+\sys assumes that either \one{} updates are pure functions deterministic in
+their input (placeholder or disguised rows) and do not have side effects; or
+\two{} any nondeterminism or update side effects will maintain application
+correctness.
+%
+As an example of an unsupported update, take an update that calculates the
+current vote count of a post to store as a post's \texttt{vote\_count}
+attribute, and say that a disguise has removed both a user's post and its votes.
+%
+This update thus depends on other disguised rows, namely \texttt{vote} rows.
+%
+When \sys reveals the disguise, \sys will first reveal the diff records for
+posts before revealing those for votes in order to maintain referential
+integrity. But when applying the \texttt{vote\_count} update to post diff
+records, \sys will find 0 votes for the post, because the votes have not yet
+been restored.
+%
+\sys only supports this update if this is correct application behavior (scenario
+\two{}).
 %
 
 

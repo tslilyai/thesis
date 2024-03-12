@@ -168,7 +168,7 @@ version of the private key encrypted with the user's password.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 \section{Application Updates Replay Log}
 
-\sys represents application update executables as Rust functions from database objects
+\sys's prototype accepts application update specifications as Rust functions from database objects
 ($<$table, row$>$ pairs) to a new set of database objects. \sys stores the log
 as a vector of updates function pointers with timestamps, and persists the
 pointers to disk. This approach requires recompiling \sys to add new update
