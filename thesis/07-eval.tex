@@ -77,7 +77,6 @@ We use MariaDB 10.5 with the InnoDB storage engine atop a local SSD.
 \section{\sys Developer Effort}
 \label{s:eval-effort}
 
-\begin{comment}
 \begin{figure}[t]
 \centering
 \small
@@ -92,7 +91,6 @@ We use MariaDB 10.5 with the InnoDB storage engine atop a local SSD.
     reasonable developer effort.}
   \label{f:loc}
 \end{figure}
-\end{comment}
 
 % We estimate developer effort to use \sys via the lines of code of spec (JSON)
 % and application code added to support \xxing and revealing transformations.
@@ -747,7 +745,6 @@ longer to complete~\cite{delf}.
 
 \section{Database Management Operations}
 \label{s:eval-updates}
-\todo{get results}
 
 %
 If developers perform database management operations, this both increases
@@ -759,63 +756,144 @@ developer effort and affects \sys's performance. Here, we answer the following t
         update, and applying updates during reveal?
 \end{enumerate}
 
+\subsection{Supporting Updates}
+\begin{figure}
+    \centering
+    \small
+    \begin{tabular}{m{0.28\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}}
+        \centering\textbf{Attribute} & \textbf{Normalize URL} & \textbf{Add Story Texts} &
+        \textbf{Add Show Email} \\
+        \hline
+        Impl Bulk Op & 68 LoC & 19 LoC & 2 LoC \\
+        \hline
+        Impl Update & $\varnothing$ & 54 LoC & 27 LoC \\
+        \hline
+        Perform Bulk Op & 5.63s & 5.10s & 0.095s\\
+        \hline
+        Perform Update (1 story row) & 0.22ms & 0.01ms & 0.01ms \\
+        \hline
+        Perform Update (1 user row) & 0.20ms & 0.01ms & 0.01ms \\
+    \end{tabular}
+    \caption{Stats for updates.}
+    \label{tab:updates}
+\end{figure}
 
-\subsection{Categories of Updates}
-The bulk update for URL normalization reuses the update which
-performs URL-normalization as a subroutine. The bulk updates for the other two
-schema migrations required writing separate updates that operate on
-individual rows, instead of on entire tables.
-
-
-\todo{check}
-Developers already write these bulk application updates (\eg Lobsters
+Developers must already write their management operations today (\eg Lobsters
 implements these updates as Ruby Active Record Migrations~\cite{ruby_arm}). 
 %
-Developers also notify \sys of application updates and schema migrations that
-may affect disguised data that could be later revealed.  Notifying \sys of three
-different application updates and schema migrations for Lobsters required adding
-one line of code per update to register the update with \sys, after
-the bulk update is performed. 
+However, depending on the type of operation, developers may need to additionally
+write an update specification for \sys to capture that operation.
 %
+Operations that execute by affecting entire tables (\eg via an \texttt{ALTER
+TABLE} command) require writing separate updates which take as input a set of
+rows instead of an entire table.
+%
+However, bulk management operations may already operate on a row-level, and thus
+can be reused as an update specification to \sys.
+
+
+%
+Our Lobsters implementation implements the selected three bulk operations in
+Rust instead of Ruby Active Record Migration, as shown in
+Table~\ref{tab:updates}. We reuse the bulk URL normalization operation for the
+update to \sys. We implemented the other two schema migrations as bulk table
+updates, however, and thus wrote separate updates that operate on individual
+rows.
+%
+As shown in Table~\ref{tab:updates}, the additional lines of code to write the
+updates on top of the bulk operation are either 0, when the update acts as a
+subroutine of the bulk operation, or less than 100 LoC.
+%
+Invoking \sys with the three different application updates and schema migrations
+for Lobsters required adding one line of code per update that the application
+calls when performing the bulk operation. 
+%
+
+\begin{figure}
+\centering
+  \includegraphics[width=.7\columnwidth]{figs/categories}
+
+    \caption{Out of the most recent 20 Lobsters database management operations,
+    the majority (75\%) are table operations which require developers to write
+    separate update specifications for \sys, 15\% are row operations which can
+    be reused as updates without additional effort, and 10\% are unsupported
+    because they denormalize the schema in order to cache aggregate results.}
+  \label{tab:categories}
+\end{figure}
 
 %
 In addition to the updates described and implemented in
-\S\ref{s:casestudies:updates}, we inspected 20 other updates/migrations in
-Lobsters from the
-past three years, and classified them broadly as follows: 
-\begin{itemize}[nosep] 
-    \item creating tables; 
-    \item removing, adding, or renaming table columns; 
-    \item removing or adding table indexes;
-    \item setting column constraints (\eg \texttt{NOT NULL}); 
-    \item modifying column content based on deterministic functions (\eg URL normalization);
-    \item generating rows for new tables based on existing table rows (\eg adding \texttt{story\_texts} when restructuring \texttt{stories}); and 
-    \item updating a row based on the current state of other database tables (\eg updating the \texttt{vote\_count} of comments based on the number of votes).  
-\end{itemize}
+\S\ref{s:casestudies:updates}, we inspected the 20 most recent management operations in
+Lobsters from the past three years, and classified them as:
+\begin{enumerate}[nosep]
 %
-\sys can support all but the last category of updates, unless the 
-update's output is correct no matter the state of other database tables.
+    \item a row operation (which can be reused as an update to \sys), such as URL
+normalization; 
 %
-This last category represents 2 of the 20 inspected updates.
+\item a table operation (which requires writing a new update for \sys), such as
+generating tables from other tables (\eg texttt{story\_texts} from
+\texttt{stories}) or altering columns; or
+%
+\item an unsupported operation (which cannot be supported as an update with
+    \sys), such as updating the \texttt{vote\_count} of comments based on the number of votes).
+\end{enumerate}
+Figure~\ref{tab:categories} shows the distribution of 20 bulk operations among these
+three categories. 
+%
+\sys can support all operations other than updating rows based
+on current external database state, unless the update's output is correct no
+matter the state of other database tables. This represents 2 of the 20 inspected
+updates.
+%
 %
 %As described in \S\ref{s:design:limits}, unless it is valid application behavior
 %for \eg \texttt{vote\_count} to be 0 regardless of the number of votes, \sys
 %will not correctly apply an update that sets the count of votes for comments.
 %
-We note that these types of updates occur in applications that optimize for
+These types of operations might occur in applications that optimize for
 performance by denormalizing their database schema; we hypothesize that this
 category of update would not exist with a normalized schema.
 %
-These particular updates also happen to be idempotent for any rows affected, and thus
-could be reapplied via \eg a cron job regularly to update revealed data.
+However, these particular operations also happen to be idempotent for any rows
+affected, and thus could be reapplied via \eg a cron job regularly to update
+revealed data.
 %
 
 %
-With the exception of this last category of updates, users can still reveal
+For the large majority of database management operations, users can still reveal
 their data disguised prior to these migrations, as if the migration had occurred
 with their data present in the database.
 
+%
+\begin{comment}
+    *row operation
+    normalize URL
+    set column value to NULL
+    fix note formatting
 
+    *table operation
+    1 remove 
+    add index and column
+    add column
+    add index
+    add story_texts from stories
+    create story_texts 
+    add index
+    add column (and modify it)
+    create table
+    set value and remove column
+    rename column
+    add column
+    create categories and update columns
+    add index
+    add index
+
+    *unsupported
+    update comments based on count of votes from votes
+    memoize score not upvotes
+
+\end{comment}
+%%%%%%%%%%%%%%%%
 \subsection{Performance of Reveals with Updates}
 \label{s:eval:updates}
 
