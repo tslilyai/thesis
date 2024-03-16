@@ -95,78 +95,87 @@ disguise or reveal has completed.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Disguising Beyond \sys: Flexible Access Control}
-
-Zooming out beyond disguised user data for web applications, we can imagine
-completely different directions in which disguising for flexible privacy could
-be applied. 
+Disguising and revealing in \sys protects disguised data from any external party
+other than the user themselves. However, disguising and revealing can also apply
+in more nuanced settings, such as disguising data in different ways to 
+protect from different parties. 
 %
-As part of a collaboration led by Hannah
-Gross~\cite{funhouse}, we investigated using the same disguising abstractions to
-provide flexible access control, where the application itself needs to control
-user data exposure to insiders.
-%
+In these settings, isguising and revealing can offer potential opportunities for
+more flexible access control to control user data exposure to web application
+insiders.
 
 %
-Today, thousands of insiders at companies have access to sensitive user data,
-and this access can lead to devastating data leaks.
-\todo{cite?}
+As part of a collaboration led by Hannah Gross, Eddie Kohler, M. Frans Kaashoek,
+and Malte Schwarzkopf~\cite{funhouse}, we investigated using disguising
+abstractions to allow the application to control user data exposure to insiders.
 %
-One important part of this problem stems from the fact that today, employees
-have access to all the data that they need for their job at any point in time.
-For example, a hotel employee might be given authorization to see the full room
-booking and customer database because they need this information to perform
-their job, such as performing aggregates to determine room occupancy; or helping
-customers manage their bookings
+Our work draws on the key observation that company employees do not \emph{always}
+need the user information that they can typically access.
 %
-However, we make the key observation that these employees do not \emph{always} need
-\emph{all} of this information.
-
-Instead, we envision a world where every employee operates atop a personalized
-redacted database that contains the minimum amount of data they need
-continuously. For example, a hotel customer service representative might only
-need to be able to look at room occupancy and see free rooms when not actively
-helping a customer.
-%
-Similarly, a business intelligence analyst might need to be able to compute
-aggregates and statistics using coarse-grained data like area codes, but not
-need to see unique user identifiers like usernames or precise phone numbers.
+Just as \sys allows users to only expose their data while using the application,
+perhaps the application can use disguising and revealing to only expose user
+data to employees when they actually need and use it.
 %
 
 %
-However, redacted databases would present only the minimal amount of data the
-employee needs for common, daily operations. If, for example, a particular
-customer needs assistance, the employee currently helping the customer should be
-able to change their redactions temporarily and dynamically to expose only the
-necessary parts of that user's data.
+To achieve this goal, we envision a world where every employee operates atop a
+personalized disguised database that contains the minimum amount of data they
+need continuously. For example, a hotel customer service representative might
+only need to be able to look at room occupancy and see free rooms when not
+actively helping a customer.
 %
-Different employees simultaneously helping different customers can apply
-different upgrades to get a partially redacted view of the database
+%Similarly, a business intelligence analyst might need to be able to compute
+%aggregates and statistics using coarse-grained data like area codes, but not
+%need to see unique user identifiers like usernames or precise phone numbers.
+%%
+%
+However, disguised databases would present only the minimal amount of data the
+employee needs; if, for example, a particular customer needs assistance, the
+employee currently helping the customer should be able to temporarily reveal
+parts of their disguised database to dynamically expose that user's data.
+%
+Different employees simultaneously helping different customers can reveal
+different disguises to get a partially disguised view of the database
 individualized for that employee.
 %
 As soon as the employee no longer needs the user's data, the employee’s access
-returns back to its original, minimally exposing state.
+returns back to its original, maximally disguised state.
+%
 
 %
-To achieve this world of minimalist yet flexible access control, we need a database
-system that can dynamically change redactions that apply to each employee, but
-present a consistent view of the redacted database to each employee. A strawman
-solution might attempt to do so with personalized database views (similar to the
-proposal in Multiverse DB~\cite{multiverse}), but this would require an enormous
-number of views (potentially one for each employee, and for each upgrade the
-employee applies).
+To achieve this flexible access control, we need a database
+system that applies disguises and dynamically reveals them at per-employee
+granularity.
 %
-Furthermore, redactions would need to handle referential integrity, work even in
-the presence of indexes and database views, and work with existing query
-optimizations without overly affecting performance.
+A strawman solution might attempt to do so with personalized database views
+(similar to the proposal in Multiverse DB~\cite{multiverse}), but this would
+require an enormous number of views (potentially one for each employee, and for
+each upgrade the employee applies).
 %
-Employees must also have the ability to flexibly perform fine-grained upgrades
-of their access without compromising security.
+Furthermore, just as with \sys, disguises cannot break the database: they would
+need to handle referential integrity, work even in the presence of indexes and
+database views, and work with existing query optimizations without overly
+affecting performance.
 %
-While disguising and revealing abstractions can help address some of these
-challenges (\eg handling referential integrity when performing redactions, and
-providing ways to specify redactions and upgrades), achieving a database system
-for flexible access control requires solving many new challenges.
+Employees must also have the ability to flexibly perform fine-grained reveals of
+their disguised views without compromising security.
+%
+While \sys's disguising and revealing abstractions can help address some of
+these challenges (\eg handling referential integrity with decorrelation),
+achieving a database system for flexible access control requires solving many
+new challenges.
 
+%
+%Today, thousands of insiders at companies have access to sensitive user data,
+%and this access can lead to devastating data leaks.
+%
+%One important part of this problem stems from the fact that today, employees
+%have access to all the data that they need for their job at any point in time.
+%For example, a hotel employee might be given authorization to see the full room
+%booking and customer database because they need this information to perform
+%their job, such as performing aggregates to determine room occupancy; or helping
+%customers manage their bookings
+%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Final Thoughts}
 Today, user data increasingly lands in the hands of web services, which reduce
