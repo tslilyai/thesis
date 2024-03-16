@@ -1,10 +1,9 @@
 %
-\sys's prototype consists of \lyt{TODO}k lines of Rust.
+\sys's prototype consists of $\approx10$k lines of Rust, and supports MySQL.
 %(1.6k LoC specifically added for \syscrypt).
 %
 \sys also provides an API server that exposes a JSON-HTTP API that applications
-can use to invoke \sys. Our \sys prototype supports MySQL.
-\todo{check}.
+can use to invoke \sys.
 %
 %In the following, we discuss key implementation details that \sys relies for
 %security and performance.
@@ -180,20 +179,17 @@ with serialized input rows, and deserialize the output.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 \section{Batching}
 %
-For efficiency, \sys batches the deletion of rows from the same table, and the
-creation of pseudoprincipals upon disguise. 
+For efficiency, \sys batches the deletion of rows from the same table, updates
+to rows of the same table from modifications and decorrelation, and the creation
+of pseudoprincipals upon disguise. 
 %
-\sys also batches the deletion of pseudoprincipals during reveal. However, \sys
-does not batch insertion of other table rows during reveal, as each row's
-foreign key dependencies and relevant application updates need to be applied to
-each row; however, with careful implementation, \sys could support batching of
-all insertions.  \todo{TODO should we batch other tables? it's much more
-complex}.
+\sys also batches the deletion of pseudoprincipals during reveal, and 
+the reveal of same-table diff records.
 %
-\sys performs decorrelation and modification operations individually for each
-row during both disguise and reveal, as different rows are updated to different
-values.
+%\sys performs decorrelation and modification operations individually for each
+%row during disguise, as different rows are updated to different values.
 %%
+%\todo{xxx batch disguising?}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 %

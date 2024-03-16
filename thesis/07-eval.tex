@@ -770,11 +770,16 @@ developer effort and affects \sys's performance. Here, we answer the following t
         \hline
         Perform Bulk Op & 5.63s & 5.10s & 0.095s\\
         \hline
-        Perform Update (1 story row) & 0.22ms & 0.01ms & 0.01ms \\
+        Perform Update (story row) & 0.22ms & 0.01ms & 0.01ms \\
         \hline
-        Perform Update (1 user row) & 0.20ms & 0.01ms & 0.01ms \\
+        Perform Update (user row) & <0.01ms & 0.01ms & 0.01ms \\
+        \hline
+        Perform Update (other row) & <0.01ms & <0.01ms & <0.01ms \\
     \end{tabular}
-    \caption{Stats for updates.}
+    \caption{Schema migrations that affect entire tables require
+    writing separate update function for \sys. Applying these updates adds greater overheads per
+    story than per user or per other table row, as more updates apply to the
+    stories table.}
     \label{tab:updates}
 \end{figure}
 
@@ -794,15 +799,18 @@ can be reused as an update specification to \sys.
 
 %
 Our Lobsters implementation implements the selected three bulk operations in
-Rust instead of Ruby Active Record Migration, as shown in
-Table~\ref{tab:updates}. We reuse the bulk URL normalization operation for the
-update to \sys. We implemented the other two schema migrations as bulk table
-updates, however, and thus wrote separate updates that operate on individual
-rows.
+Rust instead of Ruby Active Record Migration. Table~\ref{tab:updates} shows the
+amount of code required per operation, as well as the additional code required
+to add a corresponding update to give \sys. We reuse the bulk URL normalization
+operation for the update to \sys. We implemented the other two schema migrations
+as bulk table updates, however, and thus wrote separate updates that operate on
+individual rows.
 %
-As shown in Table~\ref{tab:updates}, the additional lines of code to write the
-updates on top of the bulk operation are either 0, when the update acts as a
-subroutine of the bulk operation, or less than 100 LoC.
+The additional lines of code to write the updates on top of the bulk operation
+are either 0 when the update acts as a subroutine of the bulk operation, or
+less than 100 LoC.
+\todo{too vague? it seems a lot compared to the table sql statements, but
+updates are rather straightforward.}
 %
 Invoking \sys with the three different application updates and schema migrations
 for Lobsters required adding one line of code per update that the application
@@ -897,12 +905,13 @@ with their data present in the database.
 \subsection{Performance of Reveals with Updates}
 \label{s:eval:updates}
 
-We next look at how operating in the presence of schema migrations or
-conflicting application updates changes with \sys, and how it affects \sys's
-reveal performance. 
+We next look at how bulk operations and updates affect application performance,
+and how updates affect \sys's reveal performance.  Table~\ref{tab:updates} shows
+the results.
 
-First, we look at the cost of invoking \sys to record updates when the
-application performs updates or schema migrations in Lobsters.
+\paragraph{Bulk Operation Performance.}
+First, we look at the cost of performing bulk operations, which applications
+incur without \sys.
 %
 Applying these changes themselves equates to modifying all 120k stories (\eg URL 
 normalization) and/or changing the database schema.  The URL normalization
@@ -913,70 +922,58 @@ application, which batch updates all stories with the normalized URL. The
 unoptimized version that updates stories one-by-one takes 1789s.
 %
 
-%
 Adding the \texttt{show\_email} attribute to the \texttt{users} table takes
 82ms, and 
 %
 creating and populating the \texttt{story\_texts} table, and removing a column
 from the \texttt{stories} table takes 4.93s.
+%
 
+%
+\paragraph{Record Update.}
 %
 Invoking \sys's hook to insert a new application update in \sys's replay log
 takes on average 0.58ms, a negligible amount compared to the time to perform the
 update/migration. This includes the time to persist the update (one database
 insert query) and add it to \sys's in-memory update replay log.
 %
-%Each entry in the replay log requires \todo{XXX} bytes of memory (and disk, if
-%persisted). \lyt{Not persisted? They're also function pointers, so I'm not sure
-%*how* to encode them / find the size of the actual code block?}
+
+\paragraph{Reveal with Updates.}
+%
+We next evaluate the latency of reveal operations in Lobsters when updates
+corresponding to the implemented three bulk operations have been applied after
+reveal.
 %
 
 %
-We next evaluate the latency of reveal operations in Lobsters when the global
-database changes described in \S\ref{s:casestudies:updates} have been applied
-after reveal.
+Applying the three updates to one disguised story row takes 0.2--0.3ms, and
+applying the three updates to one disguised user takes $<0.1$ms.
 %
-The effects of performing updates increases with the amount of disguised data a
-user wants to reveal. For our support updates, the main overheads come from
-revealing disguised stories, which increases by 0.5--0.8ms per disguised
-story.
+The updates do not affect other row types.
 %
-Our chosen updates either affect diff records containing \texttt{users} or
-\texttt{stories} data. URL normalization and reorganizing into
-\texttt{story\_texts} both affect \texttt{stories}, and take on average
-0.4--0.5ms and 0.02ms respectively when applied to the original and placeholder
-rows for a single \texttt{stories} diff record. 
+The URL normalization update requires 0.22ms, where initializing a URL
+normalizer object takes $\approx$0.2ms.
 %
-The main cost of URL normalization comes from initializing a URL normalizer
-object ($\approx$0.3ms).
-\todo{we could amortize this by putting the normalizer in Edna or something, but
-this would be cheating... or batching all story diff records into one update.}
-%
-Restoring a stories diff record also requires an additional query to reveal a
-\texttt{story\_texts} table row, incurring a 0.1--0.3ms cost per story.
-%
-(Revealing other table diff records adds only the cost of checking whether to
-apply the updates, which takes 0.01--0.02ms per diff record).
-%
-In total, we observe that users with very few (\eg $<5$ posted stories) incur
-negligible additional overheads , but users with lots of data incur moderate
-overheads proportional to the number of their stories (\eg $\approx$400ms to reveal
-an account with 600-700 stories).
-%\eg 673 stories and 1971 comments
-
-\todo{there's extra overheads for the updates test simply because db queries take 0.1ms longer for
-every table... not really sure what to do about this (could this be because the
-database has been globally updated?)}
-
-%
-Adding \texttt{show\_email} to \texttt{users} adds negligible overheads
-($<0.01$ms per user), as this simply appends a column to the in-memory row.
-This update also does not increase the number of queries to reveal a user
-record.
+However, because \sys applies an update to all affected rows of the same table
+simultaneously, this cost is amortized by applying updates to all disguised
+stories at once. \todo{impl}
 %
 
+After applying the update, \sys also must restore the updated rows to
+the database. Updates do not affect the cost of restoring rows for all tables
+other than stories.  However, restoring stories also requires an additional
+query to reveal a \texttt{story\_texts} table row, incurring a 0.1--0.3ms cost
+per story.
 
-
+%
+As expected, the effects of performing updates increases with the amount of disguised data a
+user wants to reveal.
+%
+Users with very few (\eg $<5$ posted stories) see little increase in reveal
+latency with updates, but revealing users with lots of data shows moderate effects
+from updates (\eg revealing a user with 700 stories, 2000 comments, and
+\todo{xxx} messages takes on
+average 6.9s instead of 5.6s).
 
 %
 \section{Summary}

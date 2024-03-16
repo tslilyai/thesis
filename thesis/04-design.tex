@@ -493,21 +493,26 @@ but preserves the data and its association with other owners.
 \sys removes the data once all users have \xxed it and all ownership links are
 to pseudoprincipals.
 %
-
-%
-For instance, consider a Lobsters message between Bea and Chris as shown in
-Figure~\ref{f:shared:hl}: after Bea \xxs the message, the message is owned by
-Chris and a pseudoprincipal (1); if Chris then \xxs the message, \sys removes it
-(2).
-%
-Either owner can reveal the message, which restores the message to the database
-and recorrelates the revealing user (3); the other owner remains decorrelated as a
-pseudoprincipal until they also choose to reveal the message.
+Any owner can reveal the message, which restores the message to the database if
+it does not exist, and recorrelates only the revealing user; all disguised
+owners remain decorrelated as pseudoprincipals until they also choose to reveal the message.
 %
 Regardless of the reveal order, if all owners reveal the message, \sys returns
-the message to its original state (4).
-%
+the message to its original state.
 
+%
+For instance, consider the scenario in Figure~\ref{f:shared:hl} where Bea and
+Chris share a Lobsters message:
+\begin{enumerate}[nosep]
+    \item[(1)] When Bea \xxs the message, the message is owned by
+Chris and a pseudoprincipal;
+    \item[(2)] If Chris then \xxs the message, \sys removes it.
+    \item[(3)] If Bea reveals the message, this restores the message to the database
+and recorrelates only Bea; Chris remains decorrelated as a pseudoprincipal.
+\item[(4)] When Chris reveals the message, \sys returns
+the message to its original state.
+\end{enumerate}
+%
 
 %
 \paragraph{\sys's Solution.}
@@ -527,42 +532,52 @@ the message to its original state (4).
 \sys supports these joint ownership semantics with the following design,
 depicted in Figure~\ref{f:shared:data}.
 %
-The first time any owner removes the data, \sys generates pseudoprincipals for
+\begin{enumerate}
+    \item[(1)] The first time any owner removes the data, \sys generates pseudoprincipals for
 each owner of the data, and creates a fully-decorrelated version of the shared
-data row (1). 
-%
+data row. 
+
 This decorrelated row is stored as a (plaintext) remove diff record in a
 \emph{partially-removed} table created by \sys, indexed by the row's unique
 identifier columns (\eg a primary key id).
 
-%
-When another owner's disguise removes the data (2), \sys stores a copy of the
+\item[(2)]
+When another owner's disguise removes the data, \sys stores a copy of the
 fully-decorrelated diff record for the disguise, diff records recording the
 associated pseudoprincipal row and foreign key rewrite for the owner, and a
 speaks-for record recording which pseudoprincipal the owner can speaks-for.
 %
 
 %
-As shown in (2), if the owner also happens to be the last remaining owner (all
-other owners are pseudoprincipals, \ie all other owners have removed the data),
-\sys removes the shared data row from the application database, and the
-fully-decorrelated diff record from \sys's partially-removed table.
+As shown in this example, if the owner also happens to be the last remaining
+        owner (all other owners are pseudoprincipals, \ie all other owners have
+        removed the data), \sys removes the shared data row from the application
+        database, and the fully-decorrelated diff record from \sys's
+        partially-removed table.
 %
 
-%
-Now, when \emph{any} owner chooses to return (3), \sys first restores the
+\item[(3)]
+When \emph{any} owner chooses to return, \sys first restores the
 fully-decorrelated row from the copy of the fully-decorrelated diff record in
 the owners's disguised data.  \sys then rewrites the foreign key for the
 pseudoprincipal who currently owns the shared data to recorrelate with the
 owner, and removes that pseudoprincipal, revealing the other diff records like
 normal.
 %
-If a subsequent owner reveals the shared data (4), \sys's consistency checks will
+
+\item[(4)] If a subsequent owner reveals the shared data, \sys's consistency checks will
 prevent the reveal of the fully-decorrelated row (inserting the row will cause a
 duplicate row in the table). However, \sys will still rewrite the foreign key
 for that owner's pseudoprincipal to the original owner, and remove the
 pseudoprincipal from the database.
 %
+
+
+\end{enumerate}
+
+%
+
+
 
 %
 Thus, \sys can disguise and reveal shared data no matter the order in which its
