@@ -691,6 +691,8 @@ impact on other users' application experience in the common case.
 The latency of disguising operations depends on load: the expensive user's
 account removal and revealing take 4.7 and 10.6 seconds under high load, and 3.2
 and 6.9 seconds under low load.
+\lyt{Note: these numbers are about the same (if not higher) when not using
+transactions.}
 %
 This is acceptable: 50\% of data deletions at Facebook take five minutes or
 longer to complete~\cite{delf}.
