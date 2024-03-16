@@ -77,21 +77,6 @@ We use MariaDB 10.5 with the InnoDB storage engine atop a local SSD.
 \section{\sys Developer Effort}
 \label{s:eval-effort}
 
-\begin{figure}[t]
-\centering
-\small
-\begin{tabular}{c|ccc}
-    \textbf{App} & \textbf{Original LoC} & \textbf{Spec LoC (JSON)} & \textbf{Hooks LoC}\\
-\hline
-    Lobsters & 160k & 518 & 179 \\
-    WebSubmit & 908 & 75 & 312 \\
-    HotCRP & N/A & 357 & N/A \\
-\end{tabular}
-    \caption{Adding \sys specs (JSON) and \xxing/revealing endpoints require
-    reasonable developer effort.}
-  \label{f:loc}
-\end{figure}
-
 % We estimate developer effort to use \sys via the lines of code of spec (JSON)
 % and application code added to support \xxing and revealing transformations.
 
@@ -126,11 +111,9 @@ Lobsters' \xx specifications are written in 518 LoC, WebSubmit's in 75 LoC, and
 HotCRP's in 357 LoC (all in JSON).  The specification size is proportional to
 schema size and what data each application \xxs.
 %
-
-%
-Our Rust/SQL implementation of the three Lobster bulk database management
-operations required \todo{xxx} LoC, and the corresponding updates for
-disguised data required \todo{xxx} additional LoC. \todo{check}
+Writing the corresponding updates for the three Lobsters bulk management
+operations required an additional 81 LoC on top of the 89 LoC the application
+developer wrote for the bulk database management operations themselves.
 %
 
 Thus, the developer effort required to use \sys---writing \sys specifications, and
