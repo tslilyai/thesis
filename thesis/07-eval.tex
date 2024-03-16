@@ -935,7 +935,7 @@ applying the three updates to one disguised user takes $<0.1$ms.
 The updates do not affect other row types.
 %
 Modified or decorrelated stories require applying updates to both placeholder
-and original rows; thus, updates require $\approx 0.5ms$ per story modify or
+and original rows; thus, updates require $\approx$0.5ms per story modify or
 decorrelate diff record.
 %
 
@@ -954,7 +954,7 @@ After applying the update, \sys also must restore the updated rows to the
 database. Updates do not affect the cost of restoring rows for all tables other
 than stories.  However, restoring stories also requires an additional queries to
 reveal and consistency check \texttt{story\_texts} table rows, incurring a
-$\approx0.6$ms cost per story.
+$\approx$0.6ms cost per story.
 %
 
 %
