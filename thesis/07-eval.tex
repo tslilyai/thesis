@@ -688,9 +688,9 @@ impact on other users' application experience in the common case.
 %respectively.
 %
 
-The latency of disguising operations depends on load:
-the expensive user's account removal and revealing take 4.4 and 3.6 seconds
-under high load, and 3.3 and 2.6 seconds under low load.
+The latency of disguising operations depends on load: the expensive user's
+account removal and revealing take 4.7 and 10.6 seconds under high load, and 3.2
+and 6.9 seconds under low load.
 %
 This is acceptable: 50\% of data deletions at Facebook take five minutes or
 longer to complete~\cite{delf}.
@@ -707,18 +707,17 @@ longer to complete~\cite{delf}.
 %-0.04431790047
 %-0.02995791037
 %-0.1705867789
-%cheap disguise 17 27 39
-%cheap restore 118 291 472
-%cheap disguise txn 22 35 49
-%cheap restore txn 118 288 467
-%expensive disguise 3212 3517 3693
-%expensive restore 2693 2811 2979
-%exp txn delete 3029 3269 3481
-%exp txn restore 2422 2612 2868
-%expensive disguise 4105 4373 4594
-%expensive restore 3704 3903 4317
-%exp txn delete 4135 4400 4592
-%exp txn restore 3542 3661 3785
+
+\begin{comment}
+high load disguise 4510 4711 5107
+high load restore 11579 11727 11852
+high load disguise txn 4477 4743 5034
+high load restore txn 10403 10605 10837
+expensive disguise 3001 3253 3560
+expensive restore 6998 7219 7474
+exp txn delete 2976 3218 3407
+exp txn restore 6605 6895 7223
+\end{comment}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \input{07-eval-qapla}
