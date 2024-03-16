@@ -323,10 +323,10 @@ operations and the cost of cryptographic operations.
 %
 %\sys's high-level API additionally performs queries on the application database.
 %
-\lyt{Each disguise and reveal operation requires decoding of JSON specifications
-into \sys-specific Rust datatypes; this takes $\approx0.1$ms on average. This
-could be offloaded to registering each specification with \sys when the
-application starts, allowing \sys to decode them in advance.}
+%\lyt{Each disguise and reveal operation requires decoding of JSON specifications
+%into \sys-specific Rust datatypes; this takes $\approx0.1$ms on average. This
+%could be offloaded to registering each specification with \sys when the
+%application starts, allowing \sys to decode them in advance.}
 %
 \sys's database operations are fast; in our prototype, they generally take
 $0.2$--$0.3$ms but vary depending on the amount of data touched.
@@ -972,5 +972,7 @@ effects from updates (\eg revealing a user with 673 stories, 1971 comments, and
 In our evaluation, we used \sys to add seven \xxing transformations to three web
 applications. We found that the effort required was reasonable, that \sys's
 \xxing and revealing operations are fast enough to be practical, and that they
-impose little overhead on normal application operation.
+impose little to moderate overheads on normal application operation depending on
+the amount of data being disguised or revealed.
+\todo{check}
 %
