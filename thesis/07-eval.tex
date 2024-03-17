@@ -126,7 +126,7 @@ invoking \sys---is small, even though these applications were not written with
 
 %
 We now evaluate \sys's performance using WebSubmit,
-HotCRP, and Lobsters (\S\ref{s:case-studies}).
+HotCRP, and Lobsters (Ch.~\ref{ch:case_studies}).
 %
 %To measure the extra cost that \sys's cryptographic operations add,
 %, as a developer would do without \sys.
@@ -197,7 +197,7 @@ Figure~\ref{f:ops-websubmit} shows that common operations have comparable
 latencies with and without \sys.
 %
 \sys adds 9ms to account creation; and \xxing
-and revealing operations take longer in \sys (13.1--53.2ms), but allow users to
+and revealing operations take longer in \sys (12.6--40.6ms), but allow users to
 reveal their data and take less developer effort.
 %
 
@@ -218,13 +218,13 @@ decorrelations across 12 tables. %, so we would expect higher latencies.
 Figure~\ref{f:ops-hotcrp} shows higher latencies in general, even for the manual
 baseline, which reflects the more complex \xxing transformations.
 %
-\sys takes 63.8--84.6ms to \xx and reveal a PC member's data, again owing to the
+\sys takes 59.2--71.5ms to \xx and reveal a PC member's data, again owing to the
 extra cryptographic operations necessary.
 %
 HotCRP's account anonymization is admin-applied and runs for all PC members, so
 its total latency is proportional to the PC size.
 %
-With 80 PC members, this transformation takes 6.8s, which is acceptable for a
+With 80 PC members, this transformation takes 5.7s, which is acceptable for a
 one-off operation.
 %
 As before, \sys adds small latency to common application operations, and 9ms to
@@ -259,16 +259,16 @@ The benchmark measures server-side latency of common operations and
 %
 The results are in Figure~\ref{f:ops-lobsters}.
 %
-The median latencies for entire-account removal or decay are small (9.7--13.4ms
+The median latencies for entire-account removal or decay are small (8.6--12.1ms
 for \sys, and 4.0--5.2ms for the baseline), since the median Lobsters user has
-little data. Revealing \xxed accounts takes 13.1--17.6ms in the median.
+little data. Revealing \xxed accounts takes 15.3--22.0ms in the median.
 %
-Highly active users with lots of data raise the 95\textsuperscript{th} percentile
-latency to 100--180ms for \xxing and 45--80ms for revealing.
+Highly active users with lots of data raise the 95\textsuperscript{th}
+percentile latency to $\approx$175ms for both \xxing for revealing.
 %
-Topic anonymization touches less data and is faster than
-whole-account transformations, taking 3.6ms and 13.1ms for the median user to
-\xx and reveal, respectively.
+Topic anonymization touches less data and is faster than whole-account
+transformations, taking 3.3ms and 12.1ms for the median user to respectively \xx
+and reveal.
 %
 
 \textbf{Summary.}
@@ -443,17 +443,20 @@ the number of pseudoprincipals created by anonymization.
 Figure~\ref{f:composition} shows the resulting latencies.
 %
 WebSubmit account removal and restoration latencies increase by $\approx$1ms per
-pseudoprincipal (18.2ms and 21.8ms respectively); 50\% of this increased cost
+pseudoprincipal (18.3ms and 19.0ms respectively); 50\% of this increased cost
 comes from the additional, per-pseudoprincipal encryption and decryption of
 records, the rest comes from database operations.
 %
-HotCRP removal and restoration latencies also increase by $\approx$1ms
-per pseudoprincipal (191.2ms and 230.4ms respectively); again, cryptographic
-operations add $\approx$0.5ms per pseudoprincipal, and the remaining cost
-increase comes from per-pseudoprincipal database queries and
-updates.
+HotCRP removal latencies also increase by $\approx$1ms per
+pseudoprincipal (181.8ms) and restoration latencies increase by $\approx$2ms per pseudoprincipal
+(365.6.4ms). Again, cryptographic operations add $\approx$0.5ms per
+pseudoprincipal, and the remaining cost increase comes from per-pseudoprincipal
+database queries and updates. Restoration requires more per-pseudoprincipal
+queries to \eg perform consistency checks, resulting in a greater latency
+increase than in removal. 
 %querying-for and per-pseudorpicnipal
 %
+
 WebSubmit and HotCRP do not create new references to pseudoprincipals
 after data gets disguised, but if they did, \sys would need to issue additional
 per-pseudoprincipal queries to rewrite or remove these references (if configured
@@ -461,7 +464,8 @@ to do so).
 %
 Compared to accounts in WebSubmit, accounts in HotCRP have more data and
 14--15$\times$ more pseudoprincipals after anonymization, which accounts for the
-larger relative slowdown.
+larger relative slowdown and the increased effect of per-pseudoprincipal
+reveals.
 %
 %HotCRP particularly demonstrates how cryptographic operations grow comparatively
 %more expensive: from 21\% of the cost to 41\% for account removal, and from 8\%
@@ -647,21 +651,26 @@ Figure~\ref{f:concurrent-lobsters} shows the results.
 %
 If a random user disguises and reveals their data (the common case),
 normal operations are mostly unaffected by concurrent \xxing and revealing:
-throughput drops $\le$3.7\% without transactions and $\le$7.0\% with transactions.
+throughput drops $\le$4.7\% without transactions and $\le$6.5\% with transactions.
+%2.3 low load
+%3.2 low load
+This shows that \sys's \xxing and revealing transformations have acceptable
+impact on other users' application experience in the common case.
+
 %
 Constantly \xxing and revealing the user with the most data (the worst-case
-scenario) has a larger effect, with throughput reduced by up to $7.4$\%
-(without transactions) and up to $17$\% (with transactions, high load).
-%5.8\% in low load, 2.6 high
-%13.3\% in low load, 16.3 high
-%dropping by at most 4.6\%---by concurrent \xxing of a random user
-%(with and without transactions) and of the most expensive user (without
-%transactions); \xxing the most expensive user with transactions does, however,
-%impact performance by 11.9\%.
+scenario) has a larger
+effect, with throughput reduced by up to $6.4$\% (without transactions) and up
+to $26$\% (with transactions).
+%5.8\% in low load, 2.6 high 13.3\% in low load, 16.3 high dropping by at most
+%4.6\%---by concurrent \xxing of a random user (with and without transactions)
+%and of the most expensive user (without transactions); \xxing the most
+%expensive user with transactions does, however, impact performance by 11.9\%.
 %%
 %Under high load, the relative impacts are similar: the throughput when
 %concurrently \xxing a random user (with and without transactions) and the most
-%expensive user (without transactions) drops by $\le 4.4$\%; and when disguising the
+%expensive user (without transactions) drops by $\le 4.4$\%; and when disguising
+%the
 %%most expensive user with transactions, drops by 17.1\%.
 %
 %\lyt{XXX Note: drop w/out txn is actually more for low load than high load.}
@@ -676,9 +685,14 @@ scenario) has a larger effect, with throughput reduced by up to $7.4$\%
 %(1.8\%) in throughput (transactions decrease throughput by 3.8\%), but
 %throughput remains high ($>5$ops/ms).
 %
+This worst-case scenario disguises and reveals a user owning 1\% of all the data
+in a database of 16k users, and demonstrates the upper bound on Edna’s
+performance impacts when Edna runs large disguising and revealing transactions
+continuously.  Because the queries within disguise and reveal transactions touch
+16 tables, all which are commonly read by normal application operations, a
+moderate impact is expected: the transactions will lock the tables, preventing
+application operations from reading them until the transaction has completed. 
 
-This shows that \sys's \xxing and revealing transformations have acceptable
-impact on other users' application experience in the common case.
 %and operations over \xxed data
 %
 %\ms{Did we lose a sentence about account removals under low load here? The following doesn't quite flow from the prior point}
@@ -688,11 +702,11 @@ impact on other users' application experience in the common case.
 %respectively.
 %
 
-The latency of disguising operations depends on load: the expensive user's
-account removal and revealing take 4.7 and 10.6 seconds under high load, and 3.2
-and 6.9 seconds under low load.
-\lyt{Note: these numbers are about the same (if not higher) when not using
-transactions.}
+The latency of disguising operations depends on load: on average, disguising and
+revealing transformations take only milliseconds.  The expensive user's account
+removal and revealing take 4.7 and 10.6 seconds under high load, and 3.2 and 6.9
+seconds under low load. \lyt{Note: these numbers are about the same (if not
+higher) when not using transactions.}
 %
 This is acceptable: 50\% of data deletions at Facebook take five minutes or
 longer to complete~\cite{delf}.
@@ -946,8 +960,8 @@ normalizer object takes $\approx$0.2ms.
 %
 However, because \sys batches reveal of same-table diff record, \sys applies an
 update to all affected rows of the same table simultaneously. Thus, \sys
-amortizes the cost of URL normalizer initialization by applying normalizing
-all disguised stories at once.
+amortizes the cost of URL normalizer initialization by normalizing
+all disguised stories from a disguise at once.
 %
 
 %
