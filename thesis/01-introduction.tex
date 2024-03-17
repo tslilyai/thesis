@@ -4,20 +4,21 @@ Many users today have tens to hundreds of accounts with web services that store
 sensitive data, from social media to tax preparation and e-commerce
 sites~\cite{tens,hundreds,password_life_cycle}.
 %
-And while users now have the right to delete their data (via \eg the
+While users have the right to delete their data (via \eg the
 GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), users want and deserve more nuanced
 controls over their data that don't exist today.
 %
-For example, a user might wish to hide
-and protect data of an e-commerce or dating app profile when inactive, but also
-want their data to be present should they return to use the application. 
+For example, a user might wish to hide and protect data of an e-commerce or
+dating app profile when inactive, but also want their data to be present should
+they return to use the application. 
 %
 %But today, achieving this flexible privacy remains out of reach, in part
 %because of the many challenges facing web developers in building services that
 %can adapt to changing privacy needs. 
-Today, however, services often provide only coarse-grained, blunt tools that
-result in all-or-nothing exposure of users' private information, and fail to
-achieve the flexible privacy that users want and deserve.
+Today, however, services often provide only coarse-grained, blunt tools such as
+permanent account deletion \todo{more tools? account deactivation?} that result
+in all-or-nothing exposure of users' private information, and fail to achieve
+the flexible privacy that users want and deserve.
 %
 
 %
@@ -26,7 +27,7 @@ privacy. Disguised data is a reversible state of data in which sensitive data is
 selectively hidden.
 %
 To demonstrate the feasibility of disguised data, this thesis also presents
-\sys---the first system for disguised data---which helps web applications allow users
+\sys---the first system for disguised data---which helps database-backed web applications allow users
 to remove their data without permanently losing their accounts, anonymize their
 old data, and selectively dissociate personal data from public profiles.
 %
@@ -43,9 +44,9 @@ revealing enables the user to restore their data to the application.
 %
 
 %
-In this chapter, we motivate the need for data disguising for flexible
-privacy; describe the challenges in successfully disguising and revealing data;
-and introduce our approach to achieve data disguising as well as our
+This chapter motivates the need for data disguising for flexible privacy;
+describes the challenges in disguising and revealing data; introduces this
+thesis' approach to achieve data disguising; and summarizes this thesis'
 contributions.
 
 %*********************************************************************************%
@@ -119,7 +120,7 @@ all of their data has been removed.
 %
 
 %
-To capture this new state of data, this thesis introduces the new key
+To capture this new state of data, this thesis introduces the new 
 abstraction of \emph{disguised data}.  Disguised data represents a state of data
 where \one{} some or all of the user's original sensitive data is rendered
 inaccessible to the application; \two{} some data may be replaced with
