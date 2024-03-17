@@ -143,17 +143,21 @@ identifying data visible to the service and other users.
 Today, disguised data for flexible privacy remains out of reach for users of
 web applications in part because getting it right is hard. 
 %
-Real applications have complex notions of privacy, data ownership, and data
-sharing.
+Real applications store their data in a database with complex schemas and have
+complex notions of privacy, data ownership, and data sharing.
 %
-Simple solutions that \eg delete all data associated with a user can break
-referential integrity or create orphaned data, which requires application
-changes to handle correctly, and lack support for users to return.
+Simple solutions that \eg delete all data associated with a user can create
+orphaned data or break
+referential integrity---for example, one row might have a foreign key to a
+deleted row of another table, leaving a dangling reference---which
+requires application changes to handle correctly. These solutions also lack
+support for users to return.
 %
 To solve this manually, a developer would have to carefully perform
 application-specific database changes to remove data, store any data removed to
 be able to later restore it, and correctly revert the database changes on
 restoring.
+%
 
 %
 Developers would also have to reason about interactions between multiple
@@ -173,6 +177,14 @@ Furthermore, stored removed data must be inaccessible to the application and
 protected against data breaches, but must be accessible if the user chooses to
 return. The developer also needs to provide user-friendly ways for users to
 prove their ownership of the stored data.
+%
+
+%
+\lyt{Finally, application databases often undergo management operations, such as
+schema migrations. These operations would fail to affect any disguised
+data: it remains inaccessible to the application or developer. However, the
+disguised data would need to reflect these global database changes in order to
+preserve correctness upon reveal.}
 %
 
 
@@ -204,8 +216,8 @@ them, while maintaining application functionality and referential integrity.
 %
 %\section{Challenges}
 %
-Our approach for \sys's approach faces three challenges, and we describe each
-challenge and our solution's abstractions next.
+Our approach for \sys's approach faces three challenges, which we describe next,
+along with \sys's solution.
 
 %\head{Disguise Specifications.}
 %
@@ -274,8 +286,8 @@ part of this, this thesis contributes:
         %, which cover a wide range of application
         %needs and compose cleanly; 
 
-    \item Design techniques to realize disguised data, including diff records and speaks-for chains.
-        (Ch.~\ref{ch:design})
+    \item Design techniques to realize disguised data, including diff records and speaks-for chains
+        (Ch.~\ref{ch:design}).
 
     \item \sys, a prototype Rust library for MySQL-backed web applications that
         implements user data control via disguising and revealing, which is
@@ -284,11 +296,11 @@ part of this, this thesis contributes:
 
     \item Case studies that integrate \sys with three real-world web
     applications and demonstrate \sys's ability to enable composable and
-        reversible transformations. (Ch.~\ref{ch:case_studies})
+        reversible transformations (Ch.~\ref{ch:case_studies}).
 
     \item An evaluation of \sys's effectiveness and performance, including how
     \sys contrasts with and complements related work (Qapla~\cite{qapla} and
-        CryptDB~\cite{cryptdb}) (Ch.~\ref{ch:eval}) 
+        CryptDB~\cite{cryptdb}) (Ch.~\ref{ch:eval}).
 \end{enumerate}
 %
 
