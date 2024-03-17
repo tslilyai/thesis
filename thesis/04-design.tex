@@ -291,9 +291,11 @@ consistency checks.
 
 %
 \subsection{Application Updates.}
+\label{s:design:updates}
 
 \begin{figure}
     \centering
+    \todo{fix figure to use URL norm example}
     \includegraphics[width=.8\textwidth]{figs/update-moderation}
     \caption{When the application applies updates like moderations of explicit
     words, it can invoke \sys to log the update. \sys then applies the
@@ -312,6 +314,8 @@ consistency checks.
     placeholder data exists as part of \eg a decorrelation diff record.}
 \label{f:update:schema}
 \end{figure}
+    
+\todo{use URL norm example}
 
 In order for revealing to preserve application correctness, \sys must know about
 application updates that alter invariants over application data.
@@ -339,11 +343,11 @@ words prior to reveal.
 %Neither might be what the application desires.
 %
 
-\sys handles this situation by tracking applied application updates in a
-\emph{replay log} of application update specifications.
+%\sys handles this situation by tracking applied application updates in a
+%\emph{replay log} of application update specifications.
 %
 Figure~\ref{f:update:mod} demonstrates how \sys applies application updates to
-disguised data.
+disguised data using a replay log.
 \begin{enumerate}[nosep]
     \item[(1)] \sys disguises some user data.
     \item[(2)] The application invokes \sys when it
@@ -385,7 +389,7 @@ At first glance, global application updates like URL normalization might seem
 like a different class of database management operation than structural changes
 like schema migration, and require a different approach.
 %
-However, the technique just described for application updates allows \sys to
+However, the technique described in \S\ref{s:design:updates} for application updates allows \sys to
 handle schema migrations as well. 
 %
 
@@ -408,7 +412,7 @@ performs the schema migration; \sys records these the migration update in its re
     \item[(3)] When revealing data, \sys applies the schema migration update to
         diff record data, which maps an original \texttt{users} data row to both
     a row in \texttt{users} with username \texttt{uid} and a row in
-\texttt{addrs} that has a foreign key of \texttt{uid} to \texttt{users}
+\texttt{addrs} that has a foreign key of \texttt{uid} to \texttt{users}.
 %
 The update also generates two rows for any placeholder \texttt{users}
 data row in a diff record.
@@ -421,10 +425,10 @@ data row in a diff record.
 
 \subsection{Consistency Checks for Internal Invariants} 
 After applying any developer-specified migrations or updates since the time of
-disguising, \sys still needs to perform consistency checks on the data to reveal
+disguising, \sys performs consistency checks on the data to reveal
 to ensure that revealing will not violate the database's integrity.
 %
-These checks only allow revealing if the revealed data: \one{} will still
+These checks allow revealing only if the revealed data: \one{} will still
 satisfy uniqueness and primary key constraints; \two{} will not overwrite
 modifications that occurred while data was \xxed; and \three{} will maintain
 referential integrity.
@@ -459,7 +463,7 @@ affected data remains \xxed.  For example, if a developer chooses not to
 register conflicting application updates or schema migrations, \sys's checks may
 fail, preventing disguised data from being revealed.
 %
-\sys could flag encountered conflicts, giving the application a chance to fix
+\sys could log encountered conflicts, giving the application a chance to fix
 them so a later reveal can pass the checks.
 
 
