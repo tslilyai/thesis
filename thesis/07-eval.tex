@@ -659,9 +659,8 @@ impact on other users' application experience in the common case.
 
 %
 Constantly \xxing and revealing the user with the most data (the worst-case
-scenario) has a larger
-effect, with throughput reduced by up to $6.4$\% (without transactions) and up
-to $26$\% (with transactions).
+scenario) has a larger effect, with throughput reduced by up to $5.1$\% (without
+transactions) and up to $23$\% (with transactions at high load).
 %5.8\% in low load, 2.6 high 13.3\% in low load, 16.3 high dropping by at most
 %4.6\%---by concurrent \xxing of a random user (with and without transactions)
 %and of the most expensive user (without transactions); \xxing the most
@@ -703,15 +702,28 @@ application operations from reading them until the transaction has completed.
 %
 
 The latency of disguising operations depends on load: on average, disguising and
-revealing transformations take only milliseconds.  The expensive user's account
-removal and revealing take 4.7 and 10.6 seconds under high load, and 3.2 and 6.9
-seconds under low load. \lyt{Note: these numbers are about the same (if not
+revealing transformations take <100 milliseconds.  The expensive user's account
+removal and revealing take 2.8 and 17.8 seconds under high load, and 1.8 and
+10.0 seconds under low load. \lyt{Note: these numbers are about the same (if not
 higher) when not using transactions.}
+%
+Revealing takes significantly longer than disguising due to the many more
+queries required to perform consistency checks.  \todo{Look into the cost of
+INSERT-UPDATE queries for reveal.}
 %
 This is acceptable: 50\% of data deletions at Facebook take five minutes or
 longer to complete~\cite{delf}.
 %
 
+%high load disguise 2593 2694 2952
+%high load restore 15947 16082 19043
+%high load disguise txn 2811 2897 3031
+%high load restore txn 17393 17822 18355
+%expensive disguise 1759 1835 1984
+%expensive restore 9972 10231 10551
+%exp txn delete 1691 1811 1942
+%exp txn restore 9852 10017 10199
+%
 %low load
 %-0.03667745415
 %-0.07011866235

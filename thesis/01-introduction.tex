@@ -147,10 +147,9 @@ Real applications store their data in a database with complex schemas and have
 complex notions of privacy, data ownership, and data sharing.
 %
 Simple solutions that \eg delete all data associated with a user can create
-orphaned data or break
-referential integrity---for example, one row might have a foreign key to a
-deleted row of another table, leaving a dangling reference---which
-requires application changes to handle correctly. These solutions also lack
+orphaned data or break referential integrity---the invariant that if a table row
+references another row via a foreign key, the referenced row must exist---which
+require application changes to handle correctly. These solutions also lack
 support for users to return.
 %
 To solve this manually, a developer would have to carefully perform
@@ -181,10 +180,12 @@ prove their ownership of the stored data.
 
 %
 \lyt{Finally, application databases often undergo management operations, such as
-schema migrations. These operations would fail to affect any disguised
-data: it remains inaccessible to the application or developer. However, the
-disguised data would need to reflect these global database changes in order to
-preserve correctness upon reveal.}
+schema migrations. However, these operations would fail to affect any data
+disguised at the time, because the disguised data remains inaccessible to the
+application or developer. However, the disguised data would need to reflect
+these global database changes in order to preserve correctness upon reveal,
+which would require the developer to remember and reapply these management
+operations on disguised data before revealing it.}
 %
 
 

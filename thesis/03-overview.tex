@@ -125,7 +125,7 @@ semantics (\eg revealing makes sure not to overwrite changes made since
   \label{f:lobsters_hook}
   \end{figure}
 
-We next describe how \sys's API and \xx specifications work via a \xxing
+We illustrate how \sys's API and \xx specifications work via a \xxing
 transformation for Lobsters~\cite{lobsters}.  Lobsters~\cite{lobsters} is a
 link-sharing and discussion platform with 15.4k
 users.
@@ -262,8 +262,7 @@ In our example, however, all comments by the same user on the same story
 decorrelate to the same pseudoprincipal (\verb+"group_by": "stories.id"+), thus
 keeping same-story comment threads intact.
 %
-The same user's comments on different stories, however, decorrelate to different
-pseudoprincipals; an alternative might group comments by
+The same user's comments on different stories, however, decorrelate to different pseudoprincipals; an alternative might group comments by
 \texttt{comments.user\_id}, so a single pseudoprincipal adopts all of a user's
 \fn{TAG}-related comments (effectively creating a ``Star Wars'' throwaway account).
 
@@ -321,7 +320,7 @@ the private key.
 %
 Developers can use either or both of these credentials depending on application needs.
 %
-In our Lobsters example, \sys rederives the user's private key using their password.
+In the Lobsters example, \sys rederives the user's private key using their password.
 %
 % To support forgetful users, Lobsters could use a backup token.
 % secret stored with a third party as a recovery token;
@@ -356,9 +355,11 @@ Password or keypair changes require an application to re-register the user with
 \section{Database Management Operations} 
 \label{s:overview:updates}
 
+\todo{do we still need to say why this is a challenge?}
 Databases constantly undergo management operations initiated by an admin or
 developer, like schema changes or global updates (\eg normalizing URLs of all
-posts). When one such operation is performed, the developer writes a
+stories). 
+When one such operation is performed, the developer writes a
 corresponding application update specification that captures the effects of the
 operation and invokes \sys's \texttt{record\_update} API call with the
 specification. \sys stores these updates in a replay log, which lets \sys reveal
@@ -387,24 +388,25 @@ a user's disguised data rows and produces updated-disguised data rows.
 %
 Oftentimes, these updates may be a subroutine of the bulk management operation. 
 %
-For example, if a developer wants to normalize all URLs in \texttt{posts}, they
-might first read all posts, then normalize the URL in each post individually,
-and finally \texttt{INSERT...UPDATE} the normalized posts. 
+For example, if a developer wants to normalize all URLs in Lobsters
+\texttt{stories}, they might first read all stories, then normalize the URL in
+each story individually, and finally \texttt{INSERT...UPDATE} the normalized
+stories. 
 %
 An application update given to \sys could just capture the normalization step,
-producing normalized URL posts for the posts in a user's disguised data.
+producing normalized URL stories for the stories in a user's disguised data.
 %
 
 %
 In other situations, no such update exists as a subroutine of the bulk operation
 because the bulk operation uses queries that apply to entire database tables
-instead of rows. In these scenarios, the developer should write a separate
-update specification for updating disguised data rows.
+instead of rows. In these scenarios, the developer must write a separate update
+specification for updating disguised data rows.
 %
-For example, a developer may want to add a column to the \texttt{posts} table.
-The bulk operation simply performs an \texttt{ALTER TABLE} query, while the
-update given to \sys receives post rows without the column as input, and outputs
-post rows with the column.
+For example, Lobsters has a schema migration that adds a column to the
+\texttt{users} table.  The bulk operation simply performs an \texttt{ALTER
+TABLE} query, while the update given to \sys receives user rows without the
+column as input, and outputs user rows with the column.
 %
 
 %
@@ -414,24 +416,24 @@ their input (placeholder or disguised rows) and do not have side effects; or
 correctness.
 %
 As an example of an unsupported update, take an update that calculates the
-current vote count of a post to store as a post's \texttt{vote\_count}
-attribute, and say that a disguise has removed both a user's post and its votes.
+current vote count of a story to store as a story's \texttt{vote\_count}
+attribute, and say that a disguise has removed both a user's story and its votes.
 %
 This update thus depends on other disguised rows, namely \texttt{vote} rows.
 %
 When \sys reveals the disguise, \sys will first reveal the diff records for
-posts before revealing those for votes in order to maintain referential
-integrity. But when applying the \texttt{vote\_count} update to post diff
-records, \sys will find 0 votes for the post, because the votes have not yet
+storys before revealing those for votes in order to maintain referential
+integrity. But when applying the \texttt{vote\_count} update to story diff
+records, \sys will find 0 votes for the story, because the votes have not yet
 been restored.
 %
-\sys only supports this update if this is correct application behavior (scenario
+\sys supports this update only if this is correct application behavior (scenario
 \two{}).
 %
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Threat Model}
+\section{Guarantees and Threat Model}
 \label{s:threat}
 %
 %\sys assumes well-intentioned developers who follow standard security practices
@@ -444,8 +446,8 @@ been restored.
 %\sys cannot protect against statistical correlation attacks.
 %provide information-theoretic privacy guarantees.
 %
-Developers and users can reason about the security properties of disguised data given \sys's
-threat model.
+%Developers and users can reason about the security properties of disguised data given \sys's
+%threat model.
 \sys protects the confidentiality of \xxed data between the time when a user
 disguises their data and the time when they reveal it.
 %
