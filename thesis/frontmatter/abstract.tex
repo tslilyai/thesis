@@ -2,7 +2,7 @@ Many users today have tens to hundreds of accounts with web services that store
 sensitive data, from social media to tax preparation and e-commerce
 sites~\cite{tens,hundreds,password_life_cycle}.
 %
-And while users now have the right to delete their data (via \eg the
+While users have the right to delete their data (via \eg the
 GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), users want and deserve more nuanced
 controls over their data that don't exist today.
 %
@@ -18,9 +18,9 @@ result in all-or-nothing exposure of users’ private information.
 This thesis introduces the notion of \emph{disguised data}, a reversible state
 of data in which sensitive data is selectively hidden.
 %
-This thesis then describes \sys---the first system for disguised data---which
-helps web applications allow users to remove their data without permanently
-losing their accounts, anonymize their old data, and selectively dissociate
+This thesis then describes \sys, the first system for disguised data. \sys
+enables web applications to support user account removal without permanent
+account loss; old user data anonymization; and selective dissociation of
 personal data from public profiles.
 %
 \sys helps developers support these features while maintaining application
@@ -34,7 +34,12 @@ revealing enables the user to restore their data to the application.
 previously anonymized user's account, or restoring an account back to an
 anonymized state.
 %
-With \sys, this thesis argues that web applications can enable flexible privacy
-features with reasonable efforts and costs, and thus can and should be widely
-supported.
+With \sys, web applications can enable flexible privacy features with reasonable
+developer effort (<1k LoC for a 160k real web application) and moderate
+performance impact on application operation throughput (2--6\% in the common
+case, varying with load). \todo{not sure what number to put for the throughput;
+the expensive user is a little egregious.} 
+%
+Thus, this thesis suggests that privacy features beyond what applications offer
+today are indeed practical, and can and should be widely supported.
 %
