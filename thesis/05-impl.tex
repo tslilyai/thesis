@@ -1,4 +1,5 @@
 %
+\todo{table with components and loc}
 \sys's prototype consists of $\approx10$k lines of Rust, and supports MySQL.
 %(1.6k LoC specifically added for \syscrypt).
 %
@@ -86,14 +87,14 @@ fundamental~\cite{anonymous-keys}.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 \section{Reveal Credentials}
 %
-Our prototype supports two forms of reveal credentials: \one{} private keys; or
+\sys supports two forms of reveal credentials: \one{} private keys; or
 \two{} principals' passwords, and recovery
 tokens in case they forget their passwords.
 %
 If an application chooses to use the latter, it provides the principal's password
 to \sys upon user registration.
 %
-Our prototype uses a variant of Shamir's Secret Sharing~\cite{secretsharing}
+\sys uses a variant of Shamir's Secret Sharing~\cite{secretsharing}
 to generate three shares from the private key, any two of which can reconstruct the
 private key.
 %
@@ -160,7 +161,7 @@ the recovery token.
 
 %
 Password-based secret-sharing is only one possible implementation for backup
-secrets; \sys could also support password-based backup secrets by \eg storing an
+secrets; \sys could also support password-based backup secrets by, for example, storing a
 version of the private key encrypted with the user's password.
 %
 
