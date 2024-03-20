@@ -444,29 +444,30 @@ the number of pseudoprincipals created by anonymization.
 Figure~\ref{f:composition} shows the resulting latencies.
 %
 WebSubmit account removal and restoration latencies increase by $\approx$1ms per
-pseudoprincipal (18.3ms and 19.0ms respectively); 50\% of this increased cost
+pseudoprincipal (19.4ms and 22.4ms respectively); 50\% of this increased cost
 comes from the additional, per-pseudoprincipal encryption and decryption of
 records, the rest comes from database operations.
+
 %
-HotCRP removal latencies also increase by $\approx$1ms per
-pseudoprincipal (181.8ms) and restoration latencies increase by $\approx$2ms per pseudoprincipal
-(365.6.4ms). Again, cryptographic operations add $\approx$0.5ms per
+HotCRP removal latencies also increase by $\approx$1ms per pseudoprincipal
+(205.6ms) and restoration latencies increase by $\approx$2ms per pseudoprincipal
+(392.0ms). Again, cryptographic operations add $\approx$0.5ms per
 pseudoprincipal, and the remaining cost increase comes from per-pseudoprincipal
 database queries and updates. Restoration requires more per-pseudoprincipal
 queries to \eg perform consistency checks, resulting in a greater latency
 increase than in removal. 
 %querying-for and per-pseudorpicnipal
 %
-
-WebSubmit and HotCRP do not create new references to pseudoprincipals
-after data gets disguised, but if they did, \sys would need to issue additional
-per-pseudoprincipal queries to rewrite or remove these references (if configured
-to do so).
-%
 Compared to accounts in WebSubmit, accounts in HotCRP have more data and
 14--15$\times$ more pseudoprincipals after anonymization, which accounts for the
 larger relative slowdown and the increased effect of per-pseudoprincipal
 reveals.
+
+WebSubmit and HotCRP do not create new references to pseudoprincipals after data
+gets disguised, but if they did, \sys would need to issue additional
+per-pseudoprincipal queries to rewrite or remove these references (if configured
+to do so).
+%
 %
 %HotCRP particularly demonstrates how cryptographic operations grow comparatively
 %more expensive: from 21\% of the cost to 41\% for account removal, and from 8\%
