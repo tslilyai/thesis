@@ -196,9 +196,9 @@ when possible (revealing operations are impossible in the baseline).
 Figure~\ref{f:ops-websubmit} shows that common operations have comparable
 latencies with and without \sys.
 %
-\sys adds 9ms to account creation; and \xxing
-and revealing operations take longer in \sys (12.6--40.6ms), but allow users to
-reveal their data and take less developer effort.
+\sys adds 9ms to account creation; and \xxing and revealing operations take
+longer in \sys (13.2--40.0ms), but allow users to reveal their data and take
+less developer effort.
 %
 
 \textbf{HotCRP.}
@@ -218,13 +218,13 @@ decorrelations across 12 tables. %, so we would expect higher latencies.
 Figure~\ref{f:ops-hotcrp} shows higher latencies in general, even for the manual
 baseline, which reflects the more complex \xxing transformations.
 %
-\sys takes 59.2--71.5ms to \xx and reveal a PC member's data, again owing to the
+\sys takes 64.4--79.5ms to \xx and reveal a PC member's data, again owing to the
 extra cryptographic operations necessary.
 %
 HotCRP's account anonymization is admin-applied and runs for all PC members, so
 its total latency is proportional to the PC size.
 %
-With 80 PC members, this transformation takes 5.7s, which is acceptable for a
+With 80 PC members, this transformation takes 6.4s, which is acceptable for a
 one-off operation.
 %
 As before, \sys adds small latency to common application operations, and 9ms to
@@ -259,15 +259,16 @@ The benchmark measures server-side latency of common operations and
 %
 The results are in Figure~\ref{f:ops-lobsters}.
 %
-The median latencies for entire-account removal or decay are small (8.6--12.1ms
-for \sys, and 4.0--5.2ms for the baseline), since the median Lobsters user has
-little data. Revealing \xxed accounts takes 15.3--22.0ms in the median.
+The median latencies for entire-account removal or decay are small (9.2--12.8ms
+for \sys, and 4.1--5.0ms for the baseline), since the median Lobsters user has
+little data. Revealing \xxed accounts takes 16.0--20.8ms in the median.
 %
 Highly active users with lots of data raise the 95\textsuperscript{th}
-percentile latency to $\approx$175ms for both \xxing for revealing.
+percentile latency to $\approx$150ms for account removal and 150ms for account
+restoration.
 %
 Topic anonymization touches less data and is faster than whole-account
-transformations, taking 3.3ms and 12.1ms for the median user to respectively \xx
+transformations, taking 3.6ms and 12.6ms for the median user to respectively \xx
 and reveal.
 %
 
@@ -660,7 +661,8 @@ impact on other users' application experience in the common case.
 %
 Constantly \xxing and revealing the user with the most data (the worst-case
 scenario) has a larger effect, with throughput reduced by up to $5.1$\% (without
-transactions) and up to $23$\% (with transactions at high load).
+transactions) and up to 13\% at low load and up to 23\% at high load (with
+transactions).
 %5.8\% in low load, 2.6 high 13.3\% in low load, 16.3 high dropping by at most
 %4.6\%---by concurrent \xxing of a random user (with and without transactions)
 %and of the most expensive user (without transactions); \xxing the most
@@ -703,48 +705,26 @@ application operations from reading them until the transaction has completed.
 
 The latency of disguising operations depends on load: on average, disguising and
 revealing transformations take <100 milliseconds.  The expensive user's account
-removal and revealing take 2.8 and 17.8 seconds under high load, and 1.8 and
-10.0 seconds under low load. \lyt{Note: these numbers are about the same (if not
-higher) when not using transactions.}
+removal and revealing take 2.7 and 5.4 seconds under high load. 
+%\lyt{Note: these
+%numbers are about the same (if not higher) when not using transactions.}
 %
-Revealing takes significantly longer than disguising due to the many more
-queries required to perform consistency checks.  \todo{Look into the cost of
-INSERT-UPDATE queries for reveal.}
+%Revealing takes significantly longer than disguising due to the many more
+%queries required to perform consistency checks. 
 %
 This is acceptable: 50\% of data deletions at Facebook take five minutes or
 longer to complete~\cite{delf}.
 %
 
-%high load disguise 2593 2694 2952
-%high load restore 15947 16082 19043
-%high load disguise txn 2811 2897 3031
-%high load restore txn 17393 17822 18355
-%expensive disguise 1759 1835 1984
-%expensive restore 9972 10231 10551
-%exp txn delete 1691 1811 1942
-%exp txn restore 9852 10017 10199
-%
-%low load
-%-0.03667745415
-%-0.07011866235
-%-0.07443365696
-%-0.1488673139
-
-%high load
-%-0.03243377074
-%-0.04431790047
-%-0.02995791037
-%-0.1705867789
-
 \begin{comment}
-high load disguise 4510 4711 5107
-high load restore 11579 11727 11852
-high load disguise txn 4477 4743 5034
-high load restore txn 10403 10605 10837
-expensive disguise 3001 3253 3560
-expensive restore 6998 7219 7474
-exp txn delete 2976 3218 3407
-exp txn restore 6605 6895 7223
+high load disguise 2697 2790 2884
+high load restore 6199 6305 6407
+high load disguise txn 2640 2726 2847
+high load restore txn 5216 5436 5667
+expensive disguise 12 16 21
+expensive restore 97 233 370
+exp txn delete 20 24 30
+exp txn restore 98 232 366
 \end{comment}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
