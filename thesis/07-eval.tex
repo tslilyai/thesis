@@ -154,12 +154,16 @@ latencies for revealing operations only supported by \sys
 \caption{WebSubmit (2k users, 80 answers/user).}
 \label{f:ops-websubmit}
 \end{subfigure}
+
+    \vspace{12pt}
 \begin{subfigure}[b]{\columnwidth}
     \centering
     \includegraphics[width=.8\columnwidth]{figs/hotcrp_op_stats}
   \caption{HotCRP (80 reviewers, 3k total users, 200--300 records/reviewer).}
 \label{f:ops-hotcrp}
 \end{subfigure}
+
+    \vspace{12pt}
 \begin{subfigure}[b]{\columnwidth}
     \centering
     \includegraphics[width=.8\columnwidth]{figs/lobsters_op_stats}
@@ -259,16 +263,16 @@ The benchmark measures server-side latency of common operations and
 %
 The results are in Figure~\ref{f:ops-lobsters}.
 %
-The median latencies for entire-account removal or decay are small (9.2--12.8ms
-for \sys, and 4.1--5.0ms for the baseline), since the median Lobsters user has
-little data. Revealing \xxed accounts takes 16.0--20.8ms in the median.
+The median latencies for entire-account removal or decay are small (9.9--13.8ms
+for \sys, and 4.6--5.8ms for the baseline), since the median Lobsters user has
+little data. Revealing \xxed accounts takes 17.1--22.0ms in the median.
 %
 Highly active users with lots of data raise the 95\textsuperscript{th}
 percentile latency to $\approx$150ms for account removal and 150ms for account
 restoration.
 %
 Topic anonymization touches less data and is faster than whole-account
-transformations, taking 3.6ms and 12.6ms for the median user to respectively \xx
+transformations, taking 4.0ms and 13.5ms for the median user to respectively \xx
 and reveal.
 %
 
@@ -293,7 +297,7 @@ incrementally in the background, as in Lobsters account decay.
 
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\columnwidth]{figs/composition_legend}
+    \includegraphics[width=.8\columnwidth]{figs/composition_legend}
     \begin{subfigure}[b]{.48\columnwidth}
         \includegraphics[width=\columnwidth]{figs/composition_stats_websubmit}
         \caption{WebSubmit}
@@ -452,7 +456,8 @@ records, the rest comes from database operations.
 HotCRP removal latencies also increase by $\approx$1ms per pseudoprincipal
 (205.6ms) and restoration latencies increase by $\approx$2ms per pseudoprincipal
 (392.0ms). Again, cryptographic operations add $\approx$0.5ms per
-pseudoprincipal, and the remaining cost increase comes from per-pseudoprincipal
+pseudoprincipal, and the remaining cost increase comes from
+per-pseudo\allowbreak principal
 database queries and updates. Restoration requires more per-pseudoprincipal
 queries to \eg perform consistency checks, resulting in a greater latency
 increase than in removal. 
