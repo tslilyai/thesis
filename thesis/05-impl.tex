@@ -179,13 +179,17 @@ with serialized input rows, and deserialize the output.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 \section{Batching}
-%
+\label{s:impl:batching}
+
 For efficiency, \sys batches the deletion of rows from the same table, updates
 to rows of the same table from modifications and decorrelation, and the creation
 of pseudoprincipals upon disguise. 
 %
 \sys also batches the deletion of pseudoprincipals during reveal, and 
-the reveal of same-table diff records.
+the reveal of same-table diff records. This allows, for example, all updates for
+database management operations to be applied to all diff record rows of the same
+table at the same time; and for all rows of the same table to be inserted,
+updated, or removed from the database in a single query.
 %
 %\sys performs decorrelation and modification operations individually for each
 %row during disguise, as different rows are updated to different values.

@@ -301,12 +301,12 @@ when the user owns many keys (\eg the WebSubmit admin).
 %complexity add overhead, particularly when the user owns many keys (as in the
 %case of the WebSubmit admin).
 %
-Admin-applied anonymization incurs the highest overhead (+156.4ms) as it issues
+Admin-applied anonymization incurs the highest overhead (+60.7ms) as it issues
 many queries to read user data and execute decorrelations.
 %
 Among the common operations,
 an admin getting all the answers for a lecture
-suffers similar overheads (+127.7ms).
+suffers similar overheads (+79.9ms).
 %
 %the admin possesses keys for all users's answers.
 %Although \syscrypt indexes \fn{access\_keys} by object identifiers, queries that

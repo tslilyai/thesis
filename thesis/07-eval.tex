@@ -601,12 +601,14 @@ by other users must be largely unaffected by \sys's \xxing and revealing operati
     \centering
     \includegraphics[width=\columnwidth]{figs/lobsters_concurrent_results}
     \caption{Continuous \xxing/revealing operations in Lobsters
-    have a <7\% impact on application request
-    throughput when disguising a random user; an extreme case of a
-    heavy-hitter user with lots of data repeatedly \xxing and revealing
-    causes a 6.6--30\% drop in throughput.}
+    have a <7\% impact on application request throughput when disguising a
+    random user; an extreme case of a heavy-hitter user with lots of data
+    repeatedly \xxing and revealing causes up to 8\% drop in throughput without
+    transactions, and up to 28.3\% drop in throughput with transactions.}
     \label{f:concurrent-lobsters}
 \end{figure}
+
+
 
 %
 We thus measure the impact of \sys's operations on other concurrent requests
@@ -653,22 +655,31 @@ A good result for \sys would show little impact on normal operation throughput
 when concurrent \xxing transformations occur.
 %
 
+%low cheap no txn 0 
+%low cheap txn 0.8
+%low exp no txn 4.4
+%low exp txn 28.3
+%
+%high random no txn 4.2
+%high random txn 7.2
+%high exp no txn 7.7
+%high exp txn 25.3
+
 %
 Figure~\ref{f:concurrent-lobsters} shows the results.
 %
-If a random user disguises and reveals their data (the common case),
-normal operations are mostly unaffected by concurrent \xxing and revealing:
-throughput drops $\le$4.7\% without transactions and $\le$6.5\% with transactions.
-%2.3 low load
-%3.2 low load
+If a random user disguises and reveals their data (the common case), normal
+operations are mostly unaffected by concurrent \xxing and revealing: throughput
+drops $\le$4.2\% without transactions and $\le$7.2\% with transactions (at high
+load).
+%
 This shows that \sys's \xxing and revealing transformations have acceptable
 impact on other users' application experience in the common case.
 
 %
 Constantly \xxing and revealing the user with the most data (the worst-case
-scenario) has a larger effect, with throughput reduced by up to $5.1$\% (without
-transactions) and up to 13\% at low load and up to 23\% at high load (with
-transactions).
+scenario) has a larger effect, with throughput reduced by up to $7.7$\% without
+transactions and up to 28.3\% with transactions at both low and high load.
 %5.8\% in low load, 2.6 high 13.3\% in low load, 16.3 high dropping by at most
 %4.6\%---by concurrent \xxing of a random user (with and without transactions)
 %and of the most expensive user (without transactions); \xxing the most
@@ -696,8 +707,8 @@ This worst-case scenario disguises and reveals a user owning 1\% of all the data
 in a database of 16k users, and demonstrates the upper bound on Edna’s
 performance impacts when Edna runs large disguising and revealing transactions
 continuously.  Because the queries within disguise and reveal transactions touch
-16 tables, all which are commonly read by normal application operations, a
-moderate impact is expected: the transactions will lock the tables, preventing
+16 tables, all which are commonly read by normal application operations, this
+impact is expected: transactions lock any written tables, preventing
 application operations from reading them until the transaction has completed. 
 
 %and operations over \xxed data
@@ -710,8 +721,8 @@ application operations from reading them until the transaction has completed.
 %
 
 The latency of disguising operations depends on load: on average, disguising and
-revealing transformations take <100 milliseconds.  The expensive user's account
-removal and revealing take 2.7 and 5.4 seconds under high load. 
+revealing transformations take <100ms.  The expensive user's account removal and
+revealing take 2.7 and 5.4 seconds under high load. 
 %\lyt{Note: these
 %numbers are about the same (if not higher) when not using transactions.}
 %
@@ -744,7 +755,8 @@ exp txn restore 98 232 366
 
 %
 If developers perform database management operations, this both increases
-developer effort and affects \sys's performance. Here, we answer the following two questions:
+developer effort and affects \sys's performance. Here, we answer the following
+two questions:
 \begin{enumerate}[nosep]
     \item What categories of bulk management operation can \sys support, and how
         easily? 
@@ -764,11 +776,6 @@ developer effort and affects \sys's performance. Here, we answer the following t
         \hline
         Impl Update & $\varnothing$ & 54 LoC & 27 LoC \\
         \hline
-        Perform Bulk Op & 5.63s & 5.10s & 0.095s\\
-        \hline
-        Perform Update (story row) & 0.22ms & 0.01ms & 0.01ms \\
-        \hline
-        Perform Update (user row) & <0.01ms & 0.01ms & 0.01ms 
     \end{tabular}
     \caption{Schema migrations that affect entire tables require
     writing separate update function for \sys. Applying these updates adds greater overheads per
@@ -900,28 +907,59 @@ with their data present in the database.
 \subsection{Performance of Reveals with Updates}
 \label{s:eval:updates}
 
+\begin{figure}
+    \centering
+    \small
+    \begin{tabular}{m{0.28\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}}
+        \centering\textbf{Attribute} & \textbf{Normalize URL} & \textbf{Add Story Texts} &
+        \textbf{Add Show Email} \\
+        \hline
+        Bulk Op & 5.63s & 5.10s & 0.095s\\
+        \hline
+        Update 1 story row & 0.22ms & 0.01ms & 0.01ms \\
+        \hline
+        Update 1 user row & <0.01ms & 0.01ms & 0.01ms 
+    \end{tabular}
+    \caption{Schema migrations that affect entire tables require
+    writing separate update function for \sys. Applying these updates adds greater overheads per
+    story than per user or per other table row, as more updates apply to the
+    stories table.}
+    \label{tab:updates}
+\end{figure}
+
+
 We next look at how bulk operations and updates affect application performance,
 and how updates affect \sys's reveal performance. Table~\ref{tab:updates} shows
 the results.
 
 \paragraph{Bulk Operation Performance.}
-First, as a baseline, we look at the cost of performing bulk operations, which applications
-incur without \sys.
-%
-Applying these changes themselves equates to modifying all 120k stories (\eg URL 
-normalization) and/or changing the database schema.  The URL normalization
-application update takes 5.63s, the longest of all updates.
-%
-This matches the optimized bulk update time of 6s in the deployed Lobsters
-application, which batch updates all stories with the normalized URL. The
-unoptimized version that updates stories one-by-one takes 1789s.
+First, as a baseline, we look at the cost of performing bulk operations, which
+applications incur without \sys.
 %
 
-Adding the \texttt{show\_email} attribute to the \texttt{users} table takes
-82ms, and 
 %
-creating and populating the \texttt{story\_texts} table, and removing a column
-from the \texttt{stories} table takes 4.93s.
+The URL normalization application update takes 5.63s, the longest of all
+updates.
+%
+This matches the optimized bulk operation execution time of 6s in the deployed
+Lobsters application, which batch updates all stories with the normalized URL.
+The unoptimized version first implemented by the Lobsters developers updates
+stories one-by-one, and takes 1789s, requiring them to reimplement via batching.
+%
+URL normalization modifies all 120k stories.
+%
+
+%
+Adding the \texttt{show\_email} attribute to the \texttt{users} table takes
+82ms, as it performs only one query to change the database schema.
+%
+
+%
+Finally, creating and populating the \texttt{story\_texts} table and removing a
+column from the \texttt{stories} table takes 5.24s.
+%
+This modifies all 120k stories, and changes the database schema by adding tables
+and removing columns.
 %
 
 %
@@ -938,46 +976,65 @@ insert query) and add it to \sys's in-memory update replay log.
 %
 We next evaluate the latency of reveal operations in Lobsters when updates
 corresponding to the implemented three bulk operations have been applied after
-reveal.
+reveal. 
+
+\paragraph{Apply Update to Diff Record.}
+First, we measure the cost to apply the various updates to diff record rows.
+%
+Updating \texttt{stories} diff records is the most costly, as both URL
+normalization and the \texttt{story\_texts} updates apply: this takes 0.2--0.3ms
+per story.
+%
+Diff records for modified or decorrelated stories have both placeholder and
+original rows. \sys applies updates to both placeholder and original rows, and
+thus updates take 0.5--0.6ms per \texttt{stories} modify or decorrelate diff
+record.
+%
+Initializing a URL normalizer object during the update takes a one-time cost of 0.2ms.
+%
+Because \sys applies updates to batches of rows of the same table
+(\S\ref{s:impl:batching}), \sys amortizes the cost of URL normalizer
+initialization by creating a URL normalizer object only once per reveal (when
+\sys reveals all stories).
+%
+
+Applying all three updates to \texttt{users} diff records incurs $<0.1$ms per
+user: the \texttt{show\_email} update appends a single column to user rows. 
+
+%
+The three implemented updates do not affect other row types. However, the
+implementation of Lobsters' updates does iterate through all rows to check
+whether to update them, and each row iteration takes $\approx$1$\mu$. At scale
+(\eg for a user with thousands of comments), this cost can add up to a couple
+milliseconds over the entire reveal.
+%
+
+\paragraph{Restore Updated Diff Record Rows.}
+Next, we measure the cost to restore updated rows to the database compared to the cost to
+restore rows without updates.\footnote{Although restoring updated rows is more
+expensive than restoring the original rows, the application's bulk operation
+would have incurred the cost of updating these rows had the rows not been
+disguised at the time. Thus, \sys moves the cost of updating these rows
+to reveal time, rather than bulk operation time (although the cost may be higher
+because the update is not batched over all table rows).}
+%
+Updates do not affect the cost of restoring rows for all tables other than
+\texttt{stories}, since the queries to restore the rows are the same.  However,
+restoring a story now requires additional queries to perform consistency checks
+for and insert \texttt{story\_texts} table rows, adding $\approx$0.6ms per
+story.
 %
 
 %
-Applying the three updates to one disguised story row takes 0.2--0.3ms, and
-applying the three updates to one disguised user takes $<0.1$ms.
-%
-The updates do not affect other row types.
-%
-Modified or decorrelated stories require applying updates to both placeholder
-and original rows; thus, updates require $\approx$0.5ms per story modify or
-decorrelate diff record.
-%
-
-%
-The URL normalization update requires 0.22ms, where initializing a URL
-normalizer object takes $\approx$0.2ms.
-%
-However, because \sys batches reveal of same-table diff record, \sys applies an
-update to all affected rows of the same table simultaneously. Thus, \sys
-amortizes the cost of URL normalizer initialization by normalizing
-all disguised stories from a disguise at once.
-%
-
-%
-After applying the update, \sys also must restore the updated rows to the
-database. Updates do not affect the cost of restoring rows for all tables other
-than stories.  However, restoring stories also requires an additional queries to
-reveal and consistency check \texttt{story\_texts} table rows, incurring a
-$\approx$0.6ms cost per story.
-%
-
+\paragraph{Conclusion.}
 %
 As expected, the effects of performing updates increases with the amount of
 disguised data a user wants to reveal.
 %
-Users with little data (\eg less than 5 stories) see little increase in reveal
-latency with updates, but revealing users with lots of data shows moderate
-effects from updates (\eg revealing a user with 673 stories, 1971 comments, and
-2000 messages takes on average 6.5s instead of 5.4s).
+Users with little data (\eg less than 5 stories) experience no visible increase
+in reveal latency with updates, but users with lots of data can experience a
+small effect (\eg revealing a user with 673 stories, 1971 comments, and 2000
+messages takes on average 4.67s instead of 4.50s, an increase of 3.8\%).
 %
 
 %
