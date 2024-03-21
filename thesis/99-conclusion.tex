@@ -12,7 +12,7 @@ inactive accounts, selectively dissociate personal data from public profiles,
 and remove a web service's access to their data without permanently losing their
 accounts;
 %
-and demonstrated that \sys can support disguised data in real-world applications with
+and demonstrates that \sys can support disguised data in real-world applications with
 reasonable performance.
 %
 However, \sys is just the beginning. To truly achieve a world in which web
@@ -26,11 +26,12 @@ opportunities for research.
 
 Supporting disguised data in web applications that have millions or more users,
 operate with low cost margins, and/or distribute their compute and storage
-across multiple regions raises several open questions.
+across multiple regions requires addressing several issues.
 
 %
-\paragraph{Disguised Data Storage.} If millions of users or more disguise their
-data over time, disguised data may become too much for applications to store.
+\paragraph{Disguised Data Storage.} If many (\eg millions) of users disguise
+their data over time, disguised data may become too much for applications to
+store.
 %
 Even though storage is historically cheap, and applications today willingly
 store and retain user data nearly indefinitely, eventually disguised data
@@ -105,14 +106,14 @@ more flexible access control to control user data exposure to web application
 insiders.
 
 %
-As part of a collaboration led by Hannah Gross, Eddie Kohler, M. Frans Kaashoek,
-and Malte Schwarzkopf~\cite{funhouse}, we investigated using disguising
-abstractions to allow the application to control user data exposure to insiders.
+As part of a collaboration with Hannah Gross~\cite{funhouse}, we investigated
+using disguising abstractions to allow the application to control user data
+exposure to insiders.
 %
 Our work draws on the key observation that company employees do not \emph{always}
 need the user information that they can typically access.
 %
-Just as \sys allows users to only expose their data while using the application,
+Just as \sys allows users to expose their data only while using the application,
 perhaps the application can use disguising and revealing to only expose user
 data to employees when they actually need and use it.
 %
@@ -144,7 +145,7 @@ returns back to its original, maximally disguised state.
 
 %
 To achieve this flexible access control, we need a database
-system that applies disguises and dynamically reveals them at per-employee
+system that applies disguises and dynamically reveals them at a per-employee
 granularity.
 %
 A strawman solution might attempt to do so with personalized database views
