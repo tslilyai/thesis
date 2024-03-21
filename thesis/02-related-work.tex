@@ -40,11 +40,20 @@ Policy enforcement systems
 %such as Qapla~\cite{qapla} and Blockaid~\cite{blockaid} and
 %others~\cite{static, jeeves, jif, hails, ifdb, oracle, multiverse, sieve}
 aim to prevent unauthorized access to data and protect against leakage via
-compromised accounts or SQL injections.  They enforce developer-specified
+compromised accounts or SQL injections. 
+%
+These systems enforce developer-specified
 visibility and access control policies via information flow
 control~\cite{static, jeeves, jif, hails, ifdb}, authorized views~\cite{oracle},
 per-user views~\cite{multiverse}, or by blocking or rewriting database
 queries~\cite{blockaid, qapla, sieve}.
+%
+For example, a policy for a relational database-backed application may allow the
+session user $U$ to access account information only if the predicate "\texttt{WHERE
+accounts.user\_id = U}" returns true; this prevents an attacker who injects a
+"\texttt{SELECT * FROM accounts}" query from reading any user accounts other than their
+own.
+%
 
 %
 Policy-enforcing systems do not help users anonymize data or maintain
@@ -135,8 +144,10 @@ data.
 Vanish~\cite{vanish} provides users with self-destructing data and a proof of
 data deletion using decentralized infrastructure and cryptographic techniques
 (with limitations against Sybil attacks~\cite{defeat_vanish}). Unlike \sys,
-Vanish cannot restore deleted data and requires extensive application
-restructuring to deploy.
+Vanish cannot restore deleted data and requires substantial application
+restructuring to deploy (\eg they must run a Vanish daemon, be aware of which
+objects are ``vanishing objects,'' and store and access protected data
+as key-value pairs instead of objects of other data structures).
 %
 
 %
@@ -146,13 +157,25 @@ the database and stores \xxed data encrypted.
 %
 
 %
-Finally, oblivious object stores like Dory~\cite{dory} and Snoopy~\cite{snoopy}
-protect data and search access patterns against powerful adversaries who can \eg
-compromise the entire cloud software stack and view metadata like network
-traffic and access patterns. To provide strong security, these systems rely on
-complex encryption schemes, oblivious RAM, and other cryptographic techniques;
-however, these techniques more greatly affect performance and deployability
-compared to \sys.
+Finally, oblivious object stores like Dory~\cite{dory}, Snoopy~\cite{snoopy} and
+Obladi~\cite{obladi} protect data and search access patterns against powerful
+adversaries who can, for example, compromise the entire cloud software stack and
+view metadata like network traffic and access patterns. To provide strong
+security, these systems rely on complex encryption schemes, oblivious RAM,
+hardware enclaves, or other cryptographic techniques.
+%
+While these techniques have often been considered impractically slow, Snoopy---the most
+recent system---improves the throughput of data requests by running
+requests in batches.  However, for some applications, batched data requests may
+result in too high of an individual request latency.
+%
+Furthermore, Snoopy achieves performance 39.1$\times$ slower than Redis, a
+commonly-used non-oblivious object store, which may be impractical for some
+applications.
+%
+Oblivious object stores also support only simple queries (\eg key/value point
+queries). Many applications use relational databases in order to perform more
+complex queries, which \sys supports without any modification.
 %
 
 \iffalse
