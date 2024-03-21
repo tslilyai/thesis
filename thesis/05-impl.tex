@@ -1,13 +1,33 @@
 %
-\todo{table with components and loc}
-\sys's prototype consists of $\approx10$k lines of Rust, and supports MySQL.
+\sys's prototype consists of $\approx6$k lines of Rust (broken down by component in
+Figure~\ref{f:loc}). 
 %(1.6k LoC specifically added for \syscrypt).
 %
-\sys also provides an API server that exposes a JSON-HTTP API that applications
-can use to invoke \sys.
+\sys supports MySQL, and provides an API server that exposes a JSON-HTTP API that applications
+can use to invoke \sys, if they do not link directly with \sys's Rust library.
 %
 %In the following, we discuss key implementation details that \sys relies for
 %security and performance.
+
+\begin{figure*}[t]
+\centering
+\begin{tabular}{cc}
+    \textbf{Component} & \textbf{LoC} \\
+\hline
+    API & 0.5k\\
+    disguiser & 1.0k\\
+    revealer & 0.3k \\
+    records & 2.2k \\
+    helpers & 2.0k \\
+    examples and tests & 3.1k\\
+
+\end{tabular}
+    \caption{Code components of \sys and the respective LoC to implement. Much
+    of the logic for reveal is embedded in the records implementation (\eg a
+    diff record struct implements \texttt{reveal}); the revealer handles the
+    order at which diff records are revealing and modifications of the speaks-for
+    chain.} \label{f:loc}
+\end{figure*}
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -191,6 +211,16 @@ database management operations to be applied to all diff record rows of the same
 table at the same time; and for all rows of the same table to be inserted,
 updated, or removed from the database in a single query.
 %
+
+%
+Batching utilizes MySQL's \texttt{INSERT... ON DUPLICATE KEY UPDATE}, which
+allows batch update of different items to different row values. However, this
+also introduces potential error if an item needs to update its primary key as
+well (\eg wants to \sys disguise the user ID with a pseudoprincipal ID,
+but the user ID column also acts as a primary key). If \sys detects a change to
+a primary key, \sys will individually update rows' primary keys prior to the
+batch update, ensuring that rows sent in the \texttt{INSERT...UPDATE} query 
+appropriately match those in the database.
 %\sys performs decorrelation and modification operations individually for each
 %row during disguise, as different rows are updated to different values.
 %%
