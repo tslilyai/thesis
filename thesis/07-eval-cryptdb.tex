@@ -258,11 +258,11 @@ absolute latencies.
 %
 Figure~\ref{f:cryptdb_ws_opstats} shows the results.
 %
-Normal application operations are 2--3.5$\times$ slower with \syscrypt than in
+Normal application operations are 2--3$\times$ slower with \syscrypt than in
 \sys, with the largest overheads on operations that access many rows, such as
 the admin viewing all answers.
 %
-\Xxing and revealing operations are also 2--8$\times$ slower than \sys.
+\Xxing and revealing operations are also 2--6$\times$ slower than \sys.
 %
 
 %
@@ -301,12 +301,12 @@ when the user owns many keys (\eg the WebSubmit admin).
 %complexity add overhead, particularly when the user owns many keys (as in the
 %case of the WebSubmit admin).
 %
-Admin-applied anonymization incurs the highest overhead (+60.7ms) as it issues
+Admin-applied anonymization incurs the highest overhead (+143.6ms) as it issues
 many queries to read user data and execute decorrelations.
 %
 Among the common operations,
 an admin getting all the answers for a lecture
-suffers similar overheads (+79.9ms).
+suffers similar overheads (+132.9ms).
 %
 %the admin possesses keys for all users's answers.
 %Although \syscrypt indexes \fn{access\_keys} by object identifiers, queries that
