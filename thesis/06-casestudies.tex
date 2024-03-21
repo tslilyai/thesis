@@ -1,5 +1,5 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-This section evaluates \sys's ability to add new data-redacting features to
+This section evaluates \sys's ability to add new disguising features to
 several applications; \S\ref{ch:eval} evaluates the effort needed to do so and the
 resulting performance.
 %
@@ -37,7 +37,7 @@ moderations that mark inappropriate content as removed.
 %a link-sharing and discussion platform with 14.5k users~\cite{lobsters},
 %
 We added three \xxing transformations: account deletion with return; account
-decay, \ie automatic dissociation and protection of old data; and topic-specific
+decay (\ie automatic dissociation and protection of old data); and topic-specific
 throwaway accounts.
 %
 
@@ -118,7 +118,7 @@ editing these contributions.
 %statistics will not reflect the votes these contributions accumulated.
 
 %
-With \sys and its support for composing \xxing transformations, users can
+With \sys's support for composing \xxing transformations, users can
 delete accounts that have been decayed or dissociated into throwaways, and
 can later reveal them.
 
@@ -144,7 +144,7 @@ normalization~\cite{urinorm} on the \texttt{url} column of all rows in the
 The second changes the schema by adding a \texttt{show\_email} attribute to the
 \texttt{users} table automatically set to \texttt{false}. 
 %
-Finally, the third creates a new \texttt{story\_texts} table which stores the
+The third creates a new \texttt{story\_texts} table that stores the
 \texttt{title}, \texttt{description}, and \texttt{story\_cache} attributes of
 rows from \texttt{stories}. This enables search over story content. The
 \texttt{story\_cache} column is then removed from \texttt{stories}.
