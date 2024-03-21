@@ -1,6 +1,3 @@
-\todo{Update with numbers from Google Cloud}
-\todo{Fix figures}
-
 Our evaluation seeks to answer six questions:
 %
 \begin{enumerate}[nosep]
@@ -766,20 +763,18 @@ two questions:
 \subsection{Supporting Updates}
 \begin{figure}
     \centering
-    \small
-    \begin{tabular}{m{0.28\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}}
+    \begin{tabular}{m{0.2\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}}
         \centering\textbf{Attribute} & \textbf{Normalize URL} & \textbf{Add Story Texts} &
         \textbf{Add Show Email} \\
         \hline
         Impl Bulk Op & 68 LoC & 19 LoC & 2 LoC \\
         \hline
         Impl Update & $\varnothing$ & 54 LoC & 27 LoC \\
-        \hline
     \end{tabular}
     \caption{Schema migrations that affect entire tables require
-    writing separate update function for \sys. Applying these updates adds greater overheads per
-    story than per user or per other table row, as more updates apply to the
-    stories table.}
+    writing separate update functions; however, management operations like
+    normalizing URLs that already apply per rows can be used as update
+    functions.}
     \label{tab:updates}
 \end{figure}
 
@@ -819,12 +814,24 @@ calls when performing the bulk operation.
 %
 
 \begin{figure}
-\centering
-  \includegraphics[width=.7\columnwidth]{figs/categories}
-
+    \centering
+    \begin{tabular}{m{0.15\columnwidth}|m{0.05\columnwidth}|m{0.22\columnwidth}|m{0.43\columnwidth}}
+        \centering\textbf{Bulk Op Type} & \centering\textbf{\%} &
+        \centering\textbf{Examples} & \textbf{Example SQL} \\
+        \hline
+        Table & \begin{center}75\end{center} & Create tables \newline Alter table columns \newline Add table indexes & \texttt{ALTER TABLE users ADD COLUMN show\_email} \\
+        \hline
+            Row& \begin{center}15\end{center} & Moderate text \newline Normalize URLs & \texttt{UPDATE stories SET
+        url= NORMALIZE(url)} \\
+        \hline
+            Denormalized & \begin{center}10\end{center} & Update cached story vote count & \texttt{UPDATE stories SET
+        vote\_count=(SELECT COUNT(*) FROM votes WHERE votes.story\_id =
+        stories.id)} \\
+    \end{tabular}
+ 
     \caption{Out of the most recent 20 Lobsters database management operations,
     the majority (75\%) are table operations which require developers to write
-    separate update specifications for \sys, 15\% are row operations which can
+    separate update specifications for \sys. 15\% are row operations which can
     be reused as updates without additional effort, and 10\% are unsupported
     because they denormalize the schema in order to cache aggregate results.}
   \label{tab:categories}
@@ -906,14 +913,14 @@ with their data present in the database.
 \subsection{Performance of Reveals with Updates}
 \label{s:eval:updates}
 
+\begin{comment}
 \begin{figure}
     \centering
-    \small
-    \begin{tabular}{m{0.28\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}}
+    \begin{tabular}{m{0.2\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}}
         \centering\textbf{Attribute} & \textbf{Normalize URL} & \textbf{Add Story Texts} &
         \textbf{Add Show Email} \\
         \hline
-        Bulk Op & 5.63s & 5.10s & 0.095s\\
+        Bulk Op & 5.63s & 5.24s & 0.082s\\
         \hline
         Update 1 story row & 0.22ms & 0.01ms & 0.01ms \\
         \hline
@@ -925,6 +932,7 @@ with their data present in the database.
     stories table.}
     \label{tab:updates}
 \end{figure}
+\end{comment}
 
 
 We next look at how bulk operations and updates affect application performance,
@@ -977,7 +985,7 @@ We next evaluate the latency of reveal operations in Lobsters when updates
 corresponding to the implemented three bulk operations have been applied after
 reveal. 
 
-\paragraph{Apply Update to Diff Record.}
+%\paragraph{Apply Update to Diff Record.}
 First, we measure the cost to apply the various updates to diff record rows.
 %
 Updating \texttt{stories} diff records is the most costly, as both URL
@@ -999,16 +1007,15 @@ initialization by creating a URL normalizer object only once per reveal (when
 
 Applying all three updates to \texttt{users} diff records incurs $<0.1$ms per
 user: the \texttt{show\_email} update appends a single column to user rows. 
-
 %
-The three implemented updates do not affect other row types. However, the
+Although the three implemented updates do not affect other row types, the
 implementation of Lobsters' updates does iterate through all rows to check
-whether to update them, and each row iteration takes $\approx$1$\mu$. At scale
+whether to update them. Each row iteration takes $\approx$1$\mu$. At scale
 (\eg for a user with thousands of comments), this cost can add up to a couple
 milliseconds over the entire reveal.
 %
 
-\paragraph{Restore Updated Diff Record Rows.}
+%\paragraph{Restore Updated Diff Record Rows.}
 Next, we measure the cost to restore updated rows to the database compared to the cost to
 restore rows without updates.\footnote{Although restoring updated rows is more
 expensive than restoring the original rows, the application's bulk operation
@@ -1043,5 +1050,4 @@ applications. We found that the effort required was reasonable, that \sys's
 \xxing and revealing operations are fast enough to be practical, and that they
 impose little to moderate overheads on normal application operation depending on
 the amount of data being disguised or revealed.
-\todo{check}
 %
