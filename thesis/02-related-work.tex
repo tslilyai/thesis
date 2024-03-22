@@ -98,8 +98,19 @@ user-defined data policies via cryptographic means~\cite{zeph} or
 systems security mechanisms~\cite{riverbed}.
 %
 However, this may restrict feasible application functionality (\eg to additively
-homomorphic functions), or restrict combining data with different policies, and
-requires extensive modifications to existing applications to redeploy.
+homomorphic functions, as in Zeph~\cite{zeph}), or restrict combining data with
+different policies, and requires modifying and redeploying existing
+applications.
+%
+For example, Riverbed~\cite{riverbed} requires applications to run proxies on
+both client and server, allowing the client proxy to attest that the server
+indeed runs the correct proxy. 
+%
+Furthermore, users in Riverbed who define different policies cannot easily share
+data with random other users at will, and aggregations over many users' data
+become difficult, making certain applications less amenable to the Riverbed
+structure.
+\todo{Should I add more about Zeph deployment?}
 
 %
 Systems like Pesos~\cite{pesos} and Ironsafe~\cite{ironsafe} use trusted
@@ -110,13 +121,16 @@ Ryoan~\cite{ryoan} also runs data processing applications as sandboxed modules
 within TEEs, thus protecting user data against untrusted applications in
 addition to untrusted platforms.
 %
-These systems rely on the security of TEEs, which allows them to protect against
-their stronger threat models. However, this requires applications to be written
-with the systems' specific architecture in mind, making these systems more
-difficult to deploy in today's applications.
+However, these systems require applications to be written with the systems'
+specific architecture in mind---for example, Ironsafe requires application to 
+run atop Ironsafe's trusted policy compliance monitor; and in Ryoan, a developer needs to write their
+application as a computation DAG containing Ryoan instances, which each instance
+contains a data processing module.  \todo{more detail?}
+%making these systems more difficult to deploy in
+%today's applications.
 %
-By contrast, \sys trusts developers to be well-intentioned, and undisguised data
-can be accessed by the application.
+By contrast, \sys trusts developers to be well-intentioned, and \sys can support
+disguised data in applications without modifying application architecture.
 %
 
 Decentralized platforms such as Solid~\cite{solid}, BSTORE~\cite{bstore},
