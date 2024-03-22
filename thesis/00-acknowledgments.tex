@@ -1,7 +1,5 @@
-\todo{Better acks}
-
 %
-This thesis is based off prior work on \sys, published at SOSP 2023~\cite{edna}.
+This thesis is based off prior work on \sys published at SOSP 2023~\cite{edna}.
 I am immensely grateful to my collaborators on \sys over the many years: Hannah
 Gross, Eddie Kohler, Malte Schwarzkopf, and Frans Kaashoek. Without you all,
 \sys would not exist today.
@@ -30,108 +28,71 @@ six-plus years.
 %
 I thank you all not just for \sys, but also for encouraging me to be better in
 all ways: as a thinker, a collaborator, a friend, and a human being.
+%
+I would especially like to thank:
 
-\begin{comment}
-**Family**
-Stephanie ("Stephie")
-Parents (Phaih-lan Law, Kenwood Tsai)
-Ah-ma and Ah-gong Tsai
-Cecilia and Jacek Smolinski
-Jackie and Kenny Smolinski
-Ah-Ee (and my god-dogs, Toby and Sparky)
-Wei-Jen and Wei-Ken
-Ah-ma and Ah-gong Lau
+\begin{center}{My Family}\end{center}
+    
+    \begin{itemize}
+    \item Phaih-lan Law and Kenwood Tsai, who raised me and still love me despite my many flaws. 
+    
+    \item Stephanie ("Stephie"), my forever role model. 
+     
+     \item Ah-ma and Ah-gong, who continue to show me how to embrace life to its fullest. 
+        
+    \item Aunty Cecilia, Uncle Jacek, Ah-Ee, Aunty
+    Sally, Tua-ku, Jackie, Wei-Jen, Trevor Hohn, and many aunts, uncles, and cousins, for welcoming me home across the country and world.
 
-**Family++**
-Benji Kilimnik
-Trevor Hohn
-Aunty Sally
-Aunty Alice
-Tuaku and Tuakim
+    \item Benji, for the light you have brought into my life.
+    \end{itemize}
 
+\begin{center}{My Mentors and Role Models}\end{center} 
+    \begin{itemize}
+        \item My Advisors---Malte Schwarzkopf, Frans Kaashoek, and Eddie
+            Kohler---for their unwavering belief in me and my research; I will
+            constantly be in admiration of your endless energy and persistent
+            curiousity.
 
-**Researchers**
-Akshay Narayan, Anish Athalye, Derek Leung, Gohar Irfan Chaudhry, Henry
-Corrigan-Gibbs, James Mickens, Kevin Liao, Kinan Dak Albab, Matthew Lentz,
-Nickolai Zeldovich, and the anonymous reviewers 
+        \item From the Research World: Eddie Kohler, Malte Schwarzkopf, Frans
+            Kaashoek, James Mickens, Peter Druschel, Derek Dreyer, Stefan
+            Saroiu, Margo Seltzer, Kim Keeton, Anastasia Ailamaki, Phillip
+            Levis, and Joel Emer.
 
-Stefan Saroiu
-Eddie Kohler
-Margo Seltzer
-James Mickens
-Phil Levis
-Kim Keeton
-Anastasia
+        \item PDOS and MIT peers: 
+Alexandra Henzinger, Anish Athalye, Ariel Szekely, Baltasar Dinis, Ben Holmes,
+            Derek Leung, Gohar Irfan Chaudhry, Hannah Gross, Josh Fried, Ryan
+            Lehmkuhl, Sanjit Bhat, Upamanyu Sharma, Yun-Sheng Chang, Zain
+            Ruan, Inho Cho,
+            Akshay Narayan, Tej Chajed, Ataley Mert Ileri, Jon Gjengset, Frank Cangialosi,
+            Vibhaalakshmi Sivaraman, Joseph Tassarotti, Ralf Jung, Adam Belay,
+            Henry Corrigan-Gibbs, Nickolai Zeldovich, and Robert Morris.
 
-Hannah Gross
-Nick Young 
+        \item From the "Real World": Alexander Kojevnikov, Ellen Feigenbaum,
+            Mathilda van Es, and Julia Netter.
+        
+        \item The doctors who helped me through the many obstacles which landed in
+            my path during the last decade.  
+    \end{itemize}
+    
+\begin{center}{My (Other) Families}\end{center} 
+    \begin{itemize}
+    \item My Musical Family: Solon Gordon, Jenn Chang, Valerie Chen, Lynn Chang, Lisa Wong,
+        Ken Allen, Mary Jane, and the many more who have shared their music with
+            me; and Music for Food and Sharing Notes at MIT for enabling me to
+            give back---even just a little---to the MIT and broader Boston
+            communities with music.    
 
-MIT's PDOS group, Brown's ETOS group, and
-the SystemsResearch@Google Team 
+    \item My Climbing/Running Family: Anders Simpson-Wolf, Lekha KJ, Whitney Meza, Oliver Thomas, Rick
+        Wainner, Bess and Chris, John Langan, and the others who helped
+        me become the strongest I've ever been.
 
-Joel Emer
+    \item My Friends: Serena Booth (and Ducki Booth), Valerie Chen, Melissa Wen, Roberta
+        de Viti, Lara Booth, Daniel Rothchild, Ethan Tsai, Hanson Tam, Kevin
+            Liao, Matthew Lentz, Nikhil Benesch, Samyu Yagati, Anitha
+            Gollamudi, Serena Wang, Zachary Munro, James Deng, Wentong Zhang,
+            Ashvin Swaminathan, Karima Ma, James Tompkin, Helena Caminal, Hamish Nicholson,
+            Henry Burnam, Kevin Loughlin, Yihe Huang, Ruth Fong, and Brian Zhang---I look forward
+            to the many adventures awaiting us in the coming years.
+    \end{itemize}
 
-Helena
-Yannis
-Hamish
-Frank
-Vibhaa
-Sukhi Gulati
-Julia Netter
-Mathilda van Es
-
-Too many to name over the years who've influenced my way of thinking.
-Alexander Kojevnikov, Brian Zimmer
-
-**Health Team**
-
-**Music**
-Lynn Chang and Lisa Wong
-Solon Gordon
-Jenn Chang
-Ken Allen
-Cindy Fong
-Mary Jane
-Justin Solomon
-Music for Food (April)
-Elias Miller and Apollo Ensemble
-Jeremy Lang
-
-**Climbing/Cambridge**
-Whitney
-Oliver
-Lekha
-Anders
-Rick
-Chris/Bess
-John Langan
-Aman
-
-**Friends for Life**
-Daniel
-Henry
-James
-Ashvin
-Melissa
-Zach
-Wentong
-Roberta
-Hanson
-Yihe
-Anitha
-Samyu
-Karima
-Ruth and Brian
-Serena Booth
-Serena Wang
-Lara Booth
-Ethan Tsai
-Jeffrey Kwong
-Susan Nitta
-Robert Bastian
-Swole Crew""
-Kevin Liao
-Nikhil
-Jenny
-
-\end{comment}
+ 
