@@ -132,18 +132,25 @@ HotCRP, and Lobsters (Ch.~\ref{ch:case_studies}).
 %, as a developer would do without \sys.
 %, and measure its latency.
 %
-We measure the latency of common operations, \xxing transformations,
-and operations over \xxed data enabled by \sys
-(\eg account restoration and editing \xxed data).
+We measure the latency of common operations, \xxing transformations, and
+operations over \xxed data enabled by \sys (\eg account restoration and editing
+\xxed data).
 %
-The three applications do not create new data that references pseudoprincipals,
+The three applications do not create new data that reference pseudoprincipals,
 but to fully capture any overheads we configure \sys to nevertheless run the
 checks for lingering pseudoprincipal references on revealing.
 %
-A good result for \sys would show no overhead on common operations,
-competitive performance with manual \xxing, and reasonable
-latencies for revealing operations supported only by \sys
-(\eg a few seconds for account restoration)
+
+%
+A good result for \sys would show no overhead on common operations, since \sys
+should not be invoked on normal application execution paths.
+%
+\sys should be competitive with manual \xxing, with the caveat that \sys needs
+to also encrypt and store disguised data.
+%
+Finally, \sys should have reasonable latencies for revealing operations
+supported only by \sys (\eg a few seconds for account restoration), which
+require both database queries and cryptographic operations. 
 %impossible in the manual baseline
 %
 
@@ -461,7 +468,7 @@ per-pseudo\allowbreak principal
 database queries and updates. Restoration requires more per-pseudoprincipal
 queries to \eg perform consistency checks, resulting in a greater latency
 increase than in removal. 
-%querying-for and per-pseudorpicnipal
+%querying-for and per-pseudopricnipal
 %
 Compared to accounts in WebSubmit, accounts in HotCRP have more data and
 14--15$\times$ more pseudoprincipals after anonymization, which accounts for the
