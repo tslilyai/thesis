@@ -223,7 +223,7 @@ allowing decryption of their accessible objects.
 %
 %\textbf{Implementation.}
 %
-Our prototype only supports the CryptDB deterministic encryption scheme
+The prototype supports only the CryptDB deterministic encryption scheme
 (AES-CMC encryption), which limits it to equality comparison predicates. It also does not
 support joins, a limitation shared with multi-principal CryptDB.
 %
@@ -270,7 +270,7 @@ These overheads result from the cryptographic operations and additional
 indirection in \syscrypt.
 %
 \syscrypt relies on a MySQL proxy, which adds latency: a no-op
-version of our proxy makes operations 1.03-1.5$\times$ slower.
+version of this proxy makes operations 1.03-1.5$\times$ slower.
 %proportional to the number of queries the operation issues.
 %
 %Further overheads come from object key management and computation necessary

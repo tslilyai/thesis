@@ -2,13 +2,14 @@
 \label{s:eval-qapla}
 
 We compare \sys's performance and the effort to use \sys to an implementation of
-the same disguising and revealing functionality for WebSubmit in Qapla.
+the same disguising and revealing functionality for WebSubmit using
+Qapla’s query rewriting and access control policies.
 %
 
 %
-\textbf{Effort.}
+\subsection{Effort.}
 %
-Specifying \xxing transformations as Qapla policies requires far more
+Specifying \xxing transformations as Qapla policies requires more
 explicit reasoning about transformations' implementations and their
 compositions.
 %
@@ -25,7 +26,8 @@ transformation increases the number of predicates whose combinations the
 developer must reason about.
 %
 Developers must also optimize Qapla predicates (\eg reducing joins, adding
-schema indexes and index hints) to achieve reasonable performance.
+schema indexes and index hints) to achieve reasonable performance
+(\S\ref{s:eval-qapla-perf}).
 
 %
 To modify data, the application developer can use Qapla's ``cell blinding''
@@ -66,7 +68,8 @@ achieve GDPR-compliant data removal. %, as the data remains in the database.
 \end{figure}
 
 %
-\textbf{Performance.}
+\subsection{Performance.}
+\label{s:eval-qapla-perf}
 % comparable with \sys.
 %
 We measure Qapla's performance (Figure~\ref{f:qapla_ws_opstats}) on the same

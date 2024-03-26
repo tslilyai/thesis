@@ -1,4 +1,4 @@
-Our evaluation seeks to answer six questions:
+This chapter seeks to answer six questions:
 %
 \begin{enumerate}[nosep]
  %
@@ -28,14 +28,15 @@ Our evaluation seeks to answer six questions:
 %
 \end{enumerate}
 
-We compare Edna to three alternative settings:
-\one{} a manual version
-of each \xxing transformation that directly modifies the database
-(\eg via SQL queries that remove data), which
-lacks support for revealing and does not support
-composition of multiple transformations;
-\two{} an implementation of disguising and revealing in Qapla~\cite{qapla}
-using Qapla’s query rewriting and access control policies; and \three{} an integration of Edna with CryptDB~\cite{cryptdb}, an encrypted database.
+%We compare Edna to three alternative settings:
+To measure the \sys's expenses (\S\ref{s:eval-ops}), we compare \sys to a manual version of each
+\xxing transformation that directly modifies the database (\eg via SQL queries
+that remove data), which lacks support for revealing and does not support
+composition of multiple transformations. 
+%\two{} an implementation of disguising and revealing in
+%Qapla~\cite{qapla} using
+%Qapla’s query rewriting and access control policies; and \three{} an integration
+%of Edna with CryptDB~\cite{cryptdb}, an encrypted database.
 
 %
 %To understand the cost of using \sys, we implemented a manual version of each
@@ -63,11 +64,11 @@ using Qapla’s query rewriting and access control policies; and \three{} an int
 %systems offer different, complementary guarantees.
 %
 
-All benchmarks run on a Google Cloud \texttt{n1-standard-16} instance with 16 CPUs
-and 60 GB RAM, running Ubuntu 20.04.5 LTS. Benchmarks run in
-a closed-loop setting, so throughput and latency are inverses. %of each other.
+All benchmarks run on a Google Cloud \texttt{n1-standard-16} instance with 16
+CPUs and 60 GB RAM, running Ubuntu 20.04.5 LTS. Benchmarks run in a closed-loop
+setting, so throughput and latency are inverses. %of each other.
 %
-We use MariaDB 10.5 with the InnoDB storage engine atop a local SSD.
+The benchmarks use MariaDB 10.5 with the InnoDB storage engine atop a local SSD.
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -106,23 +107,25 @@ authorization of anonymous users, and email notifications.
 A developer using \sys also writes \xx specifications and invokes \sys.
 Lobsters' \xx specifications are written in 518 LoC, WebSubmit's in 75 LoC, and
 HotCRP's in 357 LoC (all in JSON).  The specification size is proportional to
-schema size and what data each application \xxs.
+the lines required to specify the database schema in SQL, as well as what data
+each application \xxs.
 %
 Writing the corresponding updates for the three Lobsters bulk management
-operations required an additional 81 LoC on top of the 89 LoC the application
-developer wrote for the bulk database management operations themselves.
+operations requires 81 LoC; this adds to the 89 LoC that the developer already
+writes to implement the bulk database management operations themselves.
 %
 
-Thus, the developer effort required to use \sys---writing \sys specifications, and
-invoking \sys---is small, even though these applications were not written with
-\sys in mind.
+Thus, the developer effort required to use \sys---writing \sys specifications,
+and invoking \sys---requires adding <1k LoC per application (less than 1\% of
+the code of real world applications like Lobsters), even though these
+applications were not written with \sys in mind.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Performance of \sys Operations}
 \label{s:eval-ops}
 
 %
-We now evaluate \sys's performance using WebSubmit,
+We next evaluate \sys's performance using WebSubmit,
 HotCRP, and Lobsters (Ch.~\ref{ch:case_studies}).
 %
 %To measure the extra cost that \sys's cryptographic operations add,
@@ -139,7 +142,7 @@ checks for lingering pseudoprincipal references on revealing.
 %
 A good result for \sys would show no overhead on common operations,
 competitive performance with manual \xxing, and reasonable
-latencies for revealing operations only supported by \sys
+latencies for revealing operations supported only by \sys
 (\eg a few seconds for account restoration)
 %impossible in the manual baseline
 %
@@ -197,9 +200,9 @@ when possible (revealing operations are impossible in the baseline).
 Figure~\ref{f:ops-websubmit} shows that common operations have comparable
 latencies with and without \sys.
 %
-\sys adds 9ms to account creation; and \xxing and revealing operations take
-longer in \sys (13.2--40.0ms), but allow users to reveal their data and take
-less developer effort.
+\sys adds 9ms to account creation; \xxing and revealing operations also take
+longer in \sys (13.2--40.0ms), but allow users to reveal their data.
+%and take less developer effort.
 %
 
 \textbf{HotCRP.}
@@ -216,11 +219,11 @@ decorrelations across 12 tables. %, so we would expect higher latencies.
 %
 
 %
-Figure~\ref{f:ops-hotcrp} shows higher latencies in general, even for the manual
+Figure~\ref{f:ops-hotcrp} shows higher latencies than in WebSubmit in general, even for the manual
 baseline, which reflects the more complex \xxing transformations.
 %
 \sys takes 64.4--79.5ms to \xx and reveal a PC member's data, again owing to the
-extra cryptographic operations necessary.
+cryptographic operations necessary.
 %
 HotCRP's account anonymization is admin-applied and runs for all PC members, so
 its total latency is proportional to the PC size.
@@ -316,7 +319,7 @@ incrementally in the background, as in Lobsters account decay.
     \label{f:composition}
 \end{figure}
 
-We next break down the cost of \sys's operations into the cost of database
+This section breaks down the cost of \sys's operations into the cost of database
 operations and the cost of cryptographic operations.
 %
 %\sys's basic API performs some computation (which we expect to be quick) as
@@ -466,7 +469,7 @@ larger relative slowdown and the increased effect of per-pseudoprincipal
 reveals.
 
 WebSubmit and HotCRP do not create new references to pseudoprincipals after data
-gets disguised, but if they did, \sys would need to issue additional
+is disguised, but if they did, \sys would need to issue additional
 per-pseudoprincipal queries to rewrite or remove these references (if configured
 to do so).
 %
@@ -509,7 +512,8 @@ data (to one pseudoprincipal per record), as done by HotCRP anonymization.
 \section{\sys Overheads}
 \label{s:eval-overheads}
 
-\sys adds both space and compute overheads to the application; we measure the
+\sys adds both space and compute overheads to the application; this section
+measures the
 impact of these next.
 
 \subsection{Space Used By \sys.}
@@ -549,9 +553,13 @@ encrypted records.
 
 
 %
-\sys's record storage uses 12 MB, which grows to
-58.5 MB after the users remove their accounts, and the application database
-size increases from 261 MB to 290 MB (+11\%).
+\sys's record storage uses 12 MB after the initial creation of the five tables
+holding \sys's data (the disguise table, principals table, the deleted principal
+table, the user-shares table, and the replay log table); this includes the space
+for indexes and other InnoDB metadata.
+%
+\sys's storage space grows to 58.5 MB after the users remove their accounts, and
+the application database size increases from 261 MB to 290 MB (+11\%).
 %
 (\sys also caches some of this data in memory.)
 %
@@ -607,7 +615,7 @@ by other users must be largely unaffected by \sys's \xxing and revealing operati
 
 
 %
-We thus measure the impact of \sys's operations on other concurrent requests
+This section thus measures the impact of \sys's operations on other concurrent requests
 in Lobsters.
 %
 In the experiment, a set of users make continuous requests to the
@@ -751,7 +759,7 @@ exp txn restore 98 232 366
 
 %
 If developers perform database management operations, this both increases
-developer effort and affects \sys's performance. Here, we answer the following
+developer effort and affects \sys's performance. This section answers the following
 two questions:
 \begin{enumerate}[nosep]
     \item What categories of bulk management operation can \sys support, and how
@@ -798,9 +806,10 @@ Rust instead of Ruby Active Record Migration. Table~\ref{tab:updates} shows the
 amount of code required per operation, as well as the additional code required
 to add a corresponding update to give \sys. We reuse the bulk URL normalization
 operation for the update to \sys; the update requires no additional code.
-However, we implement the other two schema migrations as bulk table updates,
-and thus write separate updates that operate on individual rows, taking 54 and
-27 LoC respectively.
+However, we implement the two schema migrations that respectively add
+\texttt{show\_email} and add \texttt{story\_texts} as bulk table updates, and
+thus write separate updates that operate on individual rows, taking 54 and 27
+LoC respectively.
 %
 %Thus, the developer needs to write either no additional code to support updates
 %if the bulk operation code can be reused, or 
@@ -856,10 +865,12 @@ generating tables from other tables (\eg texttt{story\_texts} from
 Figure~\ref{tab:categories} shows the distribution of 20 bulk operations among these
 three categories. 
 %
-\sys can support all operations other than updating rows based
-on current external database state, unless the update's output is correct no
-matter the state of other database tables. This represents 2 of the 20 inspected
-updates.
+\sys can support all operations other than updating rows based on current
+external database state, unless the update's output is correct no matter the
+state of other database tables. In the investigated Lobsters database management
+operations, two operations out of the 20 were unsupported, and both updated the
+cached \texttt{vote\_count} value of stories or comments.
+%This represents 2 of the 20 inspected updates.
 %
 %
 %As described in \S\ref{s:design:limits}, unless it is valid application behavior
@@ -867,11 +878,12 @@ updates.
 %will not correctly apply an update that sets the count of votes for comments.
 %
 These types of operations might occur in applications that optimize for
-performance by denormalizing their database schema; we hypothesize that this
-category of update would not exist with a normalized schema.
+performance by denormalizing their database schema (as did Lobsters); we
+hypothesize that this category of update would not exist with a normalized
+schema.
 %
 However, these particular operations also happen to be idempotent for any rows
-affected, and thus could be reapplied via \eg a cron job regularly to update
+affected, and thus could be reapplied via a cron job regularly to update
 revealed data.
 %
 
@@ -913,7 +925,6 @@ with their data present in the database.
 \subsection{Performance of Reveals with Updates}
 \label{s:eval:updates}
 
-\begin{comment}
 \begin{figure}
     \centering
     \begin{tabular}{m{0.2\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}}
@@ -922,26 +933,39 @@ with their data present in the database.
         \hline
         Bulk Op & 5.63s & 5.24s & 0.082s\\
         \hline
-        Update 1 story row & 0.22ms & 0.01ms & 0.01ms \\
+        Record Update & 0.82ms & 0.49ms & 0.43ms \\
         \hline
-        Update 1 user row & <0.01ms & 0.01ms & 0.01ms 
+        Update 1 story & 0.22ms & 0.01ms & 0.01ms \\
+        \hline
+        Update 1 user & <0.01ms & <0.01ms & 0.01ms \\
+        \hline
+        Update other row & <0.001ms & <0.001ms & <0.001ms \\
     \end{tabular}
-    \caption{Schema migrations that affect entire tables require
-    writing separate update function for \sys. Applying these updates adds greater overheads per
-    story than per user or per other table row, as more updates apply to the
-    stories table.}
-    \label{tab:updates}
+    \caption{Applying the various updates adds greater overheads per story than
+    per user or per other table row, as more updates apply to the stories table.
+    URL normalization is the most expensive update because initialization of a
+    URL object takes 0.2ms.}
+    \label{tab:updates-perf}
 \end{figure}
-\end{comment}
 
-
-We next look at how bulk operations and updates affect application performance,
-and how updates affect \sys's reveal performance. Table~\ref{tab:updates} shows
-the results.
+This section looks at how bulk operations and updates affect application
+performance, and how updates affect \sys's reveal performance.
+Table~\ref{tab:updates-perf} shows the results.
+%
+Overall, the effects of performing updates increases with the amount of
+disguised data a user wants to reveal.
+%
+Users with little data (\eg less than 5 stories) experience no visible increase
+in reveal latency with updates, but users with lots of data can experience a
+small effect (\eg revealing a user with 673 stories, 1971 comments, and 2000
+messages takes on average 4.67s instead of 4.50s, an increase of 3.8\%).
+%
+The rest of this section breaks down these costs.
+%
 
 \paragraph{Bulk Operation Performance.}
-First, as a baseline, we look at the cost of performing bulk operations, which
-applications incur without \sys.
+First, as a baseline, this section looks at the cost of performing bulk operations, which
+applications incur without \sys (Table~\ref{tab:updates-perf}, line 1).
 %
 
 %
@@ -949,9 +973,10 @@ The URL normalization application update takes 5.63s, the longest of all
 updates.
 %
 This matches the optimized bulk operation execution time of 6s in the deployed
-Lobsters application, which batch updates all stories with the normalized URL.
-The unoptimized version first implemented by the Lobsters developers updates
-stories one-by-one, and takes 1789s, requiring them to reimplement via batching.
+Lobsters application, which normalizes the URLs of all stories in one
+batch.\footnote{The Lobsters developers first implemented an unoptimized version
+of URL normalization that normalizes stories one-by-one---this implementation
+took 1789s.}
 %
 URL normalization modifies all 120k stories.
 %
@@ -973,31 +998,35 @@ and removing columns.
 \paragraph{Record Update.}
 %
 Invoking \sys's hook to insert a new application update in \sys's replay log
-takes on average 0.58ms, a negligible amount compared to the time to perform the
-update/migration. This includes the time to persist the update (one database
-insert query) and add it to \sys's in-memory update replay log.
+takes on average 0.58ms (Table~\ref{tab:updates-perf}, line 2), a small 
+amount compared to the time to perform the update/migration This includes the
+time to persist the update (one database insert query) and add it to \sys's
+in-memory update replay log.
 %
 
 %
 \paragraph{Reveal with Updates.}
 %
-We next evaluate the latency of reveal operations in Lobsters when updates
+This section evaluates the latency of reveal operations in Lobsters when updates
 corresponding to the implemented three bulk operations have been applied after
-reveal. 
+reveal. \sys applies updates to data to reveal in batch, but the cost of
+applying updates to revealed data should still be proportional to the amount of
+data to reveal.
 
 %\paragraph{Apply Update to Diff Record.}
 First, we measure the cost to apply the various updates to diff record rows.
 %
 Updating \texttt{stories} diff records is the most costly, as both URL
 normalization and the \texttt{story\_texts} updates apply: this takes 0.2--0.3ms
-per story.
+per story (Table~\ref{tab:updates-perf}, line 3).
 %
 Diff records for modified or decorrelated stories have both placeholder and
 original rows. \sys applies updates to both placeholder and original rows, and
 thus updates take 0.5--0.6ms per \texttt{stories} modify or decorrelate diff
 record.
 %
-Initializing a URL normalizer object during the update takes a one-time cost of 0.2ms.
+Initializing a URL normalizer object during the update takes a one-time cost of
+0.2ms.
 %
 Because \sys applies updates to batches of rows of the same table
 (\S\ref{s:impl:batching}), \sys amortizes the cost of URL normalizer
@@ -1005,23 +1034,28 @@ initialization by creating a URL normalizer object only once per reveal (when
 \sys reveals all stories).
 %
 
+%
 Applying all three updates to \texttt{users} diff records incurs $<0.1$ms per
-user: the \texttt{show\_email} update appends a single column to user rows. 
+user: the \texttt{show\_email} update appends a single column to user rows
+(Table~\ref{tab:updates-perf}, line 4).
+%
+
 %
 Although the three implemented updates do not affect other row types, the
 implementation of Lobsters' updates does iterate through all rows to check
-whether to update them. Each row iteration takes $\approx$1$\mu$. At scale
-(\eg for a user with thousands of comments), this cost can add up to a couple
-milliseconds over the entire reveal.
+whether to update them. Each row iteration takes $\approx$1$\mu$
+(Table~\ref{tab:updates-perf}, line 5). At scale (\eg for a user with thousands
+of comments), this cost can add up to a couple milliseconds over the entire
+reveal.
 %
 
 %\paragraph{Restore Updated Diff Record Rows.}
-Next, we measure the cost to restore updated rows to the database compared to the cost to
-restore rows without updates.\footnote{Although restoring updated rows is more
-expensive than restoring the original rows, the application's bulk operation
-would have incurred the cost of updating these rows had the rows not been
-disguised at the time. Thus, \sys moves the cost of updating these rows
-to reveal time, rather than bulk operation time (although the cost may be higher
+Finally, we measure the cost to restore updated rows to the database compared to
+the cost to restore rows without updates.\footnote{Although restoring updated
+rows is more expensive than restoring the original rows, the application's bulk
+operation would have incurred the cost of updating these rows had the rows not
+been disguised at the time. Thus, \sys moves the cost of updating these rows to
+reveal time, rather than bulk operation time (although the cost may be higher
 because the update is not batched over all table rows).}
 %
 Updates do not affect the cost of restoring rows for all tables other than
@@ -1032,22 +1066,10 @@ story.
 %
 
 %
-\paragraph{Conclusion.}
-%
-As expected, the effects of performing updates increases with the amount of
-disguised data a user wants to reveal.
-%
-Users with little data (\eg less than 5 stories) experience no visible increase
-in reveal latency with updates, but users with lots of data can experience a
-small effect (\eg revealing a user with 673 stories, 1971 comments, and 2000
-messages takes on average 4.67s instead of 4.50s, an increase of 3.8\%).
-%
-
-%
-\section{Summary}
-In our evaluation, we used \sys to add seven \xxing transformations to three web
-applications. We found that the effort required was reasonable, that \sys's
-\xxing and revealing operations are fast enough to be practical, and that they
-impose little to moderate overheads on normal application operation depending on
-the amount of data being disguised or revealed.
+\section{Summary} 
+This evaluation used \sys to add seven \xxing transformations to three web
+applications. The benchmarks show that the effort required was reasonable, that
+\sys's \xxing and revealing operations are fast enough to be practical, and that
+they impose little to moderate overheads on normal application operation
+depending on the amount of data being disguised or revealed.
 %
