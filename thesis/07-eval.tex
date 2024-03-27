@@ -425,8 +425,8 @@ We evaluate this cost next.
 % \lyt{this is now under \sys op performance}.
 
 %
-To understand the overhead of composing transformations in \sys,
-we measure the cost of composing account removal on top of
+To understand the overhead of composing transformations in \sys (\S\ref{s:composition}), we measure the
+cost of composing account removal on top of
 %from an application that already invoked
 a prior \xxing transformation to anonymize and decorrelate all users' data.
 %
@@ -435,9 +435,14 @@ account removal (as before); \two{} account removal and restoration
 \emph{without} a prior anonymization \xxing transformation; and \three{} account
 removal and restoration \emph{with} a prior anonymization \xxing transformation.
 %
-With prior anonymization, a subset of the user's data has already been decorrelated
-when removal occurs, and removal therefore performs per-pseudoprincipal encryptions of
-\xxed data with pseudoprincipals' public keys.
+
+%
+With prior anonymization, a subset of the user's data has already been
+decorrelated when removal occurs, and removal therefore performs
+per-pseudoprincipal encryptions of \xxed data with pseudoprincipals' public
+keys. 
+%Thus, the cost of removal should increase proportional to the number of
+%pseudoprincipals created by the first anonymization transformation.
 %by the first \xxing transformation, and \sys
 %
 %This requires individually encrypting data with each pseudoprincipal's
@@ -519,31 +524,37 @@ data (to one pseudoprincipal per record), as done by HotCRP anonymization.
 \section{\sys Overheads}
 \label{s:eval-overheads}
 
-\sys adds both space and compute overheads to the application; this section
-measures the
-impact of these next.
+\sys adds both space and compute overheads to the application: \sys stores
+disguised data and metadata, adding tables to the application DB; and \sys may
+run disguising and revealing transformations simultaneously with normal
+application operations, increasing the load on the system and affecting normal
+application operation throughput.
+%
+This section
+measures both of these overheads.
 
 \subsection{Space Used By \sys.}
 
-%\begin{figure*}[t]
-%\centering
-%\begin{tabular}{ccc}
-%    & \textbf{Pre-Delete (MB)} & \textbf{Post-Delete (MB)} \\
-%\hline
-%    App DB (does not include metadata) & 261 & 290\\
-%    Encrypted Bags (Mem) & 0 & 34.3\\
-%    Encrypted Locators (Mem) & 0 & 1.9\\
-%    Principal Metadata (Mem) & 1.8 & 16.5\\
-%    Shares Metadata (Mem) & 2.0 & 2.0\\
-%    Encrypted Bags (Disk) & 0 & 35.1\\
-%    Encrypted Locators (Disk) & 0 & 0.4\\
-%    Principal Metadata (Disk) & 2.6 & 14.1 \\
-%    Shares Metadata (Disk) & 8.9 & 8.9\\
-%\end{tabular}
-%    \caption{Amount of data before and after 10\% of users remove their accounts. Edna adds an extra
-%    110MB on disk (and 44MB in memory).}
-%  \label{f:storage}
-%\end{figure*}
+\begin{figure}[t]
+\centering
+\begin{tabular}{lcc}
+    \textbf{Component} & \textbf{Pre-Delete (MB)} & \textbf{Post-Delete (MB)} \\
+\hline
+    App Tables & 261 & 290\\
+    %Disguise Table (Mem) & 0 & 34.3\\
+    %Encrypted Locators (Mem) & 0 & 1.9\\
+    %Principal Metadata (Mem) & 1.8 & 16.5\\
+    %Shares Metadata (Mem) & 2.0 & 2.0\\
+    Disguise Table (Disk) & 0 & 35.1\\
+    Deleted Principals Table (Disk) & 0 & 0.4\\
+    Principals Table (Disk) & 2.6 & 14.1 \\
+    User Shares Table (Disk) & 8.9 & 8.9\\
+\end{tabular}
+    \caption{Amount of data before and after 10\% of users remove their
+    accounts. Edna adds an extra 87.5MB on disk (and 44MB in memory).}
+    \label{f:storage}
+\end{figure}
+
 %
 To understand \sys's space footprint, we measure the size of all data stored
 on disk by \sys before and after 10\% of users in Lobsters (1.6k users)
@@ -557,22 +568,22 @@ encrypted records.
 %
 %Clients keep track of their credentials, but these are small and encoded
 %in application-specific ways.
-
+%
 
 %
-\sys's record storage uses 12 MB after the initial creation of the five tables
-holding \sys's data (the disguise table, principals table, the deleted principal
-table, the user-shares table, and the replay log table); this includes the space
-for indexes and other InnoDB metadata.
+Table~\ref{f:storage} shows the increase in space used by \sys and the
+application after \sys disguises 10\% of Lobsters users. \sys's storage
+initially consumes 12 MB, which consists of entires in the principals table and
+user shares table from the registration of all 16k users.
 %
 \sys's storage space grows to 58.5 MB after the users remove their accounts, and
 the application database size increases from 261 MB to 290 MB (+11\%).
 %
-(\sys also caches some of this data in memory.)
+(\sys also caches this data using 44MB in memory.)
 %
 The space used is primarily proportional to the number of pseudoprincipals
-produced: each pseudoprincipal requires storing an application database record, a
-speaks-for record, and row in the principal table.
+produced: each pseudoprincipal requires storing an application database record,
+a speaks-for record, and row in the principal table.
 %
 In this experiment, Lobsters produces 78.1k pseudoprincipals.
 %
@@ -583,8 +594,10 @@ In this experiment, Lobsters produces 78.1k pseudoprincipals.
 %metadata, adding $\approx$0.3 KB per pseudoprincipal and 24 MB combined,
 %
 %
-\sys removes the public keys and database data for the 1.6k removed principals, but
-stores encrypted diff records with their information, which uses another 2.2 MB.
+\sys removes the public keys for the 1.6k removed principals---subtracting from
+the principals table, but adding to the deleted principals table---and removes
+the principals' database data to store as encrypted diff records in the disguise
+table, which uses 2.2 MB.
 %
 %These diff records amount to a small overhead (2.2MB).
 %
@@ -601,8 +614,10 @@ stores encrypted diff records with their information, which uses another 2.2 MB.
 %Occasionally, a user (or an admin, or a cron job) will initiate a \xxing
 %transformation via \sys.
 %
-For \sys to be practical, the throughput and latency of normal application requests
-by other users must be largely unaffected by \sys's \xxing and revealing operations.
+For \sys to be practical, the throughput and latency of normal application
+requests by other users should be largely unaffected by \sys's \xxing and
+revealing operations, even though \sys may modify the same tables touched by
+normal application requests.
 %
 %If an expensive \xxing transformation---such as a popular Lobsters user removing their
 %account---blocked application processing for all other users, developers would
@@ -653,7 +668,7 @@ impact of \one{} randomly chosen users invoking account removal/restoration, and
 account (a worst-case scenario).
 % , since this overlaps most with the data touched by normal users).
 %
-We show throughput in a low load scenario ($\approx$20\% CPU load),
+The results illustrate throughput in a low load scenario ($\approx$20\% CPU load),
 and a high load scenario ($\approx$95\% CPU load).
 %
 Finally, we measure settings with and without a transaction for \sys
@@ -720,7 +735,12 @@ performance impacts when Edna runs large disguising and revealing transactions
 continuously.  Because the queries within disguise and reveal transactions touch
 16 tables, all which are commonly read by normal application operations, this
 impact is expected: transactions lock any written tables, preventing
-application operations from reading them until the transaction has completed. 
+application operations from reading them until the transaction has completed.
+%
+With transactions, the benchmark completes hundreds more disguising and
+revealing transformations than when run without transactions; this illustrates
+how \sys's transactions, when touching large amounts of data, can block the
+execution of normal application operations.
 
 %and operations over \xxed data
 %
