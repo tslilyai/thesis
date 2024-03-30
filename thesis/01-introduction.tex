@@ -179,13 +179,14 @@ prove their ownership of the stored data.
 %
 
 %
-\lyt{Finally, application databases often undergo management operations, such as
-schema migrations. However, these operations would fail to affect any data
+\todo{Finally, application databases often undergo management operations, such
+as schema migrations. However, these operations would fail to affect any data
 disguised at the time, because the disguised data remains inaccessible to the
 application or developer. However, the disguised data would need to reflect
-these global database changes in order to preserve correctness upon reveal,
-which would require the developer to remember and reapply these management
-operations on disguised data before revealing it.}
+these global database changes in order to preserve correctness upon reveal: for
+example, one disguised row might need to be restored as two rows in two tables
+after a schema migration. This would require the developer to remember and
+reapply these management operations on disguised data before revealing it.}
 %
 
 
