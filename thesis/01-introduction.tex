@@ -8,17 +8,17 @@ While users have the right to delete their data (via \eg the
 GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), users want and deserve more nuanced
 controls over their data that don't exist today.
 %
-For example, a user might wish to hide and protect data of an e-commerce or
-dating app profile when inactive, but also want their data to be present should
-they return to use the application. 
+For example, an inactive user might wish to hide and protect data of an e-commerce or
+dating app profile against service compromise or data leaks. However, they might also want their data to be present should they return to use the application. 
 %
 %But today, achieving this flexible privacy remains out of reach, in part
 %because of the many challenges facing web developers in building services that
 %can adapt to changing privacy needs. 
-Today, however, services often provide only coarse-grained, blunt tools such as
-permanent account deletion \todo{more tools? account deactivation?} that result
-in all-or-nothing exposure of users' private information, and fail to achieve
-the flexible privacy that users want and deserve.
+Today, however, services usually provide only coarse-grained, blunt tools such
+as permanent account deletion.
+%\todo{more tools? account deactivation?}.  
+These tools result in all-or-nothing exposure of users' private information, and
+fail to achieve the flexible privacy that users want and deserve.
 %
 
 %
@@ -114,9 +114,9 @@ and reveal their association with it if they want.
 \section{Disguised Data: A New Abstraction for Flexible Privacy}
 %
 This desired flexible privacy functionality describes an in-between state of
-user data in web applications: where users are not quite gone, because they can
-return to the application; but they are also not quite there, because some or
-all of their data has been removed.
+users data in web applications: where the data is not quite gone, because a user
+can return to the application and restore their data; but where the user data is
+also not quite there, because some or all of it has been removed.
 %
 
 %
@@ -141,15 +141,20 @@ identifying data visible to the service and other users.
 %*********************************************************************************%
 \section{Challenges} 
 Today, disguised data for flexible privacy remains out of reach for users of
-web applications in part because getting it right is hard. 
+web applications in part because getting it right is hard for application
+developers. In particular, they face four main challenges.
+
 %
-Real applications store their data in a database with complex schemas and have
+First, real applications store their data in a database with complex schemas and have
 complex notions of privacy, data ownership, and data sharing.
 %
-Simple solutions that \eg delete all data associated with a user can create
-orphaned data or break referential integrity---the invariant that if a table row
-references another row via a foreign key, the referenced row must exist---which
-require application changes to handle correctly. These solutions also lack
+Simple solutions that might try to delete all data associated with a user can
+create orphaned data or break referential integrity---the invariant that if a
+table row references another row via a foreign key, the referenced row must
+exist. 
+%
+In order to resolve these problems, developers must change the application to
+handle these situations and maintain correctness. These solutions also lack
 support for users to return.
 %
 To solve this manually, a developer would have to carefully perform
@@ -159,7 +164,7 @@ restoring.
 %
 
 %
-Developers would also have to reason about interactions between multiple
+Second, to manualy realized disguised data, developers would also have to reason about interactions between multiple
 data-redacting features, and how these features would compose.
 %
 For example, imagine an application that supports both account deletion and
@@ -172,21 +177,21 @@ applied anonymization and restore posts as anonymized.
 %
 
 %
-Furthermore, stored removed data must be inaccessible to the application and
+Third, stored removed data must be inaccessible to the application and
 protected against data breaches, but must be accessible if the user chooses to
 return. The developer also needs to provide user-friendly ways for users to
 prove their ownership of the stored data.
 %
 
 %
-\todo{Finally, application databases often undergo management operations, such
+Fourth, application databases often undergo management operations, such
 as schema migrations. However, these operations would fail to affect any data
 disguised at the time, because the disguised data remains inaccessible to the
 application or developer. However, the disguised data would need to reflect
 these global database changes in order to preserve correctness upon reveal: for
 example, one disguised row might need to be restored as two rows in two tables
 after a schema migration. This would require the developer to remember and
-reapply these management operations on disguised data before revealing it.}
+reapply these management operations on disguised data before revealing it.
 %
 
 
@@ -288,14 +293,14 @@ part of this, this thesis contributes:
         %, which cover a wide range of application
         %needs and compose cleanly; 
 
-    \item Design techniques to realize disguised data, including diff records,
-        speaks-for chains, \lyt{and the update replay log}.
+    \item A design for the \sys that realizes disguised data for practical web
+        applications, based on techniques such as diff
+        records, speaks-for chains, \todo{and the update replay log}.
         (Ch.~\ref{ch:design}).
 
-    \item \sys, a prototype Rust library for MySQL-backed web applications that
-        implements user data control via disguising and revealing, which is
-        open-source at
-        \url{https://github.com/tslilyai/edna} (Ch.~\ref{ch:impl}).
+    \item A prototype Rust library implementing \sys for MySQL-backed web applications that
+        implements user data control via disguising and revealing
+        (Ch.~\ref{ch:impl}).
 
     \item Case studies that integrate \sys with three real-world web
     applications and demonstrate \sys's ability to enable composable and
@@ -329,7 +334,21 @@ stored \xxed data) or placeholder data left in the database (\eg embedded text)
 are out of scope.
 %
 
+The \sys prototype is open-source at \url{https://github.com/tslilyai/edna}.
 
+\section{Related Publications}
+The work described in this thesis has been previously covered in two
+peer-reviewed publications:
+
+\begin{itemize}
+    \item Privacy Heroes Need Data Disguises~\cite{edna-hotos}
+    \item Edna: Disguising and Revealing User Data in Web Applications~\cite{edna}
+\end{itemize}
+%
+This thesis contains additional material on handling application database
+management operations such as schema migrations and global updates, described
+in \S\ref{s:overview:updates} and \S\ref{s:design:database-updates}, and evaluated in
+\S\ref{s:eval-updates}.
 
 \iffalse
 \section{Remaining Work: Revealing with Schema Migrations and Application
