@@ -5,6 +5,8 @@ DEPS := $(TEX_FILES) $(wildcard *.bib) $(wildcard fig/*.png) $(PLOTS)
 
 default: thesis.pdf abstract.txt
 
+.PHONY: all clean
+
 thesis.pdf: $(DEPS)
 	./latexrun --latex-args='-shell-escape' --bibtex-args=-min-crossrefs=100 -W no-overfull -W no-tabfigures thesis.tex
 

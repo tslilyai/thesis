@@ -5,11 +5,11 @@ applications.
 %
 Existing systems aim instead to support data deletion, prevent unauthorized data
 access, or protect against database server compromise---valuable, but
-complementary goals to achieving disguised data.%\sys's.
+complementary goals to support for disguised data.%\sys's.
 
 \section{Compliance Tools}
 Compliance tools such as K9db~\cite{k9db} and GDPRizer~\cite{gdprizer} help
-correctly extract or delete data in correspondence to compliance-related
+correctly extract or delete data in response to compliance-related
 requests.
 %
 These tools include systems to support wholesale user data extraction or deletion by tracking data
@@ -22,12 +22,12 @@ storage hardware~\cite{sdp}.
 Tools like DELF at Meta~\cite{delf} focus on the related problem of data
 deletion, letting developers specify deletion policies via
 annotations on social graph edges and object types. DELF ensures correct
-cascading data deletion, both for compliance-related data deletion requests, and
+cascading data deletion, both for compliance-related data deletion requests and
 for normal application deletions.
 %
 
 %
-While disguising data can provide GDPR-compliant account deletion, disguising
+While one of the uses of disguising data is to provide GDPR-compliant account deletion, disguising
 also supports more nuanced use cases beyond simple deletion: for example, \sys
 allows users to return after deletion, hides old data for inactive users, or
 hides some but not all data so the user can continue using the application.
@@ -58,11 +58,11 @@ Policy-enforcing systems do not help users anonymize data or maintain
 application integrity constraints, which is the explicit goal with disguised
 data.
 %
-Database contents of sensitive data---the data under disguise---are also
-modified so the data is no longer available in the database, and thus
-unavailable even to the service itself. This is unlike policy enforcement
-systems, which can deny access to sensitive data, but will still retain it in
-the database.
+By contrast, data disguising systems modify the database contents of sensitive
+data---the data under disguise---so the data is no longer available in the
+database, and thus unavailable even to the service itself. This is unlike policy
+enforcement systems, which can deny access to sensitive data, but still
+retains it in the database.
 %
 
 \section{Encrypted Storage Systems}
@@ -77,12 +77,18 @@ Applications must handle keys, and send queries
 either through trusted proxies that decrypt data~\cite{cryptdb}, or move
 application functionality client-side~\cite{mylar}.
 %
-Encrypted databases have orthogonal goals to systems for disguised data: while they protect data at all times
-against attackers who do not have the keys, encrypted databases do not help applications
-anonymize or temporarily remove data, which systems for disguised data do.
+Encrypted databases have orthogonal goals to systems for disguised data: while
+they protect data at all times against attackers who do not have the keys,
+encrypted databases do not help applications protect against data access by
+service itself, or by legitimate, authenticated users. 
 %
 Any user with legitimate access can view the data in an encrypted database,
-whereas \xxed data is removed from the database.
+whereas \xxed data is removed from the database and inaccessible to all users
+and the application without permission from the data's owner.
+%
+%By constrast, systems for
+%disguised data can anonymize or temporarily remove data from access by these 
+%
 
 \section{Other Related Work} 
 Other work has also focused on protecting user data and giving users more
@@ -90,10 +96,10 @@ control over their data's exposure. However, these systems differ from \sys in
 the specific problem they aim to solve, the threat model against which they
 protect, and how they can be deployed with today's applications.
 
-Some platforms focus on enforcing user-defined policies, instead of developer-defined
-policies like \sys. They prove that server-side processing respects
-user-defined data policies via cryptographic means~\cite{zeph} or
-systems security mechanisms~\cite{riverbed}.
+Some platforms focus on enforcing user-defined policies, instead of the
+developer-defined policies that \sys supports. They prove that server-side
+processing respects user-defined data policies via cryptographic
+means~\cite{zeph} or systems security mechanisms~\cite{riverbed}.
 %
 However, this may restrict feasible application functionality (\eg to additively
 homomorphic functions, as in Zeph~\cite{zeph}), or restrict combining data with
@@ -106,9 +112,10 @@ indeed runs the correct proxy.
 %
 Furthermore, users in Riverbed who define different policies cannot easily share
 data with random other users at will, and aggregations over many users' data
-become difficult, making certain applications less amenable to the Riverbed
-structure.
-\todo{Should I add more about Zeph deployment?}
+become difficult.
+%making certain applications less amenable to the Riverbed
+%structure.
+%\todo{Should I add more about Zeph deployment?}
 
 %
 Systems like Pesos~\cite{pesos} and Ironsafe~\cite{ironsafe} use trusted
@@ -119,17 +126,20 @@ Ryoan~\cite{ryoan} also runs data processing applications as sandboxed modules
 within TEEs, thus protecting user data against untrusted applications in
 addition to untrusted platforms.
 %
-However, these systems require applications to be written with the systems'
-specific architecture in mind---for example, Ironsafe requires application to 
-run atop Ironsafe's trusted policy compliance monitor; and in Ryoan, a developer needs to write their
-application as a computation DAG containing Ryoan instances, which each instance
-contains a data processing module.  \todo{more detail?}
+By constrast, \sys does not rely on TEEs, but instead trusts developers to be
+well-intentioned.
+%However, these systems require applications to be written with the systems'
+%specific architecture in mind---for example, Ironsafe requires application to
+%run atop Ironsafe's trusted policy compliance monitor; and in Ryoan, a developer
+%needs to write their application as a computation DAG containing Ryoan
+%instances, which each instance contains a data processing module.  \todo{more
+%detail?}
 %making these systems more difficult to deploy in
 %today's applications.
 %
-By contrast, \sys trusts developers to be well-intentioned, and \sys can support
-disguised data in applications without modifying application architecture.
-%
+%By contrast, \sys trusts developers to be well-intentioned, and \sys can support
+%disguised data in applications without rearchitecting for TEEs.
+%%
 
 Decentralized platforms such as Solid~\cite{solid}, BSTORE~\cite{bstore},
 Databox~\cite{databox}, and others~\cite{diy, amber, oort, w5, blockstack} put
@@ -157,7 +167,7 @@ Vanish~\cite{vanish} provides users with self-destructing data and a proof of
 data deletion using decentralized infrastructure and cryptographic techniques
 (with limitations against Sybil attacks~\cite{defeat_vanish}). Unlike \sys,
 Vanish cannot restore deleted data and requires substantial application
-restructuring to deploy (\eg they must run a Vanish daemon, be aware of which
+restructuring to deploy (\eg the application must run a Vanish daemon, be aware of which
 objects are ``vanishing objects,'' and store and access protected data
 as key-value pairs instead of objects of other data structures).
 %
@@ -165,7 +175,7 @@ as key-value pairs instead of objects of other data structures).
 %
 Sypse~\cite{sypse} pseudonymizes user data and partitions personally identifying
 information (PII) from other data. Instead of partitioning data, \sys modifies
-the database and stores \xxed data encrypted.
+the database and stores \xxed data encryptedly.
 %
 
 %
@@ -176,18 +186,20 @@ view metadata like network traffic and access patterns. To provide strong
 security, these systems rely on complex encryption schemes, oblivious RAM,
 hardware enclaves, or other cryptographic techniques.
 %
-While these techniques have often been considered impractically slow, Snoopy---the most
-recent system---improves the throughput of data requests by running
-requests in batches.  However, for some applications, batched data requests may
-result in too high of an individual request latency.
+While these techniques have often been considered impractically slow,
+Snoopy---the most recent system---improves the throughput of data requests by
+running requests in batches.  However, for some applications, batched data
+requests may result in too high of an individual request latency.
 %
-Furthermore, Snoopy achieves performance 39.1$\times$ slower than Redis, a
-commonly-used non-oblivious object store, which may be impractical for some
+Snoopy achieves performance 39.1$\times$ slower than Redis, a
+commonly-used non-oblivious object store, which is impractical for many 
 applications.
 %
 Oblivious object stores also support only simple queries (\eg key/value point
-queries). Many applications use relational databases in order to perform more
-complex queries, which \sys supports without any modification.
+queries), and allow only data retrieval; by constrast, \sys provides arbitrary
+server-side processing, which is essential to most applications. 
+%Many applications use relational databases in order to perform more
+%complex queries, which \sys supports without any modification.
 %
 
 \iffalse
