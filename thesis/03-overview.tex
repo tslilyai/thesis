@@ -352,18 +352,26 @@ Password or keypair changes require an application to re-register the user with
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{Database Management Operations} 
+\section{Global Database Updates} 
 \label{s:overview:updates}
 
-\todo{do we still need to say why this is a challenge?}
-Databases constantly undergo management operations initiated by an admin or
-developer, like schema changes or global updates (\eg normalizing URLs of all
-stories). 
-When one such operation is performed, the developer writes a
-corresponding application update specification that captures the effects of the
-operation and invokes \sys's \texttt{record\_update} API call with the
-specification. \sys stores these updates in a replay log, which lets \sys reveal
-disguised data without overwriting the associated application changes.
+%\sys allows disguised data to be restored to the database via revealing
+%transformations. However, 
+Web application databases constantly undergo global updates 
+initiated by an admin or developer, like schema changes or global updates (\eg normalizing URLs of all stories). 
+%
+However, if the developer updates the database after some data is disguised and
+before \sys reveals it, then the update will fail to apply to the disguised data
+(as it remains inaccessible to the application).
+%
+Instead, the developer must inform \sys about the update so \sys can apply the
+update to the disguised data prior to reveal.
+
+When a database update is performed, the developer writes a corresponding
+reveal-time update specification that captures the effects of the operation and
+invokes \sys's \texttt{record\_update} API call with the specification. \sys
+stores these updates in a replay log, which lets \sys reveal disguised data
+without overwriting the associated application changes.
 %
 %If the developer performs a global application change that \eg normalizes the
 %URLs of stories, the developer performs a bulk update in the Lobsters
