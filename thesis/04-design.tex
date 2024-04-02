@@ -35,7 +35,7 @@ and storing pseudoprincipals.
 %
 Next, to record disguised data, \sys generates \emph{diff records} that contain \one{}
 the original data row(s), and \two{} placeholder data rows the disguise inserted
-or rewote in the application (\eg pseudoprincipals or the value of any modified
+or rewrote in the application (\eg pseudoprincipals or the value of any modified
 columns).
 %
 All types of diff records also contain the \xx ID. 
@@ -564,7 +564,7 @@ As shown in this example, if the owner also happens to be the last remaining
 \item[(3)]
 When \emph{any} owner chooses to return, \sys first restores the
 fully-decorrelated row from the copy of the fully-decorrelated diff record in
-the owners's disguised data.  \sys then rewrites the foreign key for the
+the owner's disguised data.  \sys then rewrites the foreign key for the
 pseudoprincipal who currently owns the shared data to recorrelate with the
 owner, and removes that pseudoprincipal, revealing the other diff records like
 normal.
@@ -686,7 +686,7 @@ multiple disguises in any order.
 %
 Furthermore, as described in \S\ref{s:overview:updates}, \sys assumes that
 either \one{} updates are pure functions deterministic in their input and do not
-have side effects; or \two{} any nondeterministim or update side effects will
+have side effects; or \two{} any nondeterminism or update side effects will
 maintain application correctness.
 %
 One potential solution would be for developers to indicate the data dependencies

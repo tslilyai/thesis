@@ -342,7 +342,7 @@ update to the disguised data prior to reveal.
 When a database update is performed, the developer writes a corresponding
 \emph{reveal-time update specification} that captures the effects of the operation and
 invokes \sys's \texttt{record\_update} API call with the update
-specfication. \sys
+specification. \sys
 stores these update specifications in a replay log, which lets \sys reveal disguised data
 without overwriting the associated application changes.
 %
@@ -387,7 +387,7 @@ updating disguised data rows.
 %
 For example, Lobsters has a schema migration that adds a column to the
 \texttt{users} table.  The global update simply performs an \texttt{ALTER TABLE}
-query, while the update speification given to \sys receives user rows without the column
+query, while the update specification given to \sys receives user rows without the column
 as input, and outputs user rows with the column.
 %
 
@@ -405,7 +405,7 @@ This update thus depends on other disguised rows, namely \texttt{vote} rows.
 %
 If a disguise has removed both a user's story and its votes,
 then when \sys reveals the disguise, \sys will first reveal the diff records for
-storys before revealing those for votes in order to maintain referential
+stories before revealing those for votes in order to maintain referential
 integrity. 
 %
 But when applying a \texttt{vote\_count} update specification to story diff
