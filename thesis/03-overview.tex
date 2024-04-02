@@ -76,32 +76,6 @@ semantics (\eg revealing makes sure not to overwrite changes made since
 \section{Example: Lobsters Topic Anonymization}
 \label{s:design:lobsters}
 
-\begin{figure}[t]
-\centering
-\begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
-// Decorrelate comments on stories w/tag {{TAG}}
-"comments": [{
-  "type": "Decorrelate",
-  "predicate": "tags.tag = {{TAG}}",
-  "from": "comments JOIN stories ON comments.story_id = stories.id
-           JOIN taggings ON stories.id = taggings.story_id
-           JOIN tags ON...",
-  "group_by": "stories.id",
-  "principal_fk": "comments.user_id" } ],
-// Remove votes on stories w/tag {{TAG}}
-"votes": [{
-  "type": "Remove",
-  "predicate": "tags.tag = {{TAG}}",
-  "from": "votes JOIN stories...",
-  "principal_fk": "votes.user_id",
-}, ... ]
-\end{lstlisting}
-    \caption{Lobsters topic-based anonymization \xx specification (JSON
-    pseudocode), which decorrelates comments and removes votes on stories with
-    the specific topic tag.}
-\label{f:spec}
-\end{figure}
-
 \begin{figure}[h]
   \centering
   \begin{subfigure}[h]{0.5\columnwidth}
@@ -175,13 +149,6 @@ Bea's associations with ``Star Wars'' posts.
 \section{Disguise Specifications}
 \label{s:spec}
 
-\sys's developer interface is designed so that developers need to reason only
-about the high-level semantics of disguising expressed in the disguise
-specification. \sys takes care of applying disguise transformations, composing
-it with other disguising and revealing transformations, and creating and storing
-disguised data.
-
-
 \begin{figure}[t]
 \centering
 \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
@@ -189,10 +156,8 @@ disguised data.
 "comments": [{
   "type": "Decorrelate",
   "predicate": "tags.tag = {{TAG}}",
-  "from": "comments JOIN stories
-           ON comments.story_id = stories.id
-           JOIN taggings
-           ON stories.id = taggings.story_id
+  "from": "comments JOIN stories ON comments.story_id = stories.id
+           JOIN taggings ON stories.id = taggings.story_id
            JOIN tags ON...",
   "group_by": "stories.id",
   "principal_fk": "comments.user_id" } ],
@@ -210,8 +175,14 @@ disguised data.
 \label{f:spec}
 \end{figure}
 
-%For every \xxing transformation, the developer writes a \xx specification
-%(Figure~\ref{f:spec})
+
+\sys's developer interface is designed so that developers need to reason only
+about the high-level semantics of disguising expressed in the disguise
+specification. \sys takes care of applying disguise transformations, composing
+it with other disguising and revealing transformations, and creating and storing
+disguised data.
+
+
 \Xx specifications tell \sys what application data objects to \xx and how to \xx them.
 %
 A \xx specification identifies objects by database table name, principal, and

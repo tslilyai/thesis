@@ -142,9 +142,31 @@ keys
 % so we can splice in PDFs
 \usepackage{pdfpages}
 
+% some sanity for special characters
+\usepackage[utf8]{inputenc}
+\input{glyphtounicode}
+\pdfgentounicode=1
+
 % set up bibliography
-\usepackage[square,comma,numbers,sort&compress]{natbib}
-\usepackage{bibentry}
+%\usepackage[square,comma,numbers,sort&compress]{natbib}
+% BibLaTeX for bibliography
+\usepackage[
+  backend=biber,
+  style=numeric-comp,
+  minalphanames=3,
+  isbn=false,
+  sortcites=true,
+  sorting=anyt,
+  abbreviate=false,
+  url=false,
+  doi=false,
+  maxnames=99,
+  minbibnames=3,
+  maxbibnames=99]{biblatex}
+\addbibresource{n.bib}
+\addbibresource{n-str.bib}
+\addbibresource{n-conf.bib}
+\addbibresource{paper.bib}
 
 % enumerate* and itemize*
 \usepackage[inline]{enumitem}
@@ -259,11 +281,6 @@ keys
 
 % used in \loc macro
 \usepackage{numprint}
-
-% some sanity for special characters
-\usepackage[utf8]{inputenc}
-\input{glyphtounicode}
-\pdfgentounicode=1
 
 % generate synctex output for inverse search
 \synctex=1

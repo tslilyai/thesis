@@ -1,14 +1,14 @@
-TEX_FILES := $(wildcard *.tex) \
-	$(wildcard frontmatter/*.tex) 
-PLOTS := 
-DEPS := $(TEX_FILES) $(wildcard *.bib) $(wildcard fig/*.png) $(PLOTS)
-
-default: thesis.pdf abstract.txt
+PAPER = thesis
+TEX = $(wildcard *.tex)
+BIB = $(wildcard *.bib)
 
 .PHONY: all clean
 
-thesis.pdf: $(DEPS)
-	./latexrun --latex-args='-shell-escape' --bibtex-args=-min-crossrefs=100 -W no-overfull -W no-tabfigures thesis.tex
+$(PAPER).pdf: $(TEX) $(BIB) 
+	latexmk -f -pdf -shell-escape $(PAPER)
+
+clean:
+	rm -f *.aux *.bbl *.blg *.log *.out $(PAPER).pdf *.bcf *.run* $(PAPER).f*
 
 abstract.txt: frontmatter/abstract.tex
 	cat $< | \
@@ -35,7 +35,3 @@ spell:
 
 %.pdf: %.md
 	pandoc $< -o $@
-
-clean:
-	./latexrun --clean
-	rm -f *.pdf

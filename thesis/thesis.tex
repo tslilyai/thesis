@@ -1,4 +1,4 @@
-\documentclass[11pt,twoside,final]{mitthesis}
+\documentclass[11pt,twoside,final,natbib=false]{mitthesis}
 
 \input{preamble}
 
@@ -72,11 +72,13 @@
 
 %\backmatter
 
+\printbibliography
+
 % single spacing for bibliography
-\begin{spacing}{1}
-\bibliography{n-str,paper,n,n-conf}{}
+%\begin{spacing}{1}
+%\bibliography{n-str,paper,n,n-conf}{}
 % also consider alpha (more informative citation keys)
-\bibliographystyle{plainnat}
-\end{spacing}
+%\bibliographystyle{plainnat}
+%\end{spacing}
 
 \end{document}
