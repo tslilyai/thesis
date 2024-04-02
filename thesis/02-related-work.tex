@@ -118,16 +118,24 @@ become difficult.
 %\todo{Should I add more about Zeph deployment?}
 
 %
-Systems like Pesos~\cite{pesos} and Ironsafe~\cite{ironsafe} use trusted
-execution environments (TEEs) to enforce policy compliance in third-party
-storage platforms without trusting them with user data. 
-%
-Ryoan~\cite{ryoan} also runs data processing applications as sandboxed modules
-within TEEs, thus protecting user data against untrusted applications in
-addition to untrusted platforms.
-%
-By constrast, \sys does not rely on TEEs, and instead trusts developers to be
-well-intentioned.
+Systems like Pesos~\cite{pesos}, Ironsafe~\cite{ironsafe}, and
+Ryoan~\cite{ryoan} use trusted execution environments to protect all user data
+and computation on this data against untrusted storage platforms.  Ryoan also
+runs data processing applications as sandboxed modules within TEEs, thus
+protecting user data against untrusted applications in addition to untrusted
+platforms. 
+By contrast, \sys protects only disguised data from the application and database
+server, and trusts
+developers to be
+well-intentioned when writing disguise specifications.
+
+%use trusted
+%execution environments (TEEs) to enforce policy compliance in third-party
+%storage platforms without trusting them with user data. 
+%%
+%Ryoan~\cite{ryoan} %
+%By constrast, \sys does not rely on TEEs, and instead trusts developers to be
+%well-intentioned.
 %However, these systems require applications to be written with the systems'
 %specific architecture in mind---for example, Ironsafe requires application to
 %run atop Ironsafe's trusted policy compliance monitor; and in Ryoan, a developer
@@ -186,18 +194,24 @@ view metadata like network traffic and access patterns. To provide strong
 security, these systems rely on complex encryption schemes, oblivious RAM,
 hardware enclaves, or other cryptographic techniques.
 %
-While these techniques have often been considered impractically slow,
-Snoopy---the most recent system---improves the throughput of data requests by
-running requests in batches.  However, for some applications, batched data
-requests may result in too high of an individual request latency.
+However, oblivious object stores support only data retrival and simple queries
+(\eg key/value point queries), and expect clients to perform most 
+computations on data.
 %
-Snoopy achieves performance 39.1$\times$ slower than Redis, a
+By contrast, \sys supports arbitrary server-side processing of undisguised
+data, which most applications today require. 
+%
+Furthermore, Snoopy---the most recent system---achieves performance 39.1$\times$ slower than Redis, a
 commonly-used non-oblivious object store, which is impractical for many 
 applications.
+
+
+%While these techniques have often been considered impractically slow,
+%Snoopy---the most recent system---improves the throughput of data requests by
+%running requests in batches.  However, for some applications, batched data
+%requests may result in too high of an individual request latency.
 %
-Oblivious object stores also support only simple queries (\eg key/value point
-queries), and allow only data retrieval; by constrast, \sys provides arbitrary
-server-side processing, which is essential to most applications. 
+%
 %Many applications use relational databases in order to perform more
 %complex queries, which \sys supports without any modification.
 %
