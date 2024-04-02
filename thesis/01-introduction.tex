@@ -184,14 +184,14 @@ prove their ownership of the stored data.
 %
 
 %
-Fourth, application databases often undergo management operations, such
-as schema migrations. However, these operations would fail to affect any data
-disguised at the time, because the disguised data remains inaccessible to the
-application or developer. However, the disguised data would need to reflect
-these global database changes in order to preserve correctness upon reveal: for
-example, one disguised row might need to be restored as two rows in two tables
-after a schema migration. This would require the developer to remember and
-reapply these management operations on disguised data before revealing it.
+Fourth, application databases often undergo global updates such as schema
+migrations. However, these operations would fail to affect any data disguised at
+the time, because the disguised data remains inaccessible to the application and
+developer. However, the disguised data would need to reflect these global
+database changes in order to preserve correctness upon reveal: for example, one
+disguised row might need to be restored as two rows in two tables after a schema
+migration. This would require the developer to remember and reapply these
+global updates on disguised data before revealing it.
 %
 
 
@@ -293,7 +293,7 @@ part of this, this thesis contributes:
         %, which cover a wide range of application
         %needs and compose cleanly; 
 
-    \item A design for the \sys that realizes disguised data for practical web
+    \item A design for \sys that realizes disguised data for practical web
         applications, based on techniques such as diff records, speaks-for
         chains, and reveal-time update specifications.
         (Ch.~\ref{ch:design}).
@@ -346,16 +346,16 @@ peer-reviewed publications:
         Applications~\cite{edna}
 \end{itemize}
 %
-This thesis contains additional material on handling application database
-management operations such as schema migrations and global updates, described
-in \S\ref{s:overview:updates} and \S\ref{s:design:database-updates}, and evaluated in
-\S\ref{s:eval-updates}.
+This thesis contains additional material on handling global database update
+operations such as schema migrations and content changes, described in
+\S\ref{s:overview:updates} and \S\ref{s:design:database-updates}, and evaluated
+in \S\ref{s:eval-updates}.
 
 \iffalse
 \section{Remaining Work: Revealing with Schema Migrations and Application
 Updates}
 
-In \sys's current design, \textbf{application updates} that implicitly enforce
+In \sys's current design, \textbf{global database updates} that implicitly enforce
 invariants on application data remain unknown (and thus uncheckable) by \sys.
 \sys also fails to reveal disguised data affected by \textbf{schema migrations}
 performed since the time of disguise.

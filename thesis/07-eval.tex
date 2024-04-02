@@ -23,7 +23,7 @@ This chapter seeks to answer six questions:
         (\S\ref{s:eval-cryptdb})
 
 \item 
-    Which categories of application updates and schema migrations can \sys
+    Which categories of global database updates can \sys
         support, and with what overheads? (\S\ref{s:eval-updates})
 %
 \end{enumerate}
@@ -110,9 +110,10 @@ HotCRP's in 357 LoC (all in JSON).  The specification size is proportional to
 the lines required to specify the database schema in SQL, as well as what data
 each application \xxs.
 %
-Writing the corresponding updates for the three Lobsters bulk management
-operations requires 81 LoC; this adds to the 89 LoC that the developer already
-writes to implement the bulk database management operations themselves.
+Writing the corresponding updates for the three Lobsters global database
+updates 
+requires 81 LoC; this adds to the 89 LoC that the developer already
+writes to implement the global database updates themselves.
 %
 
 Thus, the developer effort required to use \sys---writing \sys specifications,
@@ -782,15 +783,15 @@ exp txn restore 98 232 366
 \input{07-eval-cryptdb}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\section{Database Management Operations}
+\section{Global Database Updates}
 \label{s:eval-updates}
 
 %
-If developers perform database management operations, this both increases
+If developers perform global database updates, this both increases
 developer effort and affects \sys's performance. This section answers the following
 two questions:
 \begin{enumerate}[nosep]
-    \item What categories of bulk management operation can \sys support, and how
+    \item What categories of global database update can \sys support, and how
         easily? 
     \item What are the performance impacts of invoking \sys's API to record an
         update, and applying updates during reveal?
@@ -803,41 +804,45 @@ two questions:
         \centering\textbf{Attribute} & \textbf{Normalize URL} & \textbf{Add Story Texts} &
         \textbf{Add Show Email} \\
         \hline
-        Impl Bulk Op & 68 LoC & 19 LoC & 2 LoC \\
+        Global Update & 68 LoC & 19 LoC & 2 LoC \\
         \hline
-        Impl Update & $\varnothing$ & 54 LoC & 27 LoC \\
+        Update Spec & $\varnothing$ & 54 LoC & 27 LoC \\
     \end{tabular}
     \caption{Schema migrations that affect entire tables require
-    writing separate update functions; however, management operations like
+    writing separate update specifications; however, updates like
     normalizing URLs that already apply per rows can be used as update
-    functions.}
+    specifications.}
     \label{tab:updates}
 \end{figure}
 
-Developers must already write their management operations today (\eg Lobsters
+Developers must already write their global updates today (\eg Lobsters
 implements these updates as Ruby Active Record Migrations~\cite{ruby_arm}). 
 %
-However, depending on the type of operation, developers may need to additionally
-write an update specification for \sys to capture that operation.
+However, depending on the type of update , developers may need to additionally
+write a reveal-time update specification for \sys to capture that operation.
 %
 Operations that execute by affecting entire tables (\eg via an \texttt{ALTER
 TABLE} command) require writing separate updates which take as input a set of
 rows instead of an entire table.
 %
-However, bulk management operations may already operate on a row-level, and thus
+However, global updates may already operate on a row-level, and thus
 can be reused as an update specification to \sys.
 
 
 %
-Our Lobsters implementation implements the selected three bulk operations in
+Our Lobsters implementation implements the selected three global
+updates in
 Rust instead of Ruby Active Record Migration. Table~\ref{tab:updates} shows the
 amount of code required per operation, as well as the additional code required
-to add a corresponding update to give \sys. We reuse the bulk URL normalization
-operation for the update to \sys; the update requires no additional code.
+to add a corresponding reveal-time update specification to give \sys. We reuse
+the global URL normalization update code for the reveal-time update
+specification to \sys, since the global update changes rows one-by-one. Thus,
+the update specification requires no additional code.
+%
 However, we implement the two schema migrations that respectively add
-\texttt{show\_email} and add \texttt{story\_texts} as bulk table updates, and
-thus write separate updates that operate on individual rows, taking 54 and 27
-LoC respectively.
+\texttt{show\_email} and add \texttt{story\_texts} as global table updates, and
+thus write separate reveal-time updates that operate on individual rows, taking
+54 and 27 LoC respectively.
 %
 %Thus, the developer needs to write either no additional code to support updates
 %if the bulk operation code can be reused, or 
@@ -845,15 +850,15 @@ LoC respectively.
 %\todo{too vague? it seems a lot compared to the table sql statements, but
 %updates are rather straightforward.}
 %
-Invoking \sys with the three different application updates and schema migrations
-for Lobsters required adding one line of code per update that the application
-calls when performing the bulk operation. 
+Invoking \sys with the three different global database updates for Lobsters
+required adding one line of code per update that the application calls when
+performing the update. 
 %
 
 \begin{figure}
     \centering
     \begin{tabular}{m{0.15\columnwidth}|m{0.05\columnwidth}|m{0.22\columnwidth}|m{0.43\columnwidth}}
-        \centering\textbf{Bulk Op Type} & \centering\textbf{\%} &
+        \centering\textbf{Update Type} & \centering\textbf{\%} &
         \centering\textbf{Examples} & \textbf{Example SQL} \\
         \hline
         Table & \begin{center}75\end{center} & Create tables \newline Alter table columns \newline Add table indexes & \texttt{ALTER TABLE users ADD COLUMN show\_email} \\
@@ -866,7 +871,7 @@ calls when performing the bulk operation.
         stories.id)} \\
     \end{tabular}
  
-    \caption{Out of the most recent 20 Lobsters database management operations,
+    \caption{Out of the most recent 20 Lobsters global database updates,
     the majority (75\%) are table operations which require developers to write
     separate update specifications for \sys. 15\% are row operations which can
     be reused as updates without additional effort, and 10\% are unsupported
@@ -876,27 +881,28 @@ calls when performing the bulk operation.
 
 %
 In addition to the updates described and implemented in
-\S\ref{s:casestudies:updates}, we inspected the 20 most recent management operations in
+\S\ref{s:casestudies:updates}, we inspected the 20 most recent
+global database updates in
 Lobsters from the past three years, and classified them as:
 \begin{enumerate}[nosep]
 %
-    \item a row operation (which can be reused as an update to \sys), such as URL
+    \item a row operation (which can be reused as an update specification to \sys), such as URL
 normalization; 
 %
-\item a table operation (which requires writing a new update for \sys), such as
+\item a table operation (which requires writing a new update specification for \sys), such as
 generating tables from other tables (\eg texttt{story\_texts} from
 \texttt{stories}) or altering columns; or
 %
-\item an unsupported operation (which cannot be supported as an update with
+\item an unsupported operation (which cannot be supported as an update
+    specification to 
     \sys), such as updating the \texttt{vote\_count} of comments based on the number of votes).
 \end{enumerate}
-Figure~\ref{tab:categories} shows the distribution of 20 bulk operations among these
+Figure~\ref{tab:categories} shows the distribution of 20 global updates among these
 three categories. 
 %
 \sys can support all operations other than updating rows based on current
 external database state, unless the update's output is correct no matter the
-state of other database tables. In the investigated Lobsters database management
-operations, two operations out of the 20 were unsupported, and both updated the
+state of other database tables. In the investigated Lobsters global database updates, two operations out of the 20 were unsupported, and both updated the
 cached \texttt{vote\_count} value of stories or comments.
 %This represents 2 of the 20 inspected updates.
 %
@@ -916,7 +922,7 @@ revealed data.
 %
 
 %
-For the large majority of database management operations, users can still reveal
+For the large majority of global database updates, users can still reveal
 their data disguised prior to these migrations, as if the migration had occurred
 with their data present in the database.
 
@@ -959,7 +965,7 @@ with their data present in the database.
         \centering\textbf{Attribute} & \textbf{Normalize URL} & \textbf{Add Story Texts} &
         \textbf{Add Show Email} \\
         \hline
-        Bulk Op & 5.63s & 5.24s & 0.082s\\
+        Global Op & 5.63s & 5.24s & 0.082s\\
         \hline
         Record Update & 0.82ms & 0.49ms & 0.43ms \\
         \hline
@@ -976,8 +982,8 @@ with their data present in the database.
     \label{tab:updates-perf}
 \end{figure}
 
-This section looks at how bulk operations and updates affect application
-performance, and how updates affect \sys's reveal performance.
+This section looks at how global updates affect application performance, and how
+logging reveal-time update specs affects \sys's reveal performance.
 Table~\ref{tab:updates-perf} shows the results.
 %
 Overall, the effects of performing updates increases with the amount of
@@ -991,16 +997,17 @@ messages takes on average 4.67s instead of 4.50s, an increase of 3.8\%).
 The rest of this section breaks down these costs.
 %
 
-\paragraph{Bulk Operation Performance.}
-First, as a baseline, this section looks at the cost of performing bulk operations, which
+\paragraph{Global Update Performance.}
+First, as a baseline, this section looks at the cost of performing
+global updates, which
 applications incur without \sys (Table~\ref{tab:updates-perf}, line 1).
 %
 
 %
-The URL normalization application update takes 5.63s, the longest of all
+The global URL normalization update takes 5.63s, the longest of all
 updates.
 %
-This matches the optimized bulk operation execution time of 6s in the deployed
+This matches the optimized global update execution time of 6s in the deployed
 Lobsters application, which normalizes the URLs of all stories in one
 batch.\footnote{The Lobsters developers first implemented an unoptimized version
 of URL normalization that normalizes stories one-by-one---this implementation
@@ -1025,7 +1032,7 @@ and removing columns.
 %
 \paragraph{Record Update.}
 %
-Invoking \sys's hook to insert a new application update in \sys's replay log
+Invoking \sys's hook to insert a new update specification in \sys's replay log
 takes on average 0.58ms (Table~\ref{tab:updates-perf}, line 2), a small 
 amount compared to the time to perform the update/migration This includes the
 time to persist the update (one database insert query) and add it to \sys's
@@ -1036,8 +1043,8 @@ in-memory update replay log.
 \paragraph{Reveal with Updates.}
 %
 This section evaluates the latency of reveal operations in Lobsters when updates
-corresponding to the implemented three bulk operations have been applied after
-reveal. \sys applies updates to data to reveal in batch, but the cost of
+corresponding to the implemented three global updates have been applied after
+reveal. \sys applies update specifications to data to reveal in batch, but the cost of
 applying updates to revealed data should still be proportional to the amount of
 data to reveal.
 
@@ -1080,13 +1087,13 @@ reveal.
 %\paragraph{Restore Updated Diff Record Rows.}
 Finally, we measure the cost to restore updated rows to the database compared to
 the cost to restore rows without updates.\footnote{Although restoring updated
-rows is more expensive than restoring the original rows, the application's bulk
-operation would have incurred the cost of updating these rows had the rows not
+rows is more expensive than restoring the original rows, the application's
+global updates would have incurred the cost of updating these rows had the rows not
 been disguised at the time. Thus, \sys moves the cost of updating these rows to
-reveal time, rather than bulk operation time (although the cost may be higher
+reveal time, rather than global updates execution time (although the cost may be higher
 because the update is not batched over all table rows).}
 %
-Updates do not affect the cost of restoring rows for all tables other than
+The updates do not affect the cost of restoring rows for all tables other than
 \texttt{stories}, since the queries to restore the rows are the same.  However,
 restoring a story now requires additional queries to perform consistency checks
 for and insert \texttt{story\_texts} table rows, adding $\approx$0.6ms per

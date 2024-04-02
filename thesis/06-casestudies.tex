@@ -130,12 +130,11 @@ can later reveal them.
 % shared private messages, and \sys enforces the shared-data semantics in
 % \S\ref{s:shared}.
 
-\paragraph{Application Updates and Schema Migrations.}
+\paragraph{Global Database Changes.}
 \label{s:casestudies:updates}
-We implemented three examples of recent application updates and schema
-migrations applied by the Lobsters developers in 2023-2024. 
+We implemented three examples of recent global database updates applied by the Lobsters developers in 2023-2024. 
 %
-The first is an application update and schema migration which performs URL 
+The first is a schema migration and data contents update which performs URL 
 normalization~\cite{urinorm} on the \texttt{url} column of all rows in the
 \texttt{stories} table, and then stores the normalized URL text in a new
 \texttt{normalized\_url} column.
