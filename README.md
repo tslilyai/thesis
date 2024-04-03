@@ -1,2 +1,3 @@
 # thesis
-Thesis stuffs
+* `/proposal` has proposal
+* `/thesis` has current thesis draft
