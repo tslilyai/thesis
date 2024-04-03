@@ -6,7 +6,7 @@ data disguising and data revealing.
 \begin{figure}[h!]
   \centering
     \includegraphics{figs/edna_overview}
-    \caption{Developers write \xx specifications and add hooks to invoke \sys
+    \caption[Developers write disguise specifications and add hooks to invoke Edna's API.]{Developers write \xx specifications and add hooks to invoke \sys
         from the application (green); in normal operation, clients use these
         hooks in the application to \xx and reveal their data in the database
         (blue).
@@ -94,7 +94,7 @@ semantics (\eg revealing makes sure not to overwrite changes made since
   \end{lstlisting}
   \end{subfigure}
   \vspace*{-1em}
-  \caption{The Lobsters developer adds a hook in the UI and code to perform
+    \caption[Hook to invoke topic-based anonymization.]{The Lobsters developer adds a hook in the UI and code to perform
       topic-based anonymization.}
   \label{f:lobsters_hook}
   \end{figure}
@@ -169,7 +169,7 @@ Bea's associations with ``Star Wars'' posts.
   "principal_fk": "votes.user_id",
 }, ... ]
 \end{lstlisting}
-    \caption{Lobsters topic-based anonymization \xx specification (JSON
+    \caption[Lobsters topic-based anonymization disguise specification.]{Lobsters topic-based anonymization \xx specification (JSON
     pseudocode), which decorrelates comments and removes votes on stories with
     the specific topic tag.}
 \label{f:spec}

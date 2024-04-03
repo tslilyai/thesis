@@ -178,7 +178,8 @@ require both database queries and cryptographic operations.
 \caption{Lobsters (16k users, Zipf-distributed data/user).}
 \label{f:ops-lobsters}
 \end{subfigure}
-\caption{\sys adds no latency overhead to common application operations and
+    \caption[Latency of common application, disguising, and
+    revealing operations with \sys.]{\sys adds no latency overhead to common application operations and
 modestly increases the latencies of \xxing operations compared to a manual
 implementation that lacks support for revealing or composition.
 %
@@ -316,7 +317,9 @@ incrementally in the background, as in Lobsters account decay.
           \caption{HotCRP}
         \label{f:comp-hotcrp}
       \end{subfigure}
-    \caption{Applying \xxing transformations to previously-decorrelated accounts
+    \caption[Composing disguising transformations increases latency of
+    disguise and reveal linear in the number of involved
+    pseudoprincipals.]{Applying \xxing transformations to previously-decorrelated accounts
       increases latency linear in the number of pseudoprincipals involved.
       %to the amount of data touched, as \sys performs
       %3--5.5$\times$ and restoration by 5.7--10$\times$ as \sys
@@ -551,7 +554,7 @@ measures both of these overheads.
     Principals Table (Disk) & 2.6 & 14.1 \\
     User Shares Table (Disk) & 8.9 & 8.9\\
 \end{tabular}
-    \caption{The space usage of the Lobsters-\sys database increases by 87.5MB on disk (and 44MB
+    \caption[Space overhead of \sys.]{The space usage of the Lobsters-\sys database increases by 87.5MB on disk (and 44MB
     in memory) after 10\% of 16k
     users remove their accounts with \sys.}
     \label{f:storage}
@@ -629,7 +632,8 @@ normal application requests.
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figs/lobsters_concurrent_results}
-    \caption{Continuous \xxing/revealing operations in Lobsters
+    \caption[Impact of continuously disguising and revealing on
+    application request throughput.]{Continuous \xxing/revealing operations in Lobsters
     have <7\% impact on application request throughput when disguising a
     random user; an extreme case of a heavy-hitter user with lots of data
     repeatedly \xxing and revealing causes up to 8\% drop in throughput without
@@ -808,8 +812,8 @@ two questions:
         \hline
         Update Spec & $\varnothing$ & 54 LoC & 27 LoC \\
     \end{tabular}
-    \caption{Schema migrations that affect entire tables require
-    writing separate update specifications; however, updates like
+    \caption[Code required to write reveal-time update specifications.]{Schema migrations that affect entire tables require
+    writing separate reveal-time update specifications; however, updates like
     normalizing URLs that already apply per rows can be used as update
     specifications.}
     \label{tab:updates}
@@ -871,7 +875,7 @@ performing the update.
         stories.id)} \\
     \end{tabular}
  
-    \caption{Out of the most recent 20 Lobsters global database updates,
+    \caption[Survey of global database updates supported by \sys.]{Out of the most recent 20 Lobsters global database updates,
     the majority (75\%) are table operations which require developers to write
     separate update specifications for \sys. 15\% are row operations which can
     be reused as updates without additional effort, and 10\% are unsupported
@@ -965,7 +969,7 @@ with their data present in the database.
         \centering\textbf{Attribute} & \textbf{Normalize URL} & \textbf{Add Story Texts} &
         \textbf{Add Show Email} \\
         \hline
-        Global Op & 5.63s & 5.24s & 0.082s\\
+        Global Update & 5.63s & 5.24s & 0.082s\\
         \hline
         Record Update & 0.82ms & 0.49ms & 0.43ms \\
         \hline
@@ -975,7 +979,7 @@ with their data present in the database.
         \hline
         Update other row & <0.001ms & <0.001ms & <0.001ms \\
     \end{tabular}
-    \caption{Applying the various updates adds greater overheads per story than
+    \caption[Overheads of global updates and reveal-time updates.]{Applying the various updates adds greater overheads per story than
     per user or per other table row, as more updates apply to the stories table.
     URL normalization is the most expensive update because initialization of a
     URL object takes 0.2ms.}
