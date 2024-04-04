@@ -870,7 +870,7 @@ performing the update.
             Row& \begin{center}15\end{center} & Moderate text \newline Normalize URLs & \texttt{UPDATE stories SET
         url= NORMALIZE(url)} \\
         \hline
-            Denormalized & \begin{center}10\end{center} & Update cached story vote count & \texttt{UPDATE stories SET
+            Unsupported & \begin{center}10\end{center} & Update cached story vote count & \texttt{UPDATE stories SET
         vote\_count=(SELECT COUNT(*) FROM votes WHERE votes.story\_id =
         stories.id)} \\
     \end{tabular}
@@ -906,7 +906,8 @@ three categories.
 %
 \sys can support all operations other than updating rows based on current
 external database state, unless the update's output is correct no matter the
-state of other database tables. In the investigated Lobsters global database updates, two operations out of the 20 were unsupported, and both updated the
+state of other database tables. In the investigated Lobsters global database
+updates, two operations out of the 20 were unsupported, and both updated the
 cached \texttt{vote\_count} value of stories or comments.
 %This represents 2 of the 20 inspected updates.
 %
