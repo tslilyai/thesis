@@ -1,8 +1,9 @@
 This section introduces the concept of disguised data by illustrating how
-developers and users would interact with an application that supports 
+developers and users interact with an application that supports 
 data disguising and data revealing.
 %
 
+\todo{Larger fig}
 \begin{figure}[h!]
   \centering
     \includegraphics{figs/edna_overview}
@@ -16,9 +17,9 @@ data disguising and data revealing.
 %
 \sys helps developers realize new options for users to control their data
 via \emph{\xxing transformations}; and add support for users to invoke
-\emph{revealing transformations}
+\emph{revealing transformations}.
 %
-The developer integrates an application with \sys by writing \xx specifications
+A developer integrates an application with \sys by writing \xx specifications
 and adding hooks to \xx or reveal data using \sys's API
 (Figure~\ref{f:edna-overview}).
 %
@@ -100,7 +101,7 @@ semantics (\eg revealing makes sure not to overwrite changes made since
   \end{figure}
 
 We illustrate how \sys's API and \xx specifications work via a \xxing
-transformation for Lobsters~\cite{lobsters}.  Lobsters~\cite{lobsters} is a
+transformation for Lobsters~\cite{lobsters}.  Lobsters is a
 link-sharing and discussion platform with 15.4k
 users.
 %
@@ -111,7 +112,7 @@ Users create accounts, submit URLs as stories, and interact with other users
 and their posted stories via comment threads and votes.
 %
 
-Consider \textbf{topic-based anonymization}, which allows users to
+Consider \textbf{topic-based anonymization}, a desirable privacy feature that allows users to
 hide their interest in a topic (a ``tag'' in Lobsters) by decorrelating
 their comments and removing their votes on stories with that tag.
 %
@@ -176,7 +177,7 @@ Bea's associations with ``Star Wars'' posts.
 \end{figure}
 
 
-\sys's developer interface is designed so that developers need to reason only
+\sys's developer interface ensures that developers need to reason only
 about the high-level semantics of disguising expressed in the disguise
 specification. \sys takes care of applying disguise transformations, composing
 it with other disguising and revealing transformations, and creating and storing
@@ -185,7 +186,7 @@ disguised data.
 
 \Xx specifications tell \sys what application data objects to \xx and how to \xx them.
 %
-A \xx specification identifies objects by database table name, principal, and
+A \xx specification (Figure~\ref{f:spec}) identifies objects by database table name, principal, and
 predicate, where a predicate is a SQL \fn{WHERE} clause.
 %
 \sys by default \xxs all objects related to the given principal, as defined by
@@ -209,13 +210,15 @@ at invocation time.
 %\lyt{skipping the ``custom set of objects''; that seems unclear to me.}
 %
 
+
+\todo{too specific?}
 Modification and decorrelation require \sys to generate placeholder content for
 modified columns and/or new pseudoprincipals.  Developers use one of \sys's
 generation policies to tell \sys how to generate per-column placeholder values.
 %
 The current prototype supports constants (\eg "removed"), random values (\eg a
 random email address), and values derived from the prior value (\eg a redacted
-phone number with only area code visible); 
+phone number with only area code visible).
 %
 We can imagine expanding \sys's generation specifications to take as input a
 database query dependent on external state to generate new values.
@@ -237,6 +240,7 @@ The same user's comments on different stories, however, decorrelate to different
 \texttt{comments.user\_id}, so a single pseudoprincipal adopts all of a user's
 \fn{TAG}-related comments (effectively creating a ``Star Wars'' throwaway account).
 
+\todo{limitation of prototype?}
 Developers can inform \sys to, upon revealing, check for any objects
 added after disguising that refer to pseudoprincipals; for example, a
 decorrelated comment might have new responses. This enables \sys to preserve
@@ -332,19 +336,22 @@ Web application databases constantly undergo global updates
 initiated by an admin or developer, like schema changes or global content
 changes (\eg normalizing URLs of all stories). 
 %
-However, if the developer updates the database after some data is disguised and
-before \sys reveals it, then the update will fail to apply to the disguised data
-(as it remains inaccessible to the application).
+However, developer updates to the database will fail to apply to any disguised
+data at the time. \sys may thus incorrectly reveal data that do not
+reflect the updates. 
 %
-Instead, the developer must inform \sys about the update so \sys can apply the
-update to the disguised data prior to reveal.
+To ensure updates are applied to revealed data, the developer must inform \sys
+about the update so \sys can apply the update to the disguised data prior to
+reveal.
 
 When a database update is performed, the developer writes a corresponding
 \emph{reveal-time update specification} that captures the effects of the operation and
-invokes \sys's \texttt{record\_update} API call with the update
-specification. \sys
-stores these update specifications in a replay log, which lets \sys reveal disguised data
-without overwriting the associated application changes.
+invokes \sys's API with the update specification.
+%\texttt{record\_update} API call with the update
+%specification. 
+\todo{do we need an API section?}
+\sys stores these update specifications in a replay log, which lets \sys reveal
+disguised data without overwriting the associated application changes.
 %
 %If the developer performs a global application change that \eg normalizes the
 %URLs of stories, the developer performs a bulk update in the Lobsters
@@ -386,7 +393,7 @@ In these scenarios, the developer must write a separate update specification for
 updating disguised data rows.
 %
 For example, Lobsters has a schema migration that adds a column to the
-\texttt{users} table.  The global update simply performs an \texttt{ALTER TABLE}
+\texttt{users} table.  The global update performs an \texttt{ALTER TABLE}
 query, while the update specification given to \sys receives user rows without the column
 as input, and outputs user rows with the column.
 %
@@ -404,8 +411,8 @@ attribute.
 This update thus depends on other disguised rows, namely \texttt{vote} rows.
 %
 If a disguise has removed both a user's story and its votes,
-then when \sys reveals the disguise, \sys will first reveal the diff records for
-stories before revealing those for votes in order to maintain referential
+then when \sys reveals the disguise, \sys will first reveal disguised 
+stories before revealing disguised votes in order to maintain referential
 integrity. 
 %
 But when applying a \texttt{vote\_count} update specification to story diff
