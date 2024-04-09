@@ -495,7 +495,7 @@ between users are owned by both users.
 %or co-authored papers in HotCRP.
 %
 \sys's default semantics for shared data implement an ownership model inspired
-by a common treatment of messages as jointly owned.
+by a common treatment of shared data as jointly owned.
 %
 When a user \xxs shared data, \sys decorrelates the data from the \xxing user,
 but preserves the data and its association with other owners.
@@ -540,8 +540,21 @@ the message to its original state.
 \label{f:shared:data}
 \end{figure}
 
-\sys supports these joint ownership semantics with the following design,
-depicted in Figure~\ref{f:shared:data}:
+\sys supports these joint ownership semantics by modifying its design for
+removal when encountering a shared object.
+%
+The first time any owner removes the data, \sys would normally remove the data
+object. However, since the other owners have not since removed the data, \sys
+must keep the data object around, but dissociated from the removing owner.
+
+\sys ensures that \one{} if any user removes the data, then the data is
+decorrelated from their identity; \two{} if all users have removed the data, the
+data is removed from the database; and \three{} if any user returns, the data is
+restored to the database with only revealed users recorrelated.
+\todo{elaborate here.}
+
+Figure~\ref{f:shared:data} depicts an example execution of \sys over shared
+data:
 %
 \begin{enumerate}
     \item[(1)] The first time any owner removes the data, \sys generates pseudoprincipals for
@@ -573,7 +586,9 @@ fully-decorrelated row from the copy of the fully-decorrelated diff record in
 the owner's disguised data.  \sys then rewrites the foreign key for the
 pseudoprincipal who currently owns the shared data to recorrelate with the
 owner, and removes that pseudoprincipal, revealing the other diff records like
-normal.
+normal. 
+        \todo{\sys also restores the partially-removed record to store the
+        completely decorrelated remove diff record.}
 %
 
 \item[(4)] If a subsequent owner reveals the shared data, \sys's consistency checks will
@@ -598,6 +613,7 @@ owners remove it (and become pseudoprincipals); similarly, if an owner never
 restores the shared data, the data will remain forever owned by the owner's
 pseudoprincipal if other owners choose to restore it.
 %
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -669,7 +685,29 @@ IDs for every data object, so \sys can refind the object when revealing.
 However, this method requires more invasive changes to application data. 
 %
 
-\paragraph{\sys's Replay Log.}
+\paragraph{Shared Data.}
+\sys's approach for shared data faces two main limitations. First, the
+application cannot use foreign keys to the users table as unique identifiers for
+a table's rows. \sys uses unique identifiers to determine which objects to
+update upon a reveal, and also modifies foreign keys to the users table when
+decorrelating and recorrelating users from a shared data object. Thus, if
+foreign keys to the users table are modified, the unique identifier would change
+as well, and \sys would incorrectly reveal shared data.
+%
+Note that this would not be an issue for a single-owner removal, since the
+object is removed and not dissociated from the owner.
+
+One potential solution if foreign keys to users act as unique row identifiers
+might introduce a layer of indirection by adding a new unique identifier (\eg an
+autoincrementing primary key), at the cost of potential performance impacts.
+
+Second, owners of shared data who remove and reveal the data multiple times will
+decorrelate to the same pseudoprincipal each time.
+\todo{elaborate here.}
+
+%TODO pseudoprincipal created upon disguise and not for all principals at once
+
+\paragraph{Reveal-Time Updates.}
 \label{s:design:updates:limitations}
 %\sys's replay log also faces some limitations.
 %
@@ -681,7 +719,7 @@ However, this method requires more invasive changes to application data.
 %
 
 %
-Updates in replay logs only apply to diff records, which contain the actual
+Reveal-time updates in replay logs only apply to diff records, which contain the actual
 data changes, and not speaks-for records; \sys assumes that the identifiers for
 principals in speaks-for records that encode the speaks-for chain remain
 consistent as the database changes, allowing \sys to use its composition
@@ -691,7 +729,7 @@ multiple disguises in any order.
 
 %
 Furthermore, as described in \S\ref{s:overview:updates}, \sys assumes that
-either \one{} updates are pure functions deterministic in their input and do not
+either \one{} reveal-time updates are pure functions deterministic in their input and do not
 have side effects; or \two{} any nondeterminism or update side effects will
 maintain application correctness.
 %
