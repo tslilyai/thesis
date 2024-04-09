@@ -277,10 +277,9 @@ decorrelated comments.
 \label{s:design:database-updates}
 \sys's revealing as described thus far may accidentally reveal data that ignores
 database updates applied since the time of disguise, such as
-global application changes to un\xxed data or schema migrations.
+global transformations to un\xxed data or schema changes.
 %
-To prevent this, \sys utilizes reveal-time update
-specifications provided by the
+To prevent this, \sys utilizes reveal-time update specifications provided by the
 developer to apply updates to \xxed data prior to revealing it. This ensures
 that revealed data correctly reflects the current state of the database.
 %
@@ -310,8 +309,8 @@ these updates to data to reveal; and \sys's consistency checks.
     \centering
     \includegraphics[width=.8\textwidth]{figs/update-migration}
     \caption[During reveal, \sys applies reveal-time update specifications for
-    schema migration updates.]{Similar to a moderations update, the
-    application can notify \sys of a schema migration to apply to diff records
+    schema changes.]{Similar to a moderations update, the
+    application can notify \sys of a schema change to apply to diff records
     prior to reveal. Yellow highlights changes to the application data or \sys's
     data. For simplicity, only the placeholder data of a pseudoprincipal row is
     shown; in reality, placeholder data exists as part of \eg a decorrelation
@@ -320,7 +319,7 @@ these updates to data to reveal; and \sys's consistency checks.
 \end{figure}
     
 In order for revealing to preserve application correctness, \sys must know about
-global database updates that alter invariants over application data.
+global database updates that transform application data.
 %
 Consider an example where a moderator periodically edits all posts to remove
 swear words, creating an implicit invariant that all posts created prior to the
@@ -385,38 +384,38 @@ scenarios such as decorrelation or modification, \sys would apply the logged
 update to placeholder data as well. The updated placeholder data would then be
 removed.}
 
-\subsection{Schema Migrations}
+\subsection{Schema Changes}
 %
 Applications also constantly undergo database updates to migrate their schema in
 order to reorganize data or add new application features. When these occur, \sys
 must know how to manipulate any disguised data structured in the old database
 layout to match that of the current database.
 %
-At first glance, schema migrations might seem like a different class of
-database update than global database changes like URL normalization, and
+At first glance, schema changes might seem like a different class of
+database update than global data transformations like content moderation, and
 thus require a different approach.
 %
 However, the technique described in \S\ref{s:design:updates} for global 
-changes allows \sys to handle schema migrations as well. 
+changes allows \sys to handle schema changes as well. 
 %
 
 %
 Take, for example, a developer of an application with a \texttt{users} table
 that contains rows with \texttt{username}s, \texttt{addr}s, and \texttt{email}s.
 The developer may choose to allow users multiple addresses via a schema
-migration. To do so, they would create a new \texttt{addrs} table, with a
+change. To do so, they would create a new \texttt{addrs} table, with a
 foreign key to the users table, and populate \texttt{addrs} using the address
 data in \texttt{users}.  Finally, they would remove the \texttt{addr} column
 from \texttt{users}.
 %
 
-Figure~\ref{f:update:mod} demonstrates how \sys applies such a schema migration
+Figure~\ref{f:update:mod} demonstrates how \sys applies such a schema change 
 to disguised data.  \begin{enumerate}[nosep]
     \item[(1)] \sys disguises some user data.
     \item[(2)] The developer invokes \sys with a reveal-time update
         specification when 
-performing the schema migration; \sys records the update specification its replay log.
-    \item[(3)] When revealing data, \sys applies the migration update
+performing the schema change; \sys records the update specification its replay log.
+    \item[(3)] When revealing data, \sys applies the schema change update
         to diff record data, which maps an original \texttt{users} data row to
         both
     a row in \texttt{users} with username \texttt{uid} and a row in
@@ -767,7 +766,7 @@ agree on the intermediate states of partially removed data.
 %\sys's replay log also faces some limitations.
 %
 %First, developers must do additional work to add hooks to invoke \sys when any
-%major application change or schema migration occurs. 
+%major application change or schema change occurs. 
 %%
 %Invoking these hooks and applying these updates during reveal also adds
 %additional computation work; we measure these costs in \S\ref{s:eval:updates}.
