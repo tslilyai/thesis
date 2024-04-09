@@ -19,9 +19,9 @@ data disguising and data revealing.
 via \emph{\xxing transformations}; and add support for users to invoke
 \emph{revealing transformations}.
 %
-A developer integrates an application with \sys by writing \xx specifications
-and adding hooks to \xx or reveal data using \sys's API
-(Figure~\ref{f:edna-overview}).
+As shown in Figure~\ref{f:edna-overview}, a developer integrates an application
+with \sys by writing \xx specifications and adding hooks to \xx or reveal data
+using \sys's API (Figure~\ref{f:api-high}).
 %
 This proceeds as follows:
 %
@@ -351,8 +351,6 @@ reveal.
 When a database update is performed, the developer writes a corresponding
 \emph{reveal-time update specification} that captures the effects of the operation and
 invokes \sys's API with the update specification.
-%\texttt{record\_update} API call with the update
-%specification. 
 \sys stores these update specifications in a replay log, which lets \sys reveal
 disguised data without overwriting the associated application changes.
 %
