@@ -823,12 +823,11 @@ two questions:
 Developers must already write their global updates today (\eg Lobsters
 implements these updates as Ruby Active Record Migrations~\cite{ruby_arm}). 
 %
-However, depending on the type of update , developers may need to additionally
+However, depending on the type of update, developers may need to additionally
 write a reveal-time update specification for \sys to capture that operation.
 %
-Operations that execute by affecting entire tables (\eg via an \texttt{ALTER
-TABLE} command) require writing separate updates which take as input a set of
-rows instead of an entire table.
+Schema changes (\eg an \texttt{ALTER TABLE} command) require writing separate
+updates which take as input a set of rows instead of the table.
 %
 However, global updates may already operate on row data, and thus
 can be reused as an update specification to \sys.
