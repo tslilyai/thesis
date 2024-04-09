@@ -134,9 +134,9 @@ can later reveal them.
 \label{s:casestudies:updates}
 We implemented three examples of recent global database updates applied by the Lobsters developers in 2023-2024. 
 %
-The first is a schema migration and data contents update which performs URL 
-normalization~\cite{urinorm} on the \texttt{url} column of all rows in the
-\texttt{stories} table, and then stores the normalized URL text in a new
+The first changes the schema and transforms data contents of stories. It
+performs URL normalization~\cite{urinorm} on the \texttt{url} column of all rows
+in the \texttt{stories} table, and then stores the normalized URL text in a new
 \texttt{normalized\_url} column.
 %
 %

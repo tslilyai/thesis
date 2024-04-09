@@ -812,9 +812,10 @@ two questions:
         \hline
         Update Spec & $\varnothing$ & 54 LoC & 27 LoC \\
     \end{tabular}
-    \caption[Code required to write reveal-time update specifications.]{Schema migrations that affect entire tables require
+    \caption[Code required to write reveal-time update specifications.]{Schema
+    migrations that change the schema require
     writing separate reveal-time update specifications; however, updates like
-    normalizing URLs that already apply per rows can be used as update
+    normalizing URLs that transform database table data can be used as update
     specifications.}
     \label{tab:updates}
 \end{figure}
@@ -829,7 +830,7 @@ Operations that execute by affecting entire tables (\eg via an \texttt{ALTER
 TABLE} command) require writing separate updates which take as input a set of
 rows instead of an entire table.
 %
-However, global updates may already operate on a row-level, and thus
+However, global updates may already operate on row data, and thus
 can be reused as an update specification to \sys.
 
 
@@ -844,7 +845,7 @@ specification to \sys, since the global update changes rows one-by-one. Thus,
 the update specification requires no additional code.
 %
 However, we implement the two schema migrations that respectively add
-\texttt{show\_email} and add \texttt{story\_texts} as global table updates, and
+\texttt{show\_email} and add \texttt{story\_texts} as schema changes, and
 thus write separate reveal-time updates that operate on individual rows, taking
 54 and 27 LoC respectively.
 %
@@ -865,9 +866,9 @@ performing the update.
         \centering\textbf{Update Type} & \centering\textbf{\%} &
         \centering\textbf{Examples} & \textbf{Example SQL} \\
         \hline
-        Table & \begin{center}75\end{center} & Create tables \newline Alter table columns \newline Add table indexes & \texttt{ALTER TABLE users ADD COLUMN show\_email} \\
+        Schema Change & \begin{center}75\end{center} & Create tables \newline Alter table columns \newline Add table indexes & \texttt{ALTER TABLE users ADD COLUMN show\_email} \\
         \hline
-            Row& \begin{center}15\end{center} & Moderate text \newline Normalize URLs & \texttt{UPDATE stories SET
+        Data Transformation & \begin{center}15\end{center} & Moderate text \newline Normalize URLs & \texttt{UPDATE stories SET
         url= NORMALIZE(url)} \\
         \hline
             Unsupported & \begin{center}10\end{center} & Update cached story vote count & \texttt{UPDATE stories SET
@@ -905,7 +906,7 @@ generating tables from other tables (\eg texttt{story\_texts} from
 Figure~\ref{tab:categories} shows the distribution of 20 global updates among these
 three categories. 
 %
-\sys can support all but those updates based on  external data to the data
+\sys can support all but those updates based on external data to the data
 disguised (such as rows of another database table).  \sys cannot ensure that
 external data has not changed since the developer applied the update, and thus
 cannot support these updates unless the update's output is correct no matter the
