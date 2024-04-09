@@ -875,11 +875,12 @@ performing the update.
         stories.id)} \\
     \end{tabular}
  
-    \caption[Survey of global database updates supported by \sys.]{Out of the most recent 20 Lobsters global database updates,
-    the majority (75\%) are table operations which require developers to write
-    separate update specifications for \sys. 15\% are row operations which can
+    \caption[\sys supports 90\% of Lobster's recent global database updates.]{Out of the most recent 20 Lobsters global database updates,
+    the majority (75\%) are schema changes which require developers to write
+    separate update specifications for \sys. 15\% are data transformations which can
     be reused as updates without additional effort, and 10\% are unsupported
-    because they denormalize the schema in order to cache aggregate results.}
+    because they rely on data external to the disguised data (values of 
+    external tables).}
   \label{tab:categories}
 \end{figure}
 
@@ -890,10 +891,10 @@ global database updates in
 Lobsters from the past three years, and classified them as:
 \begin{enumerate}[nosep]
 %
-    \item a row operation (which can be reused as an update specification to \sys), such as URL
+    \item a data transformation (which can be reused as an update specification to \sys), such as URL
 normalization; 
 %
-\item a table operation (which requires writing a new update specification for \sys), such as
+\item a schema change (which requires writing a new update specification for \sys), such as
 generating tables from other tables (\eg texttt{story\_texts} from
 \texttt{stories}) or altering columns; or
 %
@@ -904,10 +905,12 @@ generating tables from other tables (\eg texttt{story\_texts} from
 Figure~\ref{tab:categories} shows the distribution of 20 global updates among these
 three categories. 
 %
-\sys can support all operations other than updating rows based on current
-external database state, unless the update's output is correct no matter the
-state of other database tables. In the investigated Lobsters global database
-updates, two operations out of the 20 were unsupported, and both updated the
+\sys can support all but those updates based on  
+external data to the data disguised (such as rows of another database table).
+\sys cannot ensure that external data has not changed since the developer
+applied the update, and thus cannot support these updates unless the update's output is correct no matter the
+state of external data. In the investigated Lobsters global database
+updates, two updates out of the 20 were unsupported, and both updated the
 cached \texttt{vote\_count} value of stories or comments.
 %This represents 2 of the 20 inspected updates.
 %
@@ -916,12 +919,12 @@ cached \texttt{vote\_count} value of stories or comments.
 %for \eg \texttt{vote\_count} to be 0 regardless of the number of votes, \sys
 %will not correctly apply an update that sets the count of votes for comments.
 %
-These types of operations might occur in applications that optimize for
+These types of updates might occur in applications that optimize for
 performance by denormalizing their database schema (as did Lobsters); we
 hypothesize that this category of update would not exist with a normalized
 schema.
 %
-However, these particular operations also happen to be idempotent for any rows
+However, these particular updates also happen to be idempotent for any rows
 affected, and thus could be reapplied via a cron job regularly to update
 revealed data.
 %
