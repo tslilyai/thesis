@@ -31,49 +31,47 @@ can use to invoke \sys, if they do not link directly with \sys's Rust library.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%\section{API}
-%\label{s:api}
-%%
-%An application can use the prototype if:
-%\one{} it uses a MySQL database;
-%\two{} rows to \xx have direct foreign key relationships to a users table,
-%where each user corresponds to a row of that table;
-%\three{} all rows to \xx are owned by one or more principals; and
-%\four{} all rows can be uniquely identified (\eg via primary key).
-%%
-%Applications that do not satisfy these assumptions---\eg because they have
-%complex ownership chains or use a NoSQL database---could be supported with
-%extensions to the prototype.
-%
-\iffalse
+\section{API}
+\label{s:api}
+
 \begin{figure}[t]
 \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
-// Generates keypair for p and returns
-// the user's backup credential
-(*\textbf{RegisterPrincipal}*)(p: UID, pw: Password,
-        pubkey: PublicKey, privkey: PrivKey)
+// Generates keypair for p and returns the user's backup credential
+(*\textbf{RegisterPrincipal}*)(
+        p: UID, 
+        pw: Password,
+        pubkey: PublicKey, 
+        privkey: PrivKey)
     -> Credential;
-// \xxs principal p according to the spec,
-// optionally over already-\xxed data ((*\S\ref{s:composition}*))
-(*\textbf{\xxData}*)(p: Option<UID>, spec: \xxSpec,
-    \xx_over: Option<(
-        Credential,
-        Vec<Locator>
-    )>) -> (\xxID, Vec<Locator>);
-// Reveals data \xxed by s for p with p's
-// private key.
-// locs point to bags p can decrypt
-(*\textbf{RevealData}*)(p: Option<UID>, s: \xxID,
-    cred: Credential, locs: Vec<Locator>);
-// Gets principals at loc that p can speak-for.
-(*\textbf{CanSpeakFor}*)(p: UID, cred: Credential,
-    loc: Locator) -> Vec<UID>;
+
+// disguises principal p according to the spec, optionally over already-disguised data ((*\S\ref{s:composition}*))
+(*\textbf{disguiseData}*)(
+        p: Option<UID>, 
+        spec: disguiseSpec,
+        principal_gen: principalGenerator,
+        schema: schemaFile,
+        disguise_over: Option<Credential>) 
+    -> disguiseID;
+
+// Reveals data disguised by s for p with p's password. 
+// pp_ref_policy informs Edna now to handle new references to pseudoprincipals.
+(*\textbf{RevealData}*)(
+    p: Option<UID>, 
+    s: disguiseID, 
+    pp_ref_policy: PseudoprincipalReferencePolicy,
+    schema: schemaFile,
+    cred: Credential>);
+
+// Gets principals that p can speak-for.
+(*\textbf{CanSpeakFor}*)(p: UID, cred: Credential) -> Vec<UID>;
+
+// Records a reveal-time update spec in the replay log.
+(*\textbf{RecordUpdate}*)(update_spec: RevealTimeUpdateSpec);
 \end{lstlisting}
 \caption{\sys's high-level API (Rust-like syntax).}
 \label{f:api-high}
 \end{figure}
 %
-\fi
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%

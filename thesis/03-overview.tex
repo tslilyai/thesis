@@ -202,55 +202,59 @@ For each selected group of objects, developers choose to
 %re-associates the objects with pseudoprincipals. \hmng{this is a pretty verabtim
 %repetition from section 3, remove or condense I'd say?}
 %
-The example specification in Figure~\ref{f:spec} decorrelates all comments and removes all
-votes on stories with a particular tag, specified by the \texttt{TAG} parameter provided
-at invocation time.
+The example specification in Figure~\ref{f:spec} decorrelates all comments and
+removes all votes on stories with a particular tag, specified by the
+\texttt{TAG} parameter provided at invocation time.
 %
 %or a custom set of objects specified by the \xxing transformation.
 %\lyt{skipping the ``custom set of objects''; that seems unclear to me.}
 %
 
-
-\todo{too specific?}
-Modification and decorrelation require \sys to generate placeholder content for
-modified columns and/or new pseudoprincipals.  Developers use one of \sys's
-generation policies to tell \sys how to generate per-column placeholder values.
 %
-The current prototype supports constants (\eg "removed"), random values (\eg a
-random email address), and values derived from the prior value (\eg a redacted
-phone number with only area code visible).
+For each modification in the disguise specification, the developer informs \sys
+of how to generate new placeholder values for modified columns using one of
+\sys's value generation policies. The current prototype supports constants (\eg
+"removed"), random values (\eg a random email address), and values derived from
+the prior value (\eg a redacted phone number with only area code visible).
 %
-We can imagine expanding \sys's generation specifications to take as input a
-database query dependent on external state to generate new values.
-%
-
 
 %
 To ensure that decorrelation preserves referential integrity, \sys generates
 pseudoprincipals to replace the original principal. 
 %
-Decorrelation can use pseudoprincipals at different granularities.
-In the extreme, the \xx specification may tell \sys to create a unique
-pseudoprincipal for each decorrelated application object.
-In our example, however, all comments by the same user on the same story
-decorrelate to the same pseudoprincipal (\verb+"group_by": "stories.id"+), thus
-keeping same-story comment threads intact.
+Decorrelation can use pseudoprincipals at different granularities.  In the
+extreme, the \xx specification may tell \sys to create a unique pseudoprincipal
+for each decorrelated application object.  In our example, however, all comments
+by the same user on the same story decorrelate to the same pseudoprincipal
+(\verb+"group_by": "stories.id"+), thus keeping same-story comment threads
+intact.
 %
-The same user's comments on different stories, however, decorrelate to different pseudoprincipals; an alternative might group comments by
+The same user's comments on different stories, however, decorrelate to different
+pseudoprincipals; an alternative might group comments by
 \texttt{comments.user\_id}, so a single pseudoprincipal adopts all of a user's
-\fn{TAG}-related comments (effectively creating a ``Star Wars'' throwaway account).
+\fn{TAG}-related comments (effectively creating a ``Star Wars'' throwaway
+account).
 
-\todo{limitation of prototype?}
-Developers can inform \sys to, upon revealing, check for any objects
-added after disguising that refer to pseudoprincipals; for example, a
+
+In addition to providing per-disguise specifications, developers also specify
+two global policies. First, they give \sys a pseudoprincipal-generation policy
+(using \sys's value generation policies) to tell \sys how to generate per-column
+placeholder values.
+%
+%We can imagine expanding \sys's generation specifications to take as input a
+%database query dependent on external state to generate new values.
+%
+%
+Second, developers also inform \sys how to, upon revealing, handle any objects
+added after disguising that refer to pseudoprincipals. For example, a
 decorrelated comment might have new responses. This enables \sys to preserve
-referential integrity for data referring to pseudoprincipals. \sys
-provides three options if it finds such objects: \one{} change the object's
-reference to point to the original principal; \two{} delete the object; and
-\three{} continue referring to the pseudoprincipal.
+referential integrity for data referring to pseudoprincipals. Developers choose
+between three options for pseudoprincipal-referring objects: \one{} change the
+object's reference to point to the original principal; \two{} delete the object;
+or \three{} continue referring to the pseudoprincipal.
 %
 This option is global; another design for \sys could also support a menu of
-options, such as per-table checks and fixes (where the developer to specifies
+options, such as per-table checks and fixes (where the developer specifies
 per-table policies) or per-inserted-object ones (where the developer makes
 application modifications to log all added references to pseudoprincipals).
 
@@ -349,7 +353,6 @@ When a database update is performed, the developer writes a corresponding
 invokes \sys's API with the update specification.
 %\texttt{record\_update} API call with the update
 %specification. 
-\todo{do we need an API section?}
 \sys stores these update specifications in a replay log, which lets \sys reveal
 disguised data without overwriting the associated application changes.
 %
