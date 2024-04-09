@@ -905,13 +905,13 @@ generating tables from other tables (\eg texttt{story\_texts} from
 Figure~\ref{tab:categories} shows the distribution of 20 global updates among these
 three categories. 
 %
-\sys can support all but those updates based on  
-external data to the data disguised (such as rows of another database table).
-\sys cannot ensure that external data has not changed since the developer
-applied the update, and thus cannot support these updates unless the update's output is correct no matter the
-state of external data. In the investigated Lobsters global database
-updates, two updates out of the 20 were unsupported, and both updated the
-cached \texttt{vote\_count} value of stories or comments.
+\sys can support all but those updates based on  external data to the data
+disguised (such as rows of another database table).  \sys cannot ensure that
+external data has not changed since the developer applied the update, and thus
+cannot support these updates unless the update's output is correct no matter the
+state of external data. In the investigated Lobsters global database updates,
+two updates out of the 20 were unsupported, and both updated the cached
+\texttt{vote\_count} value of stories or comments.
 %This represents 2 of the 20 inspected updates.
 %
 %

@@ -546,74 +546,99 @@ removal when encountering a shared object.
 The first time any owner removes the data, \sys would normally remove the data
 object. However, since the other owners have not since removed the data, \sys
 must keep the data object around, but dissociated from the removing owner.
+%
 
+%
 \sys ensures that \one{} if any user removes the data, then the data is
 decorrelated from their identity; \two{} if all users have removed the data, the
 data is removed from the database; and \three{} if any user returns, the data is
-restored to the database with only revealed users recorrelated.
-\todo{elaborate here.}
+restored to the database with only revealed users recorrelated.  
+%
 
-Figure~\ref{f:shared:data} depicts an example execution of \sys over shared
+%
+To support these semantics, \sys creates a \emph{partially-removed} metadata
+table. The table is indexed by a data row's unique identifier columns (\eg a
+primary key id); each index maps to a (plaintext) remove diff record for a
+shared data object. The diff record contains the shared data row, but where the
+row has been fully-decorrelated: all foreign keys to owners of the object have
+been rewritten to refer to a pseudoprincipal.
+%
+Entries in the partially-removed table ensure that all owners agree on the
+partially-removed state of shared data (\eg when some users are gone but others
+remain, so pseudoprincipals replace the removed users). This allows users to
+reveal consistently no matter which user reveals the shared data object first. 
+%
+
+
+Figure~\ref{f:shared:data} depicts how \sys executes \sys over shared
 data:
 %
 \begin{enumerate}
-    \item[(1)] The first time any owner removes the data, \sys generates pseudoprincipals for
-each owner of the data, and creates a fully-decorrelated version of the shared
-data row. 
+    \item[(1)] When any owner removes some shared data row, \sys checks the
+        partially-removed metadata table with the data's identifiers.
+        
+        If \sys does \emph{not} find a matching entry, as in
+        Figure~\ref{f:shared:data}, then \sys creates a fully-decorrelated
+        version of the data row (with all foreign keys to owner replaced with
+        random pseudoprincipal identifiers). \sys then inserts this into the
+        partially-removed table.
 
-This decorrelated row is stored as a (plaintext) remove diff record in a
-\emph{partially-removed} table created by \sys, indexed by the row's unique
-identifier columns (\eg a primary key id).
+        A matching entry must now exist; \sys takes the matching entry and
+        stores a copy of the entry's fully-decorrelated diff record for the
+        disguise.  As shown in step 3, this information will let an
+        owner restore the data to the database if all owners have removed, and
+        the data no longer exists in the database.
+
+        \sys then creates the pseudoprincipal that matches the corresponding
+        decorrelated foreign key to the owner, and stores diff records recording
+        the pseudoprincipal row and foreign key rewrite for the owner. Finally,
+        \sys stores a speaks-for record recording which pseudoprincipal the
+        owner can speak-for. These records allow the owner to recorrelate back
+        with the shared data after the data is restored to the database in a
+        decorrelated state (steps 3 and 4).
 
 \item[(2)]
-When another owner's disguise removes the data, \sys stores a copy of the
-fully-decorrelated diff record for the disguise, diff records recording the
-associated pseudoprincipal row and foreign key rewrite for the owner, and a
-speaks-for record recording which pseudoprincipal the owner can speaks-for.
-%
-
-%
-As shown in this example, if the owner also happens to be the last remaining
-        owner (all other owners are pseudoprincipals, \ie all other owners have
-        removed the data), \sys removes the shared data row from the application
-        database, and the fully-decorrelated diff record from \sys's
-        partially-removed table.
+        When the last remaining owner removes the data (all other owners are
+        pseudoprincipals, \ie all other owners have removed the data), \sys
+        removes the shared data row from the application database, and the
+        corresponding entry from \sys's partially-removed table.
 %
 
 \item[(3)]
 When \emph{any} owner chooses to return, \sys first restores the
-fully-decorrelated row from the copy of the fully-decorrelated diff record in
+fully-decorrelated row to the database as well as the partially-removed table,
+        using the copy of the fully-decorrelated diff record in
 the owner's disguised data.  \sys then rewrites the foreign key for the
 pseudoprincipal who currently owns the shared data to recorrelate with the
 owner, and removes that pseudoprincipal, revealing the other diff records like
 normal. 
-        \todo{\sys also restores the partially-removed record to store the
-        completely decorrelated remove diff record.}
 %
 
-\item[(4)] If a subsequent owner reveals the shared data, \sys's consistency checks will
-prevent the reveal of the fully-decorrelated row (inserting the row will cause a
-duplicate row in the table). However, \sys will still rewrite the foreign key
-for that owner's pseudoprincipal to the original owner, and remove the
-pseudoprincipal from the database.
+\item[(4)] If a subsequent owner reveals the shared data, \sys's consistency
+    checks will prevent the reveal of the fully-decorrelated row (inserting the
+        row will cause a duplicate row in the table). However, \sys will still
+        rewrite the foreign key for that owner's pseudoprincipal to the original
+        owner, and remove the pseudoprincipal from the database, thus
+        recorrelating the data to the owner and restoring ownership.
 %
-
-
 \end{enumerate}
 
+Note that the partially-removed table entry for any shared data object is
+created only once: the first time any owner's disguise removes the shared data
+object. Future removes after reveals will reuse the same partially-removed table
+entry.
 %
-
-
+\sys thus ensures that any user who reveals and then removes the shared data
+again decorrelates to the \emph{same} pseudoprincipal as before.
 
 %
-Thus, \sys can disguise and reveal shared data no matter the order in which its
-owners decide to remove or reveal it. If an owner never removes the shared data,
-they will continue to be correlated and have access to the data even if other
-owners remove it (and become pseudoprincipals); similarly, if an owner never
-restores the shared data, the data will remain forever owned by the owner's
-pseudoprincipal if other owners choose to restore it.
+With this design, \sys can disguise and reveal shared data no matter the order
+in which its owners decide to remove or reveal it. If an owner never removes the
+shared data, they will continue to be correlated and have access to the data
+even if other owners remove it (and become pseudoprincipals); similarly, if an
+owner never restores the shared data, the data will remain forever owned by the
+owner's pseudoprincipal if other owners choose to restore it.
 %
-
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -696,14 +721,44 @@ as well, and \sys would incorrectly reveal shared data.
 %
 Note that this would not be an issue for a single-owner removal, since the
 object is removed and not dissociated from the owner.
-
-One potential solution if foreign keys to users act as unique row identifiers
+%
+If foreign keys to users table act as unique identifiers, one potential solution
 might introduce a layer of indirection by adding a new unique identifier (\eg an
 autoincrementing primary key), at the cost of potential performance impacts.
 
-Second, owners of shared data who remove and reveal the data multiple times will
-decorrelate to the same pseudoprincipal each time.
-\todo{elaborate here.}
+Second, owners of shared data who remove and reveal the data multiple times 
+decorrelate to the same pseudoprincipal each time. This may allow for more opportunity
+for observers of the application to determine which pseudoprincipal corresponds
+to which user (although this falls outside of \sys's threat model).
+To see why \sys requires this limitation, imagine the following counterexample:
+\begin{enumerate}
+    \item[1)] Bea and Chris both remove a shared message, so no data is left in
+        the database. Both Bea and Chris store a diff record of the message mapping Bea to $P_1$,
+        and Chris to $P_2$. 
+       
+    \item[2)] Chris first reveals and then removes the message again, so no data
+        is left in the database. Chris now stores a diff record of the message
+        with Chris mapped some \emph{new} pseudoprincipal $P_3$.
+        
+    \item[3)] Now Bea reveals, restoring the message with $P_1$ and $P_2$ to
+        the database. 
+        
+    \item[4)] Chris attempts to reveal the message, but cannot find $P_3$ in the
+        database, and thus fails to recorrelate with the message. 
+\end{enumerate}
+%
+Chris' reveal's failure arises because Chris and Bea disagree upon what
+data---in particular, which pseudoprincipal references---to insert into the
+database, should the shared data object no longer exist. Chris believes it to be
+$P_3$, whereas Bea will restore to $P_2$ for Chris. 
+%Chris and Bea must agree,
+%because \emph{any} owner can perform the final removal of the data from the
+%database, and \emph{any} owner can perform the first reveal that restores data
+%back into the database.
+To remedy this, \sys uses the partially-removed table to ensure that owners
+agree on the intermediate states of partially removed data.
+%
+
 
 %TODO pseudoprincipal created upon disguise and not for all principals at once
 
