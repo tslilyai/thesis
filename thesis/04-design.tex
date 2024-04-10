@@ -87,6 +87,8 @@ credentials to reveal the transformation later.
 
 %
 To perform Bea's topic-based anonymization (Figure~\ref{f:lobsters_visual}),
+which allows Bea to hide their associate with content with a particular tag,
+%
 \sys thus:
 %
 \one{} queries the database to fetch comments and votes by Bea
@@ -235,8 +237,7 @@ application objects to their pre-\xxed state.
 
 %
 To preserve referential integrity, \sys restores
-\xxed data that was removed from tables in topologically-sorted order (again
-constructing the dependency graph).
+\xxed data that was removed from tables in topologically-sorted order (constructing the dependency graph as in \S\ref{s:applying})
 %
 \sys then reveals any modifications, and finally performs recorrelations. 
 %
@@ -245,7 +246,7 @@ and inserts the original row (both of which are recorded in the diff record).
 %
 However, for efficiency, \sys first checks if a placeholder row in diff records
 has the same identifiers (\eg a primary key) as an original data row in the diff
-record, and if so, will update the relevant columns of the placeholder row instead.
+record, and if so, updates the relevant columns of the placeholder row instead.
 %
 
 %
@@ -276,14 +277,15 @@ decorrelated comments.
 \section{Global Database Updates}
 \label{s:design:database-updates}
 \sys's revealing as described thus far may accidentally reveal data that ignores
-database updates applied since the time of disguise, such as
-global transformations to un\xxed data or schema changes.
+database updates applied since the time of disguise, such as global
+transformations to un\xxed data or schema changes.
 %
 To prevent this, \sys utilizes reveal-time update specifications provided by the
 developer to apply updates to \xxed data prior to revealing it. This ensures
-that revealed data correctly reflects the current state of the database.
+that revealed data correctly reflects the current state of the database and any
+implicit application-level invariants.
 %
-Prior to revealing the updated data, \sys will also perform consistency checks
+Prior to revealing the updated data, \sys also performs consistency checks
 to guarantee adherence to internal database invariants, such as uniqueness
 constraints.
 %
@@ -291,7 +293,7 @@ Here, we describe how developers specify reveal-time updates; how \sys applies
 these updates to data to reveal; and \sys's consistency checks.
 
 %
-\subsection{Global Database Updates}
+\subsection{Global Data Transformations}
 \label{s:design:updates}
 
 \begin{figure}
@@ -299,29 +301,16 @@ these updates to data to reveal; and \sys's consistency checks.
     \includegraphics[width=.8\textwidth]{figs/update-moderation}
     \caption[During reveal, \sys applies reveal-time update specifications for
     global moderation updates.]{When the application applies updates like moderations of explicit
-    words, it can invoke \sys to log the corresponding reveal-time update specification. \sys then applies the
-    update to disguised data in diff records prior to reveal. Yellow 
+    words, it invokes \sys to log the corresponding reveal-time update specification. \sys then applies the
+    update to disguised data in diff records prior to revealing them. Yellow 
     highlights changes to the application data or \sys's data.}
 \label{f:update:mod}
-\end{figure}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=.8\textwidth]{figs/update-migration}
-    \caption[During reveal, \sys applies reveal-time update specifications for
-    schema changes.]{Similar to a moderations update, the
-    application can notify \sys of a schema change to apply to diff records
-    prior to reveal. Yellow highlights changes to the application data or \sys's
-    data. For simplicity, only the placeholder data of a pseudoprincipal row is
-    shown; in reality, placeholder data exists as part of \eg a decorrelation
-    diff record.}
-\label{f:update:schema}
 \end{figure}
     
 In order for revealing to preserve application correctness, \sys must know about
 global database updates that transform application data.
 %
-Consider an example where a moderator periodically edits all posts to remove
+Consider an example: a moderator edits all posts to remove
 swear words, creating an implicit invariant that all posts created prior to the
 last moderation pass should contain no swear words.
 %
@@ -385,8 +374,21 @@ update to placeholder data as well. The updated placeholder data would then be
 removed.}
 
 \subsection{Schema Changes}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=.8\textwidth]{figs/update-migration}
+    \caption[During reveal, \sys applies reveal-time update specifications for
+    schema changes.]{Similar to a moderations update, the
+    application notifies \sys of a schema change to apply to diff records
+    prior to reveal. \todo{what does schema change do.} Yellow highlights changes to the application data or \sys's
+    data. For simplicity, the figure shows only the placeholder data of a pseudoprincipal row; in reality, placeholder data exists as part of \eg a decorrelation
+    diff record.}
+\label{f:update:schema}
+\end{figure}
+
 %
-Applications also constantly undergo database updates to migrate their schema in
+Applications also undergo database updates to migrate their schema in
 order to reorganize data or add new application features. When these occur, \sys
 must know how to manipulate any disguised data structured in the old database
 layout to match that of the current database.
@@ -657,7 +659,7 @@ reveal step.
 To support this, an application accepts reveal credentials along with a
 modification request. \sys uses these credentials to validate that the user
 speaks-for a specific pseudoprincipal by walking the speaks-for chain (cf.\
-Figure~\ref{f:revealpseudo}) and ensuring that the user can access a speaks-for
+Figure~\ref{f:revealpseudo}). This ensures that the user can access a speaks-for
 record linked to the pseudoprincipal. After validating the user's request, \sys updates
 the database with the modification.
 %
