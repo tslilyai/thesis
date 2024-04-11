@@ -35,47 +35,6 @@ updates as reveal-time update specifications.
 \end{figure}
 
 %
-\begin{figure}[t]
-\begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
-// Generates keypair for p and returns the user's backup credential
-(*\textbf{RegisterPrincipal}*)(
-        p: UID, 
-        pw: Password,
-        pubkey: PublicKey, 
-        privkey: PrivKey)
-    -> Credential;
-
-// disguises principal p according to the spec, 
-// optionally over already-disguised data ((*\S\ref{s:composition}*))
-(*\textbf{disguiseData}*)(
-        p: Option<UID>, 
-        spec: DisguiseSpec,
-        principal_gen: PrincipalGenerator,
-        schema: Schema,
-        disguise_over: Option<Credential>) 
-    -> disguiseID;
-
-// Reveals data disguised by s for p with p's password. 
-// pp_ref_policy informs Edna how to handle new references to pseudoprincipals.
-(*\textbf{RevealData}*)(
-    p: Option<UID>, 
-    s: disguiseID, 
-    pp_ref_policy: PseudoprincipalReferencePolicy,
-    schema: Schema,
-    cred: Credential>);
-
-// Gets principals that p can speak-for.
-(*\textbf{CanSpeakFor}*)(p: UID, cred: Credential) -> Vec<UID>;
-
-// Records a reveal-time update spec in the replay log.
-(*\textbf{RecordUpdate}*)(update_spec: RevealTimeUpdateSpec);
-\end{lstlisting}
-\caption{\sys's API (Rust-like syntax).}
-\label{f:api-high}
-\end{figure}
-%
-
-
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
