@@ -23,18 +23,19 @@
 
 // Reveals data disguised by s for p with p's password. 
 (*\textbf{RevealData}*)(
-    p: Option<UID>, 
-    did: disguiseID, 
-    pp_ref_policy: PseudoprincipalReferencePolicy,
-    allow_partial_row_reveal: bool,
-    schema: Schema,
-    cred: RevealCredential>);
+        p: Option<UID>, 
+        did: disguiseID, 
+        pp_ref_policy: PseudoprincipalReferencePolicy,
+        allow_partial_row_reveal: bool,
+        schema: Schema,
+        cred: RevealCredential>)
+    -> bool;
 
 // Gets principals that p can speak-for.
 (*\textbf{CanSpeakFor}*)(p: UID, cred: RevealCredential) -> Vec<UID>;
 
 // Records a reveal-time update spec in the replay log.
-(*\textbf{RecordUpdate}*)(update_spec: RevealTimeUpdateSpec);
+(*\textbf{RecordUpdate}*)(update_spec: RevealTimeUpdateSpec) -> bool;
 \end{lstlisting}
 \caption{\sys's API (Rust-like syntax).}
 \label{f:api-high}
@@ -46,9 +47,9 @@ of the following functions (Figure~\ref{f:api-high}). This section describes
 each function and how developers would use them to support disguising and
 revealing.
 
-\subsection{\texttt{RegisterPrincipal}.}
+\subsection{\texttt{RegisterPrincipal}}
 
-    Registers an application user to allow their data to be disguised and
+    Registers an application user as a principal whose data can be disguised and
     revealed. Unique users should not be registered multiple times.  Once
     registered, data of an undeleted user that exists in the database can always
     be disguised and revealed.
@@ -67,7 +68,8 @@ revealing.
     their password or private key.
 
 
-\subsection{\texttt{DisguiseData}.}
+\subsection{\texttt{DisguiseData}}
+    \todo{principals vs users?}
 
     Rewrites and/or removes data from the application database according to the
     provided disguise specification (\ie disguises data). The original data is encrypted
@@ -75,7 +77,9 @@ revealing.
     to invoke with a \texttt{RevealData} call in order to restore the data.
     
     This function may insert pseudoprincipals (anonymous users) into the
-    application database if a decorrelation is specified by the disguise.
+    application database if a decorrelation---a rewriting of a foreign key to
+    point to an anonymous principal instead of an 
+    original principal user---is specified by the disguise.
     \todo{we haven't talked about decorrelation yet?} Data disguised within the
     same disguise may refer to (via a foreign key) the same pseudoprincipal
     specified.
@@ -123,6 +127,7 @@ revealing.
     disguise.
 
     \paragraph{Special Considerations.}
+    \todo{clarify.}
     If a data row to be removed by the disguise is shared among multiple users,
     the data row is only removed once all users have agreed to disguise. This
     occurs if \one{} all users individually disguise the data (\texttt{p =
@@ -134,72 +139,101 @@ revealing.
 
 
 \subsection{\texttt{RevealData}}
-
     Restores data disguised by the disguise corresponding to the provided ID to
-    the database.
-    Revealing the same disguise ID multiple times will do nothing after the
-    first reveal.
+    the database. Revealing the same disguise ID multiple times will do nothing
+    after the first reveal.
 
     If revealing a row violates database constraints specified in the schema
-    (\eg uniqueness, referential integrity, NULl checks), \texttt{RevealData} will not
-    restore that row.  
+    (\eg uniqueness, referential integrity, NULl checks), \texttt{RevealData}
+    will not restore that row.  \texttt{RevealData} may fail to restore some
+    rows, but will still reveal others that successfully pass all constraints
+    checks.
 
-    If an attribute of a row has been changed by the application to differ from
-    the original value since the row was disguised. This scenario is impossible for
-    data that has been removed from the database during the disguise.
-
-    changed since row's original values the
-    row will be partially 
-
-    The reveal of non-conflicting rows produced by the same
-    disguise may still be restored to the database.
+    Revealing a row operates on a per-attribute granularity. If an attribute of
+    a row at the time of reveal differs from the attribute value set when
+    \texttt{DisguiseData} disguised the row, then that attribute of the row will
+    not be restored to the original value. This prevents \texttt{RevealData}
+    from overwriting an application change since the time of disguise. 
+    %
+    \texttt{RevealData} will still reveal matching attributes for the row unless
+    developers diable partial row removal
+    (\texttt{allow\_partial\_row\_reveal}).
 
     Revealed data will reflect all of the updates registered via
     \texttt{RecordUpdate} since the time of disguise \texttt{did}, applied in
     chronological order.
 
-    If a removed data row to be restored by the disguise is shared among
-    multiple users, ; all other users owning the
-    data will remain disguised.
-
-
-    the data row is only removed once all users have agreed to disguise. This
-    occurs if \one{} all users individually disguise the data (\texttt{p =
-    Some(uid)} for all owners \texttt{p}), or \two{} the disguise is applied
-    over all users (\texttt{p = None}).
-
     \paragraph{Arguments.} 
-    A disguise is invoked either automatically by the application, or a specific
+    A reveal is invoked by a specific
     user of the application identified by user ID. 
     % 
-    If disguise is user-specific, then only that user's data that matches the
-    disguise specification will be disguised.  Otherwise, all data matching the
-    disguise specification will be disguised (potentially data of multiple
-    users). 
-    %
-    If a user invokes a disguise through the application and provides a reveal
-    credential (their password, private key, or backup token), the function 
-    will disguise data
-    that has already been disguised (\S\ref{s:composition}).
+    The user also provides a reveal
+    credential (their password, private key, or backup token) and the 
+    identifier for the disguise to reveal.
 
     The developer provides three arguments:
     \begin{itemize}[nosep]
-    \item A disguise specification that describes how to disguise data by
-    removing, modifying (replacing some or all of its contents with placeholder
-    values), or decorrelating, replacing links to users with links to
-    pseudoprincipals.
-    
-    \item A principal generator, which describes how to create a
-    pseudoprincipal in the application (global across all disguises).
-    
+    \item A pseudoprincipal reference policy (\texttt{RECORRELATE}, \texttt{REMOVE},
+    or \texttt{RETAIN}) to ensure that reveals of decorrelations preserve
+    referential integrity. \texttt{RECORRELATE} ensures that any table rows that
+    have been added since the time of disguise, and which have foreign
+    key references to a pseudoprincipal row that is removed by the reveal, will
+    reference the revealed user replacing the pseudoprincipal.
+    \texttt{REMOVE} removes such new references to removed pseudoprincipal rows,
+    and \texttt{RETAIN} prevents \texttt{RevealData} from the removing
+    pseudoprincipal row and retains any new references to it.
+     
+    \item A flag specifying whether a row can be partially restored if some
+    attributes at the time of reveal differ from the attribute values set when
+    disguising the row.
+
     \item The database schema, which specifies ownership links from data tables to user
     tables via foreign key relationships (global across all disguises).
     \end{itemize}
 
     \paragraph{Return Value.} 
-    The function returns a unique disguise ID for the applied disguise.
+    Returns true if all rows to reveal pass database constraint checks, and false otherwise.
 
+    \paragraph{Special Considerations.}
+    \todo{shared data, composition}
 
+\subsection{\texttt{CanSpeakFor}}
+    Finds all principals in the application identified by user ID that stem from
+    a (potentially recursive) decorrelaton of user \texttt{p}.
+    User \texttt{p} is thus authorized to speak-for any of these principals.
+
+    \paragraph{Arguments.} 
+    \texttt{CanSpeakFor} is invoked on behalf of some user with UID \texttt{p},
+    and with the user's password.
+
+    \paragraph{Return Value.} 
+    A list of all user IDs of principals that \texttt{p} can
+    speak-for.
+
+\subsection{\texttt{RecordUpdate}}
+Enables a developer to perform updates to disguised data prior to revealing it.
+Invoking \texttt{RecordUpdate} timestamps and logs a developer-provided update
+specification---a data transformation function---to reflect a global update
+performed on undisguised data. All updates since the time of disguise will be
+performed in chronological order on disguised data prior to revealing it.
+
+If the provided reveal-time update specification relies on data external to the
+disguised data to reveal (\eg the current time or state of undisguised data),
+\sys cannot ensure correctness when applying the update to disguised data at
+revveal time.
+
+    \paragraph{Arguments.} Takes a reveal-time update specification reflecting
+    the data transformations performed on table rows. The specification maps a
+    set of table rows to a set of updated table rows.
+
+    \paragraph{Return Value.} Returns true on successful recording in \sys's
+    log, and false on failure.
+
+\subsection{Example API Usage}
+
+\todo{Examples of applying the API and resulting DB state with pseudoprincipals?
+Lobsters example? Shared data, composition, reveal-time updates?
+Hard to catch every edge condition...}
 
 
 \iffalse

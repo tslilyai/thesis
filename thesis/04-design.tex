@@ -954,18 +954,19 @@ guarantees security equivalent to the security of the user's password.
 
 // Reveals data disguised by s for p with p's password. 
 (*\textbf{RevealData}*)(
-    p: UID, 
-    pwd: Password,
-    did: disguiseID, 
-    pp_ref_policy: PseudoprincipalReferencePolicy,
-    allow_partial_row_reveal: bool,
-    schema: Schema);
+        p: UID, 
+        pwd: Password,
+        did: disguiseID, 
+        pp_ref_policy: PseudoprincipalReferencePolicy,
+        allow_partial_row_reveal: bool,
+        schema: Schema)
+    -> bool;
 
 // Gets principals that p can speak-for.
 (*\textbf{CanSpeakFor}*)(p: UID, pwd: Password) -> Vec<UID>;
 
 // Applies an update spec to disguised data
-(*\textbf{ApplyUpdate}*)(update_spec: UpdateSpec);
+(*\textbf{ApplyUpdate}*)(update_spec: UpdateSpec) -> bool;
 \end{lstlisting}
 \caption{Potential \sys API without Encryption of Disguised Data (Rust-like syntax).}
 \label{f:newapi}

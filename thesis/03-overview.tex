@@ -204,8 +204,9 @@ added after disguising that refer to pseudoprincipals. For example, a
 decorrelated comment might have new responses. This enables \sys to preserve
 referential integrity for data referring to pseudoprincipals. Developers choose
 between three options for pseudoprincipal-referring objects: \one{} change the
-object's reference to point to the original principal; \two{} delete the object;
-or \three{} continue referring to the pseudoprincipal.
+object's reference to point to the original principal (\texttt{RECORRELATE});
+\two{} delete the object (\texttt{REMOVE});
+or \three{} continue referring to the pseudoprincipal (\texttt{RETAIN}).
 %
 This option is global; another design for \sys could also support a menu of
 options, such as per-table checks and fixes (where the developer specifies
