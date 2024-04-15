@@ -214,6 +214,9 @@ transformations}, which restore the original data at a user’s request.
 (\eg links to throwaway accounts or old HotCRP reviews) even if the application
 is later compromised (\eg via a SQL injection or a compromised admin's account).
 %
+Only the user can invoke revealing transformations on their disguise data to
+authorize the application to restore it.
+%
 
 %
 We demonstrate our approach in \sys, a system that realizes disguising and
@@ -225,19 +228,12 @@ and \sys takes care of correctly applying, composing, and optionally reverting
 them, while maintaining application functionality and referential integrity.
 %
 
-%
-%\section{Challenges}
-%
-Our approach for \sys's approach faces three challenges, which we describe next,
-along with \sys's solution.
-
-%\head{Disguise Specifications.}
-%
+Our approach for \sys's approach faces three challenges.
 First, \sys needs to present a simple, yet versatile interface for developers to
 specify \xxing transformations.
 %
 \sys addresses this challenge with a restricted programming model centered
-around three primitives: remove, modify, and decorrelate (which reassigns data
+around three primitives: \emph{remove}, \emph{modify}, and \emph{decorrelate} (which reassigns data
 to placeholder users).
 %
 This model limits the potential for developer error, and lets \sys derive the
@@ -252,8 +248,7 @@ transformations should require minimal application modifications.
 %
 To achieve this, \sys introduces \emph{pseudoprincipals}, anonymous placeholder
 users that are inserted into the database on \xxing and exist solely to own data
-decorrelated from real users (\eg because the application requires the data to
-continue operating) and maintain referential integrity.
+decorrelated from real users and maintain referential integrity.
 %
 Pseudoprincipals can also act as built-in ``throwaway accounts,'' as they let
 the user disown data after-the-fact, as well as potentially later reassociate

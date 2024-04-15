@@ -1,5 +1,5 @@
 \todo{Larger fig}
-\begin{figure}[h!]
+\begin{figure}[t]
   \centering
     \includegraphics{figs/edna_overview}
     \caption[Developers write disguise specifications and add hooks to invoke
@@ -11,23 +11,65 @@
 \end{figure}
 %
 
-This section introduces the concept of disguised data by describing \sys's
-disguising and revealing API, and how developers would use this API to allow
-users to disguise and reveal their data in the application.
-%
-\sys helps developers realize new options for users to control their data
-via \emph{\xxing transformations}; and add support for users to invoke
-\emph{revealing transformations}.
+This section introduces the concept of disguised data by describing how
+developers and users interact with an application that supports data disguising
+and data revealing.
 %
 
+%
+\sys helps developers realize new options for users to control their data
+via \emph{\xxing transformations} and \emph{revealing transformations}.
+%
 
 As shown in Figure~\ref{f:edna-overview}, a developer integrates an application
 with \sys by writing \xx specifications and adding hooks to \xx or reveal data
-using \sys's API. 
+using \sys's API. This proceeds as follows:
 
-\todo{put after? put spec before api?}
+%
+(1) An application registers users with a public--private keypair
+that either the application or the user's client generates. \sys stores the
+public key in its database, while the user retains the private key for use in
+future reveal operations.
+%
 
-\input{03-overview-api.tex}
+%
+(2) When the application wants to \xx some data, it invokes \sys with the
+corresponding developer-provided \xx specification and any necessary
+parameters (such as a user ID).
+%
+\Xx specifications can remove data, modify data (replacing some or all of its
+contents with placeholder values), or decorrelate data, replacing
+links to users with links to pseudoprincipals (fake users).
+%
+% Decorrelation preserves the structure of the application database, and avoids
+% integrity issues like dangling foreign keys, while obscuring the data's
+% relationship to natural principals (true users).
+%
+\sys takes the data it removed or replaced and the connections between
+the user and any pseudoprincipals it created, encrypts that data with the user's
+public key, and stores the resulting ciphertext---the \emph{\xxed
+data}---such that it cannot be linked back to the user without the user's
+private key.
+%
+%The application's database now no longer contains the \xxed data.
+%
+
+
+%
+(4) When a user wishes to reveal their \xxed data, they pass credentials
+to the application, which calls into \sys to reveal the data.
+%
+Credentials are application-specific: users may either provide their private
+key or other credentials sufficient for \sys to re-derive the private key.
+%
+\sys reads the \xxed data and decrypts it, undoing the changes to the
+application database that \xxing introduced.
+%
+
+%
+\sys provides the developer with sensible default \xxing and revealing
+semantics (\eg revealing makes sure not to overwrite changes made since
+\xxing).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Example: Lobsters Topic Anonymization}
