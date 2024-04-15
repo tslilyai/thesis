@@ -1,24 +1,21 @@
 %Users' privacy requirements for their sensitive data on web applications are
 %highly contextual and constantly in flux. 
-Many users today have tens to hundreds of accounts with web services that store
+Users have tens to hundreds of accounts with web services that store
 sensitive data, from social media to tax preparation and e-commerce
 sites~\cite{tens,hundreds,password_life_cycle}.
 %
+%
 While users have the right to delete their data (via \eg the
-GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), users want and deserve more nuanced
-controls over their data that don't exist today.
+GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), more nuanced
+data controls often don't exist.
 %
-For example, an inactive user might wish to hide and protect data of an e-commerce or
-dating app profile against service compromise or data leaks. However, they might also want their data to be present should they return to use the application. 
+For example, a user might wish to hide and protect their profiles on an
+e-commerce or dating app when inactive, and to recover their accounts should
+they return to use the application. 
 %
-%But today, achieving this flexible privacy remains out of reach, in part
-%because of the many challenges facing web developers in building services that
-%can adapt to changing privacy needs. 
-Today, however, services usually provide only coarse-grained, blunt tools such
-as permanent account deletion.
-%\todo{more tools? account deactivation?}.  
-These tools result in all-or-nothing exposure of users' private information, and
-fail to achieve the flexible privacy that users want and deserve.
+However, services often provide only coarse-grained, blunt tools such as
+permanent account deletion that
+result in all-or-nothing exposure of users’ private data
 %
 
 %
@@ -61,7 +58,7 @@ thesis.
 %GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), users want and deserve more nuanced
 %controls over their data that don't exist today.
 %%
-User today lack desirable controls over their personal data stored by web
+User today lack fine-grained controls over their personal data stored by web
 applications.
 %
 Consider Twitter: after a change in management~\cite{musk-twitter}, many users
@@ -91,7 +88,7 @@ their passport details with a hotel, to be inaccessible to the service after
 some time of inactivity, and therefore protected from leaks or service
 compromises~\cite{retention,breach:marriott}. Or users may prefer
 to---explicitly or automatically---dissociate their identity from old data, such
-as teenage social media posts or old reviews on HotCRP.
+as teenage social media posts or old reviews on HotCRP~\cite{hotcrp}.
 %
 Today, users work around the lack of such support by explicitly maintaining
 multiple identities (\eg Reddit throwaway accounts~\cite{reddit:throwaway} and
@@ -100,7 +97,7 @@ solution.
 %
 
 %
-Providing this functionality can benefit both the service and the user.
+Providing this fine-grained privacy functionality can benefit both the service and the user.
 %
 It helps the service comply with privacy regulations, reduces its liability on
 data breaches, and appeals to privacy-conscious users; meanwhile, the user can
@@ -114,13 +111,14 @@ and reveal their association with it if they want.
 \section{Disguised Data: A New Abstraction for Flexible Privacy}
 %
 This desired flexible privacy functionality describes an in-between state of
-users data in web applications: where the data is not quite gone, because a user
-can return to the application and restore their data; but where the user data is
-also not quite there, because some or all of it has been removed.
+users data in web applications. The data is not quite gone, because a user
+can return to the application and restore their data; but the user data is
+also not quite there, because some or all of it has been removed or made
+inaccessible to the application.
 %
 
 %
-To capture this new state of data, this thesis introduces the new 
+To capture this new state, this thesis introduces the new 
 abstraction of \emph{disguised data}.  Disguised data represents a state of data
 where \one{} some or all of the user's original sensitive data is rendered
 inaccessible to the application; \two{} some data may be replaced with
@@ -142,14 +140,14 @@ identifying data visible to the service and other users.
 \section{Challenges} 
 Today, disguised data for flexible privacy remains out of reach for users of
 web applications in part because getting it right is hard for application
-developers. In particular, they face four main challenges.
+developers. In particular, developers face four main challenges.
 
 %
-First, real applications store their data in a database with complex schemas and have
+First, real applications store their data in databases with complex schemas and have
 complex notions of privacy, data ownership, and data sharing.
 %
 Simple solutions that might try to delete all data associated with a user can
-create orphaned data or break referential integrity---the invariant that if a
+create orphaned data or break referential integrity, which is the invariant that if a
 table row references another row via a foreign key, the referenced row must
 exist. 
 %
@@ -164,34 +162,41 @@ restoring.
 %
 
 %
-Second, to manually realized disguised data, developers would also have to reason about interactions between multiple
-data-redacting features, and how these features would compose.
+Second, to manually realized disguised data, developers would also have to
+reason about interactions between multiple data-redacting features, and how
+these features would compose.
 %
 For example, imagine an application that supports both account deletion and
 anonymizing old data: if a user wants to delete all their posts after they have
 been anonymized, a SQL query must somehow determine which anonymized posts
 belong to the user in order to remove them.
 %
-And if the user later wants to return, the developer must account for the
-applied anonymization and restore posts as anonymized.
+And if the user later wants to return and restore their posts, the developer
+must account for the applied anonymization and restore the user's posts as
+anonymized.
 %
 
 %
-Third, stored removed data must be inaccessible to the application and
-protected against data breaches, but must be accessible if the user chooses to
-return. The developer also needs to provide user-friendly ways for users to
-prove their ownership of the stored data.
+Third, stored removed data should be protected against data breaches, but 
+accessible if the user chooses to return. The developer also needs to provide
+user-friendly ways for users to prove their ownership of the stored data.
 %
 
 %
 Fourth, application databases often undergo global updates such as schema
-migrations. However, these operations would fail to affect any data disguised at
-the time, because the disguised data remains inaccessible to the application and
-developer. However, the disguised data would need to reflect these global
-database changes in order to preserve correctness upon reveal: for example, one
-disguised row might need to be restored as two rows in two tables after a schema
-migration. This would require the developer to remember and reapply these
-global updates on disguised data before revealing it.
+migrations and data transformations like content reformatting. However, these
+updates would fail to affect any data disguised at the time, because the
+disguised data remains inaccessible to the application and developer.  In order
+to restore disguised data correctly, these updates must be applied to disguise
+data when a user grants permission to access the disguised data in order to
+reveal it.
+%
+For example, a disguised \texttt{posts} row might need to be restored as one 
+\texttt{posts} and one \texttt{postContent} row after a schema migration
+moves post content into a different table from posts. 
+%
+The developer thus should remember and apply these global updates to disguised
+data in chronological order during reveal.
 %
 
 
