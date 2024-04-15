@@ -1,34 +1,35 @@
-Many users today have tens to hundreds of accounts with web services that store
-sensitive data, from social media to tax preparation and e-commerce
+Users have tens to hundreds of accounts with web services that store
+sensitive information, from social media to tax preparation and e-commerce
 sites~\cite{tens,hundreds,password_life_cycle}.
 %
 While users have the right to delete their data (via \eg the
-GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), users want and deserve more nuanced
-controls over their data that don't exist today.
+GDPR~\cite{eu:gdpr} or CCPA~\cite{ccpa}), more nuanced
+data controls often don't exist.
 %
-For example, a user might wish to hide
-and protect data of an e-commerce or dating app profile when inactive, but also
-want their data to be present should they return to use the application. 
+For example, a user might wish to hide and protect their profiles on an
+e-commerce or dating app when inactive, and to recover their accounts should
+they return to use the application. 
 %
-Today, however, services often provide only coarse-grained, blunt tools that
+However, services often provide only coarse-grained, blunt tools that
 result in all-or-nothing exposure of users’ private information.
 %
 
 %
 This thesis introduces the notion of \emph{disguised data}, a reversible state
-of data in which sensitive data is selectively hidden.
+in which sensitive data is hidden.
 %
 To demonstrate the feasibility of disguised data, this thesis also presents
-\sys---the first system for disguised data---which helps database-backed web applications allow users
-to remove their data without permanently losing their accounts, anonymize their
-old data, and selectively dissociate personal data from public profiles.
+\sys---the first system for disguised data---which helps database-backed web
+applications provide new prirvacy features for users, such as 
+removing their data without permanently losing their accounts, anonymizing their
+old data, and selectively dissociating personal data from public profiles.
 %
 \sys helps developers support these features while maintaining application
 functionality and referential integrity in the database via \emph{disguising} and
 \emph{revealing} transformations.
 %
 Disguising selectively renders user data inaccessible via encryption, and
-revealing enables the user to restore their data to the application.
+revealing restores their data to the application.
 %
 \sys's techniques allow transformations to compose in any order, \eg deleting a
 previously anonymized user's account, or restoring an account back to an
@@ -37,15 +38,12 @@ anonymized state.
 
 %
 With \sys, web applications can enable flexible privacy features with reasonable
-developer effort 
-%(\S\ref{s:eval-effort}) 
-and moderate performance impact on
-application operation throughput 
-%(\S\ref{s:eval-conc}).
+developer effort and moderate performance impact on application operation
+throughput.
 %
 In the Lobsters social media application---a 160k LoC web application with >16k
 users---adding \sys and its features takes <1k LoC, and decreases throughput
-1--7\% in the common case and up to 28\% in the worst case, when a heavy user
+1--7\% in the common case and up to 28\% when a heavy user
 who owns 1\% of all application data continuously disguises and reveals their
 account.
 %
