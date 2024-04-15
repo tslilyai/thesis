@@ -939,5 +939,98 @@ If an application uses password-based reveal credentials, \sys
 guarantees security equivalent to the security of the user's password.
 
 \section{\sys Without Encryption}
-\todo{edna without encryption}
 
+\begin{figure}[t]
+\begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
+// disguises principal p according to the spec, 
+// will disguise already-disguised data ((*\S\ref{s:composition}*))
+(*\textbf{DisguiseData}*)(
+        p: Option<UID>, 
+        spec: DisguiseSpec,
+        principal_gen: PrincipalGenerator,
+        schema: Schema,
+        disguise_over: bool) 
+    -> disguiseID;
+
+// Reveals data disguised by s for p with p's password. 
+(*\textbf{RevealData}*)(
+    p: UID, 
+    pwd: Password,
+    did: disguiseID, 
+    pp_ref_policy: PseudoprincipalReferencePolicy,
+    allow_partial_row_reveal: bool,
+    schema: Schema);
+
+// Gets principals that p can speak-for.
+(*\textbf{CanSpeakFor}*)(p: UID, pwd: Password) -> Vec<UID>;
+
+// Applies an update spec to disguised data
+(*\textbf{ApplyUpdate}*)(update_spec: UpdateSpec);
+\end{lstlisting}
+\caption{Potential \sys API without Encryption of Disguised Data (Rust-like syntax).}
+\label{f:newapi}
+\end{figure}
+%
+
+Developers may find \sys's security model unnecessarily strong---perhaps they do
+not worry about data breaches or trust their application code to not expose
+disguised data. Instead, these developers may want to know whether \sys can help
+support disguised data without encryption.
+%
+This section discusses which aspects of \sys would become obsolete; which would
+still help the developer support disguised data; and potential alternative
+designs for disguised data without encryption. 
+
+\paragraph{Unnecessary Aspects of \sys.}
+If \sys removes encryption of disguised data, several aspects of \sys's design
+become unnecessary.
+%
+For example, \sys would no longer need application of global database updates
+during reveal, since disguised data remains accessible to the application, and
+updates can thus also apply directly to disguised data.  However, developers may
+still need to write data transformations corresponding to these updates in order
+to update disguised data rows stored in new database tables.
+%
+Removal of encryption also eliminates the need for registration with a user
+keypair, user reveal credentials, encryption/decryption on the disguise/reveal
+paths, and encrypted indexes mapping a user to their disguised data. The
+disguise table would hold plaintext disguised data; and \sys would not need the principal table.
+%
+Furthermore, \sys can always disguise already-disguised data, since a user does
+not need to provide a reveal credential in order to unlock their
+already-disguised data. A developer instead can allow a user to specify whether
+they wish to disguise their disguised data again using a
+boolean.
+
+%
+\paragraph{Useful Aspects of \sys.}
+Other aspects of \sys can still help developers solve disguising and revealing
+challenges unrelated to encryption.
+%
+Without encryption, \sys could provide developers with a new API
+(Figure~\ref{f:newapi}) similar to the one described in \S\ref{s:api}, but with
+disguised data no longer removed from the database via encryption. 
+%
+Users would provide their application credentials (\eg a username and password)
+to authorize the application to reveal their data.\footnote{While the
+application could reveal data without user permission, this would change the
+semantics of disguise and reveal for a user, causing them to lose control over
+their data's exposure.}
+%
+This API still helps address the challenges of maintaining referential integrity when
+a disguise is performed (creating pseudoprincipals as placeholder users);
+composing disguises and reveals in arbitrary orders, and over shared data; and
+applying global updates to disguised data (albeit perhaps during update
+execution, rather than at reveal time).
+
+%
+\paragraph{Alternatives to \sys Without Encryption.}
+Instead of moving disguised data into a new database table for disguised data,
+as \sys does, developers could also choose to implement disguised data by
+logically removing it using database flags and predicates (\eg
+\texttt{is\_deleted}) because disguised data need not be encrypted.
+%
+In this case, the developer must ensure that all queries for the data predicate
+on the tag so the application does not return disguised data. Systems like
+Qapla~\cite{qapla}---which this thesis compares to \sys in \S\ref{s:eval-qapla}---
+can help enforce these flag-based policies.
