@@ -43,10 +43,10 @@ links to users with links to pseudoprincipals (fake users).
 % integrity issues like dangling foreign keys, while obscuring the data's
 % relationship to natural principals (true users).
 %
-\sys takes the data it removed or replaced and the connections between
-the user and any pseudoprincipals it created, encrypts that data with the user's
-public key, and stores the resulting ciphertext---the \emph{\xxed
-data}---such that it cannot be linked back to the user without the user's
+\sys takes the data it removed or replaced and the connections between the user
+and any pseudoprincipals it created, encrypts that data with the user's public
+key, and stores the resulting ciphertext---the \emph{\xxed data}---such that it
+cannot be linked back to the user without the user's
 private key.
 %
 
@@ -181,10 +181,13 @@ them.
 A \xx specification (Figure~\ref{f:spec}) identifies objects to disguise by
 database table name and predicate, where a predicate is a SQL \fn{WHERE} clause.
 %
-\sys by default \xxs all objects related to the given principal, as defined by a
-foreign-key relationship provided in a global schema annotations, but
-predicates can narrow the transformation's scope (\eg to stories with specific
-tags).
+\sys by default \xxs all objects related to the given principal\footnote{A
+principal refers to an application object representing a user. This thesis uses
+principal to mean both an application user (a client connecting to the
+application with an account) as well as a pseudoprincipal (a fake application
+user)} to disguise, as
+defined by a foreign-key relationship to the principals table, but predicates
+can narrow the transformation's scope (\eg to stories with specific tags).
 %
 For each selected group of objects, developers choose to \emph{remove},
 \emph{modify}, or \emph{decorrelate} them.
@@ -197,9 +200,9 @@ For each selected group of objects, developers choose to \emph{remove},
 
 The example specification in Figure~\ref{f:spec} decorrelates all comments and
 removes all votes on stories with a particular tag, specified by the
-\texttt{TAG} parameter provided at invocation time.
-The specified foreign key \texttt{principal\_fk}) for decorrelation of comments tells the
-decorrelate operation which foreign key to the principals. 
+\texttt{TAG} parameter provided at invocation time.  The specified foreign key
+\texttt{principal\_fk}) for decorrelation of comments tells the decorrelate
+operation which foreign key to the principals table to rewrite. 
 %
 Decorrelation can use pseudoprincipals at different granularities.  In the
 extreme, the \xx specification may tell \sys to create a unique pseudoprincipal
@@ -226,10 +229,10 @@ authentication workflows when users want to reveal their disguised data.
 %
 
 %
-\sys supports two forms of reveal credentials: \one{} the principal's private key
-itself; or \two{} the principal's application password or a recovery
-token (in case they forget their password), either of which \sys can use to rederive
-the private key.
+\sys supports two forms of reveal credentials: \one{} the user's private key
+itself; or \two{} the user's application password or a recovery token (in case
+they forget their password), either of which \sys can use to rederive the
+private key.
 %
 Developers can use either or both of these credentials depending on application needs.
 %

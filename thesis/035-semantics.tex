@@ -2,7 +2,6 @@ This chapter describes \sys's high-level semantics that a developer can use to
 reason about the resulting state of data after a disguise and reveal. Following
 this high-level description comes a deeper dive into \sys's API and examples of
 how developers can use it.
-\todo{principals vs users?}
 
 \section{High-Level Semantics}
 
@@ -53,14 +52,14 @@ again to scrub its content---then revealing only one disguise will restore only
 that attribute (\eg a timestamp or the post content). 
 %
 This also applies for disguises that rewrite the same data attributes. For
-example, if one disguise decorrelates a post from its author to ``AnonymousPig''
-(\ie by rewriting its \texttt{author} foreign key to the ``AnonymousPig''
+example, if one disguise decorrelates a post from its author to ``AnonPig''
+(\ie by rewriting its \texttt{author} foreign key to the ``AnonPig''
 pseudoprincipal) and another disguise decorrelates the post again to
-``AnonymousDog,'' the post will be correlated with ``AnonymousDog'' even if the
-first disguise decorrelating to ``AnonymousPig'' is revealed.
+``AnonDog,'' the post will be correlated with ``AnonDog'' even if the
+first disguise decorrelating to ``AnonPig'' is revealed.
 %
-And if the second disguise decorrelating to ``AnonymousDog'' were revealed
-first, the data would remain decorrelated to ``AnonymousPig'' until the user
+And if the second disguise decorrelating to ``AnonDog'' were revealed
+first, the data would remain decorrelated to ``AnonPig'' until the user
 also reveals that first decorrelating disguise.
 \todo{example figures for both of these.}
 %
@@ -83,7 +82,7 @@ and a SQL \fn{WHERE} predicate.
 
 %
 A disguise is invoked either automatically by the application, or by a specific
-user of the application identified by user ID. 
+user of the application identified by their user ID. 
 % 
 If disguise is user-specific, then only data that has a foreign key to that
 user's identifier (is ``owned'' by that user) and matches the disguise
@@ -99,8 +98,8 @@ predicate.
 %
 Developers should take care to handle referential integrity to removed rows, as
 \sys will not cascade-delete referencing rows or introduce placeholders.
-(Developers should instead use decorrelate operations to remove of principal
-rows with replacement pseudoprincipal placeholders).
+(Developers should instead use decorrelate operations to remove principal
+rows and replace them with pseudoprincipals).
 %
 
 %
@@ -154,7 +153,7 @@ placeholder values.
 
 %
 If a user invokes the disguise, then \sys only decorrelates the specified
-foreign key attributes that refer to that user's principal identifier, and whose
+foreign key attributes that refer to that user's identifier, and whose
 rows match the predicate. 
 %
 Otherwise, if the disguise applies over all users, then \sys decorrelates all
@@ -260,8 +259,8 @@ the message to its original state.
 data semantics.
 
 \subsection{Composition of Disguises.}
-Once \sys has decorrelated some principal's data to a pseudoprincipal, future
-disguises applied by the principal's user will fail to further disguise that
+Once \sys has decorrelated some user's data to a pseudoprincipal, future
+disguises applied by the user will fail to further disguise that
 data.
 %
 If a user wants to further disguise their pseudoprincipal's data,
