@@ -479,55 +479,6 @@ them so a later reveal can pass the checks.
 \section{Shared Data}
 \label{s:shared}
 
-
-\begin{figure}
-    \centering
-    \includegraphics[width=.4\textwidth]{figs/shared_hl}
-    \caption[\sys supports joint ownership semantics when disguising shared data.]{\sys supports joint ownership semantics, where shared data is not
-    removed until all users have disguised their accounts. Owners can return in
-    any order, and the message remains decorrelated from unrevealed owners.}
-\label{f:shared:hl}
-\end{figure}
-
-
-%
-Many applications support shared data; in Lobsters, for example, messages
-between users are owned by both users.
-%or co-authored papers in HotCRP.
-%
-\sys's default semantics for shared data implement an ownership model inspired
-by a common treatment of shared data as jointly owned.
-%
-When a user \xxs shared data, \sys decorrelates the data from the \xxing user,
-but preserves the data and its association with other owners.
-%
-\sys removes the data once all users have \xxed it and all ownership links are
-to pseudoprincipals.
-%
-Any owner can reveal the message, which restores the message to the database if
-it does not exist, and recorrelates only the revealing user; all disguised
-owners remain decorrelated as pseudoprincipals until they also choose to reveal the message.
-%
-Regardless of the reveal order, if all owners reveal the message, \sys returns
-the message to its original state.
-
-%
-For instance, consider the scenario in Figure~\ref{f:shared:hl} where Bea and
-Chris share a Lobsters message:
-\begin{enumerate}[nosep]
-    \item[(1)] When Bea \xxs the message, the message is owned by
-Chris and a pseudoprincipal;
-    \item[(2)] If Chris then \xxs the message, \sys removes it.
-    \item[(3)] If Bea reveals the message, this restores the message to the database
-and recorrelates only Bea; Chris remains decorrelated as a pseudoprincipal.
-\item[(4)] When Chris reveals the message, \sys returns
-the message to its original state.
-\end{enumerate}
-%
-
-%
-\paragraph{\sys's Solution.}
-
 \begin{figure}
     \centering
     \includegraphics[width=\textwidth]{figs/shared_data}
@@ -541,7 +492,7 @@ the message to its original state.
 \label{f:shared:data}
 \end{figure}
 
-\sys supports these joint ownership semantics by modifying its design for
+\sys supports joint ownership semantics for shared data by modifying its design for
 removal when encountering a shared object.
 %
 The first time any owner removes the data, \sys would normally remove the data
