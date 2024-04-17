@@ -1,12 +1,189 @@
+This chapter describes \sys's high-level semantics that a developer can use to
+reason about the resulting state of data after a disguise and reveal. Following
+this high-level description comes a deeper dive into the semantics of \sys's API
+and how developers should use it. This chapter ends with examples of \sys's API
+usage and semantics.
+
 \section{High-Level Semantics}
 
 \subsection{Disguising and Revealing}
+Developers can think about disguising transformations as removing and rewriting
+data in the application database.
+%
+The database starts at some original application state, and alters application
+data depending on the disguise specification (\S\ref{s:spec}).  The resulting
+state---the disguised data state---is changed only by another disguise, by
+revealing the applied disguise, or by normal application updates.
+%
 
-\subsection{Remove, Modify, and Decorrelate}
+%
+Disguising already-disguised data can only decrease the amount of information
+retained about the original application data state. Removed data cannot be
+disguised again. If the original data has been rewritten by prior disguises,
+future disguises of the disguised state have access only to the disguised state,
+and thus can only further remove aspects of the original data state.
+%
+
+%
+Revealing a disguise $D$ reverts the changes applied by $D$ back to the
+pre-disguised state, except in two cases. First, if a normal application update has since
+changed the disguised data, then the data remains in its updated state and
+cannot be revealed.
+%
+Second, if another disguise has since applied changes to the data $D$ disguised,
+and that disguise has not yet been revealed, then the data remains in its
+current state.
+%
+Only when all subsequent disguises are revealed does the data revert to the 
+state prior to $D$.
+%
+
+%
+Thus, when multiple disguises apply to the same data, the data reflects the
+effects of all disguises that have not yet been revealed.
+%
+For example, if a post is disguised twice---once to modify the timestamp, and
+again to scrub its content---then revealing only one disguise will restore only
+that attribute (\eg a timestamp or the post content). 
+%
+This also applies for disguises that rewrite the same data attributes. For
+example, if one disguise decorrelates a post from its author to ``AnonymousPig''
+(\ie by rewriting its \texttt{author} foreign key to the ``AnonymousPig''
+pseudoprincipal) and another disguise decorrelates the post again to
+``AnonymousDog,'' the post will be correlated with ``AnonymousDog'' even if the
+first disguise decorrelating to ``AnonymousPig'' is revealed.
+%
+And if the second disguise decorrelating to ``AnonymousDog'' were revealed
+first, the data would remain decorrelated to ``AnonymousPig'' until the user
+also reveals that first decorrelating disguise.
+%
+
+%
+Revealing transformations also apply a developer's provided reveal-time updates
+(\S\ref{s:semantics:updates}) to the data to reveal, ensuring that revealed data reflects global
+application updates since the time of disguise.
+%
+
+\subsection{Disguise Specifications}
+\label{s:spec}
+
+%
+A developer describes the effects of a disguise (and the effects undone by a
+reveal) via disguise specifications.  As previously shown in
+Figure~\ref{f:spec}, each specification operation consists of the disguise
+operation type, the database table name, a foreign key to the principals table,
+and a SQL \fn{WHERE} predicate.
+
+%
+A disguise is invoked either automatically by the application, or a specific
+user of the application identified by user ID. 
+% 
+If disguise is user-specific, then only data that has a foreign key to that
+user's identifier (is ``owned'' by that user) and matches the disguise
+specification's predicate will be disguised.  Otherwise, the disguise applies to
+all data matching the disguise
+specification's predicate (potentially data owned by multiple users).
+\todo{where to put this?}
+%
+
+\paragraph{Remove.}
+A remove operation removes the entire row that matches the operation's
+predicate.
+%
+Developers should take care to handle referential integrity to removed rows, as
+\sys will not cascade-delete referencing rows, or introduced placeholders
+(decorrelate operations, on the other hand, allow removal of principal rows with
+replacement pseudoprincipal placeholders).
+%
+
+%
+A reveal of a remove operation will reinsert all removed rows that do not
+violate a primary key or uniqueness constraint of the application.
+%
+
+%
+\paragraph{Modify.}
+A modify operation changes the values of rows that match the operation's
+predicate at a per-column granularity.
+%
+Each modify operation in the disguise specification informs \sys how to generate
+new placeholder values for each column  to modify using one of \sys's value
+generation policies. The current prototype supports constants (\eg "removed"),
+random values (\eg a random email address), and values derived from the prior
+value (\eg a redacted phone number with only area code visible).
+%
+
+%
+A reveal of a modify operation restores a row's column back to its state prior
+to the disguise \emph{only if} the current column value matches the value
+generated by the modify operation during the disguise. This prevents a reveal
+from overwriting application changes to the column value since the time of
+disguise.
+%
+Some rows may thus end up partially revealed, with only some modified columns
+restored back to the original pre-disguise state.  Developrs can set a (global)
+flag to disable partial row reveals, to prevent revealing of any column values
+in a row with at least one conflicting column value.
+%
+
+%
+\paragraph{Decorrelate.}
+
+Decorrelation inserts a generated pseudoprincipal, and rewrites the predicated
+table row's foreign key to the pseudoprincipal's identifier. Decorrelation only
+rewrites the foreign key(s) specified in the decorrelate operation.
+%
+A decorrelate operation only applies to table rows with foreign key
+relationships to the principals table (if specified on other table's rows, the
+operation will do nothing).
+%
+
+%
+To ensure that decorrelation preserves referential integrity, \sys generates
+pseudoprincipals to replace the original principal. 
+%
+Decorrelation can use pseudoprincipals at different granularities.  In the
+extreme, the \xx specification may tell \sys to create a unique pseudoprincipal
+for each decorrelated application object.  In our example, however, all comments
+by the same user on the same story decorrelate to the same pseudoprincipal
+(\verb+"group_by": "stories.id"+), thus keeping same-story comment threads
+intact.
+%
+The same user's comments on different stories, however, decorrelate to different
+pseudoprincipals; an alternative might group comments by
+\texttt{comments.user\_id}, so a single pseudoprincipal adopts all of a user's
+\fn{TAG}-related comments (effectively creating a ``Star Wars'' throwaway
+account).
+%
+
+Pseudoprincipals may acquire new references from application objects inserted
+after the time of disguise---for example, a decorrelated comment might have new
+responses. To ensure that revealing preserves referential integrity, developers
+also inform \sys how to, during reveal, handle these objects added after
+disguising that refer to pseudoprincipals. 
+%
+This enables \sys to preserve referential integrity for data referring to
+pseudoprincipals.  Developers choose between three options for
+pseudoprincipal-referring objects: \one{} change the object's reference to point
+to the original principal (\texttt{RECORRELATE}); \two{} delete the object
+(\texttt{REMOVE}); or \three{} continue referring to the pseudoprincipal
+(\texttt{RETAIN}).
+%
+This option is global; another choice of API could support a menu of
+options, such as per-table checks and fixes (where the developer specifies
+per-table policies) or per-inserted-object ones (where the developer makes
+application modifications to log all added references to pseudoprincipals).
+%
+
+%
+In addition to providing per-disguise specifications, developers also specify
+two global policies. First, they give \sys a pseudoprincipal-generation policy
+(using \sys's value generation policies) to tell \sys how to generate per-column
+placeholder values.
+%
+
 
 \subsection{Shared Data}
-
-\subsection{Composition of Disguises}
 
 
 %
@@ -105,11 +282,9 @@ revealing.
     A disguise is invoked either automatically by the application, or a specific
     user of the application identified by user ID. 
     % 
-    If disguise is user-specific, then only data that has a foreign key to that
-    user's identifier (is ``owned'' by that user), and which matches the
-    disguise specification, will be disguised.  Otherwise, all data matching the
-    disguise specification will be disguised (potentially owned by multiple
-    users). 
+    If the disguise is invoked on behalf of a specific user, then all predicates
+    on specified disguise operations include an "\texttt{AND [fk\_col] = [uid]}"
+    clause.
     %
 
     %
@@ -226,6 +401,7 @@ revealing.
     speak-for.
 
 \subsection{\texttt{RecordUpdate}}
+\label{s:semantics:updates}
 Enables a developer to perform updates to disguised data prior to revealing it.
 Invoking \texttt{RecordUpdate} timestamps and logs a developer-provided update
 specification---a data transformation function---to reflect a global update
@@ -254,11 +430,12 @@ may want to add disuising and revealing without encryption.
 %
 
 %
-Without encryption, disguises have equivalent semantics as before, but the API
-becomes simpler. Users do not need to register with \sys; applications can use
-normal user authentication to authorize revealing; disguising already-disguised
-data no longer requires a user's reveal credential; and reveal-time updates can
-be applied immediately to disguised data instead of logged and applied at reveal time.
+A subset of Edna's API suffices to provide the same semantics for disguises
+without encryption. Users do not need to register with \sys; applications can
+use normal user authentication to authorize revealing; disguising
+already-disguised data no longer requires a user's reveal credential; and
+reveal-time updates can be applied immediately to disguised data instead of
+logged and applied at reveal time.
 %
 \S\ref{s:noencrypt} describes how removing encryption changes would
 change \sys's design.

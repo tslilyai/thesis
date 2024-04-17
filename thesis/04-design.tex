@@ -976,9 +976,10 @@ guarantees security equivalent to the security of the user's password.
 \fi
 %
 
-Should developers want to support disguised data without encryption (as
-described in \S\ref{s:semantics:noencrypt}), then certain aspects of \sys's
-design would be unnecessary. This section describes these aspects and potential
+Should developers want to support disguised data in a weaker threat model that
+does not require encryption (as described in \S\ref{s:semantics:noencrypt}),
+then certain aspects of \sys's design would be unnecessary. This section
+describes these aspects and potential
 alternative designs for disguised data without encryption. 
 
 \paragraph{Unnecessary Aspects of \sys.}
@@ -1018,9 +1019,10 @@ during update execution, rather than at reveal time).
 
 %
 \paragraph{Alternatives Designs Without Encryption.}
-Instead of moving disguised data into a new database table for disguised data as \sys does, developers could also choose to implement disguised data by
-logically removing it using database flags and predicates (\eg
-\texttt{is\_deleted}) because disguised data need not be encrypted.
+Instead of moving disguised data into a new database table for disguised data as
+\sys does, developers could also choose to implement disguised data by logically
+removing it using database flags and predicates (\eg \texttt{is\_deleted})
+because disguised data need not be encrypted.
 %
 In this case, the developer must ensure that all queries for the data predicate
 on the tag so the application does not return disguised data. Systems like

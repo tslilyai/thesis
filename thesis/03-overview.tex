@@ -20,7 +20,6 @@ and data revealing.
 \sys helps developers realize new options for users to control their data
 via \emph{\xxing transformations} and \emph{revealing transformations}.
 %
-
 As shown in Figure~\ref{f:edna-overview}, a developer integrates an application
 with \sys by writing \xx specifications and adding hooks to \xx or reveal data
 using \sys's API. This proceeds as follows:
@@ -51,9 +50,6 @@ public key, and stores the resulting ciphertext---the \emph{\xxed
 data}---such that it cannot be linked back to the user without the user's
 private key.
 %
-%The application's database now no longer contains the \xxed data.
-%
-
 
 %
 (4) When a user wishes to reveal their \xxed data, they pass credentials
@@ -123,8 +119,6 @@ This is currently not possible in Lobsters.
 %
 The Lobsters developer can realize topic-based anonymization as a \xxing
 transformation.
-% that anonymizes Bea's contributions in the database, while allowing
-% Bea to later edit and reclaim them if desired.
 %
 First, the developer writes a \xx specification that instructs \sys to
 decorrelate comments and remove votes on ``Star Wars'' stories
@@ -203,82 +197,12 @@ For each selected group of objects, developers choose to
 The example specification in Figure~\ref{f:spec} decorrelates all comments and
 removes all votes on stories with a particular tag, specified by the
 \texttt{TAG} parameter provided at invocation time.
+\S\ref{s:spec} describes the semantics of disguise specifications in more
+detail.
 %
 %or a custom set of objects specified by the \xxing transformation.
 %\lyt{skipping the ``custom set of objects''; that seems unclear to me.}
 %
-
-%
-For each modification in the disguise specification, the developer informs \sys
-of how to generate new placeholder values for modified columns using one of
-\sys's value generation policies. The current prototype supports constants (\eg
-"removed"), random values (\eg a random email address), and values derived from
-the prior value (\eg a redacted phone number with only area code visible).
-%
-
-%
-To ensure that decorrelation preserves referential integrity, \sys generates
-pseudoprincipals to replace the original principal. 
-%
-Decorrelation can use pseudoprincipals at different granularities.  In the
-extreme, the \xx specification may tell \sys to create a unique pseudoprincipal
-for each decorrelated application object.  In our example, however, all comments
-by the same user on the same story decorrelate to the same pseudoprincipal
-(\verb+"group_by": "stories.id"+), thus keeping same-story comment threads
-intact.
-%
-The same user's comments on different stories, however, decorrelate to different
-pseudoprincipals; an alternative might group comments by
-\texttt{comments.user\_id}, so a single pseudoprincipal adopts all of a user's
-\fn{TAG}-related comments (effectively creating a ``Star Wars'' throwaway
-account).
-
-
-In addition to providing per-disguise specifications, developers also specify
-two global policies. First, they give \sys a pseudoprincipal-generation policy
-(using \sys's value generation policies) to tell \sys how to generate per-column
-placeholder values.
-%
-%We can imagine expanding \sys's generation specifications to take as input a
-%database query dependent on external state to generate new values.
-%
-%
-Second, developers also inform \sys how to, upon revealing, handle any objects
-added after disguising that refer to pseudoprincipals. For example, a
-decorrelated comment might have new responses. This enables \sys to preserve
-referential integrity for data referring to pseudoprincipals. Developers choose
-between three options for pseudoprincipal-referring objects: \one{} change the
-object's reference to point to the original principal (\texttt{RECORRELATE});
-\two{} delete the object (\texttt{REMOVE});
-or \three{} continue referring to the pseudoprincipal (\texttt{RETAIN}).
-%
-This option is global; another design for \sys could also support a menu of
-options, such as per-table checks and fixes (where the developer specifies
-per-table policies) or per-inserted-object ones (where the developer makes
-application modifications to log all added references to pseudoprincipals).
-
-
-%
-%
-%
-%
-% E: these points do not seem central
-%
-%% Pseudoprincipals may be observably different from \emph{natural
-%% principal}---human application users---at the application level.
-%% %
-%% The application only needs to register natural principals with \sys, since
-%% \sys handles pseudoprincipal creation.
-%
-%
-%
-% In our Lobsters specification, \sys generates pseudoprincipals with random
-% usernames and emails in the \fn{users} table.
-
-
-% Like natural principals, pseudoprincipals have affiliated public keys and
-% credentials that \sys uses to \xx or reveal their data; this
-% supports the composition of \xxing transformations (\S\ref{s:composition}).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{User Reveal Credentials}
