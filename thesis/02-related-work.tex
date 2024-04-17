@@ -3,9 +3,9 @@ applications.
 %\sys addresses the problem of reversible and composable data transformations
 %for flexible data privacy in web applications.
 %
-Existing systems aim instead to support data deletion, prevent unauthorized data
-access, or protect against database server compromise---valuable, but
-complementary goals to support for disguised data.%\sys's.
+Existing systems aim to support data deletion, prevent unauthorized data
+access, or protect against database server compromise, which are valuable, but
+complementary goals.
 
 \section{Compliance Tools}
 Compliance tools such as K9db~\cite{k9db} and GDPRizer~\cite{gdprizer} help
@@ -28,7 +28,7 @@ for normal application deletions.
 
 %
 While one of the uses of disguising data is to provide GDPR-compliant account deletion, disguising
-also supports more nuanced use cases beyond simple deletion: for example, \sys
+also supports more nuanced use cases beyond simple deletion. For example, \sys
 allows users to return after deletion, hides old data for inactive users, or
 hides some but not all data so the user can continue using the application.
 %
@@ -202,7 +202,7 @@ By contrast, \sys supports arbitrary server-side processing of undisguised
 data, which most applications today require. 
 %
 Furthermore, Snoopy---the most recent system---achieves performance 39.1$\times$ slower than Redis, a
-commonly-used non-oblivious object store, which is impractical for many 
+commonly-used non-oblivious object store. This slowdown is impractical for many 
 applications.
 
 
