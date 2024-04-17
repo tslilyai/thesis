@@ -105,7 +105,7 @@ Users create accounts, submit URLs as stories, and interact with other users
 and their posted stories via comment threads and votes.
 %
 
-Consider \textbf{topic-based anonymization}, a desirable privacy feature that allows users to
+Consider \textbf{topic-based anonymization}, a privacy feature that allows users to
 hide their interest in a topic (a ``tag'' in Lobsters) by decorrelating
 their comments and removing their votes on stories with that tag.
 %
@@ -273,7 +273,7 @@ Password or keypair changes require an application to re-register the user with
 
 %\sys allows disguised data to be restored to the database via revealing
 %transformations. However, 
-Web application databases constantly undergo global updates 
+Web application databases often undergo global updates 
 initiated by an admin or developer, like schema changes or global content
 changes (\eg normalizing URLs of all stories). 
 %
@@ -282,14 +282,14 @@ data at the time. \sys may thus incorrectly reveal data that do not
 reflect the updates. 
 %
 To ensure updates are applied to revealed data, the developer must inform \sys
-about the update so \sys can apply the update to the disguised data prior to
-reveal.
+about the update so \sys can apply the update to the disguised data when
+revealing it.
 
 When a database update is performed, the developer writes a corresponding
-\emph{reveal-time update specification} that captures the effects of the operation and
-invokes \sys's API with the update specification.
-\sys stores these update specifications in a replay log, which lets \sys reveal
-disguised data without overwriting the associated application changes.
+\emph{reveal-time update specification} that captures the effects of the
+operation and invokes \sys's API with the update specification. \sys stores
+these update specifications in an \emph{update replay log} that \sys reads upon
+reveal.
 %
 %If the developer performs a global application change that \eg normalizes the
 %URLs of stories, the developer performs a bulk update in the Lobsters
@@ -309,8 +309,8 @@ disguised data without overwriting the associated application changes.
 %%
 
 %
-\sys expects developers to provide reveal-time update specification that takes
-a user's disguised data rows and produces updated-disguised data rows.
+\sys expects developers to provide a reveal-time update specification that takes
+a user's disguised data rows and produces updated versions of disguised data rows.
 %
 Oftentimes, these updates may be a subroutine of the global
 database update. 
@@ -337,10 +337,12 @@ as input, and outputs user rows with the column.
 %
 
 %
-\sys assumes that either \one{} update specifications are pure functions deterministic in
-their input (placeholder or disguised rows) and do not have side effects; or
-\two{} any nondeterminism or side effects from performing the update specification will
-maintain application correctness.
+\sys assumes that any nondeterminism or side effects from performing the update
+specification will maintain application correctness. Any pure functions
+deterministic in their input (placeholder or disguised rows) and do not have
+side effects are thus supported as update specifications.
+%
+
 %
 To exemplify an unsupported update, take a global update that calculates the
 current vote count of a story to store as a story's \texttt{vote\_count}
@@ -357,8 +359,7 @@ But when applying a \texttt{vote\_count} update specification to story diff
 records, \sys will find 0 votes for the story, because the votes have not yet
 been restored.
 %
-\sys supports this update only if this 0-vote state counts as correct application behavior (scenario
-\two{}).
+\sys supports this update only if this 0-vote state counts as correct application behavior.
 %
 
 
@@ -388,10 +389,11 @@ disguised data, nor learn what \xxed data corresponds to which user, even if the
 application is compromised and an attacker dumps the database contents (\eg via
 SQL injection).
 %
-\sys stores \xxed data encryptedly, so its confidentiality stems from ``crypto
+\sys encrypts \xxed data, so its confidentiality stems from ``crypto
 shredding,'' a GDPR-compliant data deletion approach based on the fact that
 ciphertexts are indistinguishable from garbage data if the key material is
 unavailable~\cite{dnefs,townsend:cryptoshredding,aws:cryptoshredding,gtr:cryptoshredding}.
+\todo{might depend on private key being separate from password?}
 %
 
 % STANDARD CLAIMS ABOUT CRYPTO ASSUMPTIONS
@@ -424,8 +426,7 @@ and metadata to infer which principal originally owned which objects.
 %
 
 \sys's choice of threat model and its limitations stem from
-\sys's goal of practicality and usability by existing applications, and
-from design components that support this goal.
+\sys's goal of practicality and usability by existing applications.
 %
 For example, decorrelation with pseudoprincipals removes explicit user-content
 links, but leaves placeholder information in the database to avoid application
@@ -434,3 +435,6 @@ code having to handle dangling references.
 Similarly, leveraging server-side storage to hold \xxed data leaves
 metadata available to attackers, but avoids burdening users with data storage
 management.
+%
+We believe a stronger threat model would require more modification of
+applications.
