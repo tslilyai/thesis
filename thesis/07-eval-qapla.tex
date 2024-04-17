@@ -14,7 +14,7 @@ disguising and revealing---compared to a design that modifies an existing system
 %
 
 %
-\subsection{Effort.}
+\subsection{Effort}
 %
 Specifying \xxing transformations as Qapla policies requires more
 explicit reasoning about transformations' implementations and their
@@ -25,12 +25,16 @@ that they add to the schema (\eg \fn{is\_deleted} for removed data) and toggles 
 application code. They then provision Qapla with a predicate that checks if
 this metadata flag is \fn{true} before returning a row.
 %
-Developers must carefully craft Qapla's predicates, which grow in complexity
+Qapla's predicates grow in complexity
 with the number of \xxing transformations that can compose. For example, an
 application supporting both account removal and account anonymization must
 combine predicates such that removal always takes precedence. Each additional
 transformation increases the number of predicates whose combinations the
 developer must reason about.
+%
+This constrasts with \sys because developers working with \sys can add 
+a transformation without thinking about how this transformation composes
+with others.
 %
 Developers must also optimize Qapla predicates (\eg reducing joins, adding
 schema indexes and index hints) to achieve reasonable performance
@@ -53,7 +57,7 @@ support.
 %HTTP endpoints).
 %
 
-Overall, Qapla requires more developer effort than \sys, particularly in writing
+Overall, we cound that Qapla requires more developer effort than \sys, particularly in writing
 composable and performant predicates, and manually implementing modifications
 and decorrelations. However, Qapla's approach does make some things easier.
 %
@@ -76,7 +80,7 @@ achieve GDPR-compliant data removal. %, as the data remains in the database.
 \end{figure}
 
 %
-\subsection{Performance.}
+\subsection{Performance}
 \label{s:eval-qapla-perf}
 % comparable with \sys.
 %
@@ -95,7 +99,7 @@ undisguised) data.
 Qapla's query rewriting takes $\approx$1ms, and rewrites \fn{SELECT} queries in
 ways that affect performance (\eg adding joins to evaluate predicates).
 %
-Overall, \sys achieves better performance on common operations.
+Overall, \sys achieves better performance on read operations.
 
 %
 %Furthermore, \sys achieves better performance than Qapla on common operations.

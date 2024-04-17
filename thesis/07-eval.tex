@@ -246,8 +246,8 @@ account creation.
 
 \textbf{Lobsters.}
 %
-We run Lobsters benchmarks on a database seeded with 16k users, and
-120k stories and 300k comments with votes, comparable to the late-2022 size of
+We run Lobsters benchmarks on a database seeded with 16k users, 
+120k stories, and 300k comments with votes, comparable to the late-2022 size of
 production Lobsters~\cite{lobsters}.
 %
 Content is distributed among users in a Zipf-like distribution according to
@@ -424,7 +424,7 @@ We evaluate this cost next.
 %%
 %
 
-\subsection{Composing \Xxing Transformations.}
+\subsection{Composing \Xxing Transformations}
 \label{s:eval-composition}
 % \lyt{this is now under \sys op performance}.
 
@@ -537,7 +537,7 @@ application operation throughput.
 This section
 measures both of these overheads.
 
-\subsection{Space Used By \sys.}
+\subsection{Space Used By \sys}
 
 \begin{figure}[t]
 \centering
@@ -609,7 +609,7 @@ table, which uses 2.2 MB.
 %2.2MB is 0.8\% of the original Lobsters database size of 261 MB.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\subsection{Impact On Concurrent Application Use.}
+\subsection{Impact On Concurrent Application Use}
 \label{s:eval-conc}
 
 %
@@ -629,6 +629,7 @@ normal application requests.
 %be rightly leery of \sys.
 %
 
+\todo{font?}
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figs/lobsters_concurrent_results}
@@ -637,7 +638,8 @@ normal application requests.
     have <7\% impact on application request throughput when disguising a
     random user; an extreme case of a heavy-hitter user with lots of data
     repeatedly \xxing and revealing causes up to 8\% drop in throughput without
-    transactions, and up to 28.3\% drop in throughput with transactions.}
+    transactions, and up to 28.3\% drop in throughput with transactions. Higher
+    bars are better.}
     \label{f:concurrent-lobsters}
 \end{figure}
 
@@ -671,11 +673,11 @@ Lobsters deployment~\cite{lobsters-data}.
 Since users' \xxing/revealing costs vary in Lobsters, we measure the
 impact of \one{} randomly chosen users invoking account removal/restoration, and
 \two{} the user with the most data continuously removing and restoring their
-account (a worst-case scenario).
+account (an expensive scenario).
 % , since this overlaps most with the data touched by normal users).
 %
-The results illustrate throughput in a low load scenario ($\approx$20\% CPU load),
-and a high load scenario ($\approx$95\% CPU load).
+The results illustrate throughput under low load ($\approx$20\% CPU load),
+and high load ($\approx$95\% CPU load).
 %
 Finally, we measure settings with and without a transaction for \sys
 transformations.
@@ -709,7 +711,7 @@ This shows that \sys's \xxing and revealing transformations have acceptable
 impact on other users' application experience in the common case.
 
 %
-Constantly \xxing and revealing the user with the most data (the worst-case
+Constantly \xxing and revealing the user with the most data (an expensive 
 scenario) has a larger effect, with throughput reduced by up to $7.7$\% without
 transactions and up to 28.3\% with transactions at both low and high load.
 %5.8\% in low load, 2.6 high 13.3\% in low load, 16.3 high dropping by at most
@@ -735,7 +737,7 @@ transactions and up to 28.3\% with transactions at both low and high load.
 %(1.8\%) in throughput (transactions decrease throughput by 3.8\%), but
 %throughput remains high ($>5$ops/ms).
 %
-This worst-case scenario disguises and reveals a user owning 1\% of all the data
+This scenario disguises and reveals a user owning 1\% of all the data
 in a database of 16k users, and demonstrates the upper bound on Edna’s
 performance impacts when Edna runs large disguising and revealing transactions
 continuously.  Because the queries within disguise and reveal transactions touch
@@ -766,6 +768,7 @@ revealing take 2.7 and 5.4 seconds under high load.
 %Revealing takes significantly longer than disguising due to the many more
 %queries required to perform consistency checks. 
 %
+\todo{not comparable to facebook!}
 This is acceptable: 50\% of data deletions at Facebook take five minutes or
 longer to complete~\cite{delf}.
 %
@@ -840,7 +843,7 @@ Rust instead of Ruby Active Record Migration. Table~\ref{tab:updates} shows the
 amount of code required per operation, as well as the additional code required
 to add a corresponding reveal-time update specification to give \sys. We reuse
 the global URL normalization update code for the reveal-time update
-specification to \sys, since the global update changes rows one-by-one. Thus,
+specification to \sys, since the global update changes rows one by one. Thus,
 the update specification requires no additional code.
 %
 However, we implement the two schema migrations that respectively add
@@ -898,9 +901,9 @@ normalization;
 generating tables from other tables (\eg texttt{story\_texts} from
 \texttt{stories}) or altering columns; or
 %
-\item an unsupported operation (which cannot be supported as an update
-    specification to 
-    \sys), such as updating the \texttt{vote\_count} of comments based on the number of votes).
+\item an unsupported operation, such as updating the \texttt{vote\_count} of
+        comments based on the number of votes), which relies on data external to
+        the data disguised.
 \end{enumerate}
 Figure~\ref{tab:categories} shows the distribution of 20 global updates among these
 three categories. 
@@ -1086,8 +1089,7 @@ user: the \texttt{show\_email} update appends a single column to user rows
 %
 Although the three implemented updates do not affect other row types, the
 implementation of Lobsters' updates does iterate through all rows to check
-whether to update them. Each row iteration takes $\approx$1$\mu$
-(Table~\ref{tab:updates-perf}, line 5). At scale (\eg for a user with thousands
+whether to update them. Each row iteration takes $\approx$1$\mu$s (Table~\ref{tab:updates-perf}, line 5). At scale (\eg for a user with thousands
 of comments), this cost can add up to a couple milliseconds over the entire
 reveal.
 %
