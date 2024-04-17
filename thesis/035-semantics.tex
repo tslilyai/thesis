@@ -1,7 +1,7 @@
 This chapter describes \sys's high-level semantics that a developer can use to
 reason about the resulting state of data after a disguise and reveal. Following
-this high-level description comes a deeper dive into \sys's API and how
-developers use it. This chapter ends with examples demonstrating usage of \sys's API.
+this high-level description comes a deeper dive into \sys's API and examples of
+how developers can use it.
 \todo{principals vs users?}
 
 \section{High-Level Semantics}
@@ -25,22 +25,28 @@ and thus can only further remove aspects of the original data state.
 %
 
 %
-Revealing a disguise $D$ reverts the changes applied by $D$ back to the
-pre-disguised state, except in two cases. First, if a normal application update has since
-changed the disguised data, then the data remains in its updated state and
-cannot be revealed.
+\sys applies disguises on behalf of either a single user or all users. However,
+only a user can reveal a disguise on their data, and must provide a reveal
+credential to \texttt{RevealData}.
+%
+
+%
+Revealing a disguise $D$ on some data disguised by $D$ reverts the changes to
+the data applied by $D$ back to the pre-disguised state, except in two cases.
+First, if a normal application update has since changed the disguised data, then
+the data remains in its updated state and cannot be revealed.
 %
 Second, if another disguise has since applied changes to the data $D$ disguised,
 and that disguise has not yet been revealed, then the data remains in its
 current state.
 %
-Only when all subsequent disguises are revealed does the data revert to the 
+Only when all subsequent disguises are revealed does the data revert to the
 state prior to $D$.
-%
-
 %
 Thus, when multiple disguises apply to the same data, the application data state reflects the
 effects of all yet-unrevealed disguises.
+%
+
 %
 For example, if a post is disguised twice---once to modify the timestamp, and
 again to scrub its content---then revealing only one disguise will restore only
@@ -56,33 +62,35 @@ first disguise decorrelating to ``AnonymousPig'' is revealed.
 And if the second disguise decorrelating to ``AnonymousDog'' were revealed
 first, the data would remain decorrelated to ``AnonymousPig'' until the user
 also reveals that first decorrelating disguise.
+\todo{example figures for both of these.}
 %
 
 %
 Revealing transformations also apply a developer's provided reveal-time updates
-(\S\ref{s:semantics:updates}) to the data to reveal, ensuring that revealed data reflects global
-application updates since the time of disguise.
+(\S\ref{s:semantics:updates}) to the data to reveal, ensuring that revealed data
+reflects global application updates since the time of disguise.
 %
 
 \subsection{Disguise Specifications}
 \label{s:spec}
 
 %
-A developer describes the effects of a disguise (and the effects undone by a
+A developer describes the effects of a disguise (and undone by a
 reveal) via disguise specifications.  As previously shown in
 Figure~\ref{f:spec}, each specification operation consists of the disguise
 operation type, the database table name, 
 and a SQL \fn{WHERE} predicate.
 
 %
-A disguise is invoked either automatically by the application, or a specific
+A disguise is invoked either automatically by the application, or by a specific
 user of the application identified by user ID. 
 % 
 If disguise is user-specific, then only data that has a foreign key to that
 user's identifier (is ``owned'' by that user) and matches the disguise
 specification's predicate will be disguised.  Otherwise, the disguise applies to
-all data matching the disguise specification's predicate (potentially data owned
-by multiple users).  
+all data matching the disguise specification's predicate.
+
+This section next dives into the semantics of each disguise operation type.
 %
 
 \paragraph{Remove.}
@@ -161,7 +169,7 @@ pseudoprincipal.
 If no \texttt{group\_by} attribute is specified, each row gets a unique
 pseudoprincipal.
 %
-Thus, no two disguises share the same pseudoprincipals; and no two tables share
+Thus, no two disguises share the same pseudoprincipals, and no two tables share
 the same pseudoprincipals.
 %
 
@@ -181,6 +189,7 @@ to the original principal (\texttt{RECORRELATE}); \two{} delete the object
 (\texttt{REMOVE}); or \three{} continue referring to the pseudoprincipal
 (\texttt{RETAIN}).
 %
+\todo{figure for each option}
 
 This option is global; another choice of API could support a menu of
 options, such as per-table checks and fixes (where the developer specifies
@@ -247,6 +256,23 @@ and recorrelates only Bea; Chris remains decorrelated as a pseudoprincipal.
 the message to its original state.
 \end{enumerate}
 %
+\S\ref{s:design:shared} dives deeper in how \sys's design achieves these shared
+data semantics.
+
+\subsection{Composition of Disguises.}
+Once \sys has decorrelated some principal's data to a pseudoprincipal, future
+disguises applied by the principal's user will fail to further disguise that
+data.
+%
+If a user wants to further disguise their pseudoprincipal's data,
+then the user can grant \sys permission to reveal links to their pseudoprincipal
+by providing a reveal credential (their password, private key, or backup token). 
+%
+\sys will then treat all of the user's pseudoprincipals' data as if they belong
+to the user themself, and depending on the disguise specification, will remove,
+modify, or create a new pseudoprincipal owner for these pseudoprincipals' data.
+%
+\S\ref{s:composition} fleshes out \sys's design for disguise composition.
 
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -322,6 +348,8 @@ function and how developers would use them to support disguising and revealing.
 
 
 \subsection{\texttt{DisguiseData}}
+\todo{example effects of disguises---or add examples in
+remove/modify/decorrelate sections?}
 
     Removes or rewrites application data according to the provided disguise
     specification (\ie disguises data). The original data is encrypted and
@@ -330,13 +358,12 @@ function and how developers would use them to support disguising and revealing.
     
     This function may insert pseudoprincipals (anonymous users) into the
     application database if a decorrelation---a rewriting of a foreign key to
-    point to an anonymous principal instead of an 
-    original principal user---is specified by the disguise.
-    \todo{we haven't talked about decorrelation yet?} Data disguised within the
-    same disguise may refer to (via a foreign key) the same pseudoprincipal
-    specified.
+    point to an anonymous principal instead of an original principal user---is
+    specified by the disguise.  Data disguised within the same disguise and from
+    the same table may refer to (via a foreign key) the same pseudoprincipal.
     %
-    No two disguises' sets of produced pseudoprincipals overlap. 
+    No two objects from different database tables refer to the same
+    pseudoprincipal, and no two disguises' sets of produced pseudoprincipals overlap.
 
     \paragraph{Arguments.} 
     A disguise is invoked either automatically by the application, or a specific
@@ -377,6 +404,7 @@ function and how developers would use them to support disguising and revealing.
     disguise.
 
     \paragraph{Shared Data.}
+    \todo{repetition?}
     If rows to remove are shared among multiple users, they are only deleted
     from the database once all users have disguised the row. This occurs if
     \one{} all users individually disguise the data, or \two{} the disguise is
@@ -386,6 +414,10 @@ function and how developers would use them to support disguising and revealing.
     the row will refer to a pseudoprincipal for users who have disguised.
 
 \subsection{\texttt{RevealData}}
+\todo{example effects of reveals---or add examples in
+remove/modify/decorrelate sections?}
+
+
     Restores data disguised by the disguise corresponding to the provided ID to
     the database. Revealing the same disguise ID multiple times will do nothing
     after the first reveal.
@@ -445,6 +477,8 @@ function and how developers would use them to support disguising and revealing.
     \todo{repetition here too?}
 
 \subsection{\texttt{CanSpeakFor}}
+\todo{example use of canspeakfor for editing data?}
+
     Finds all principals in the application identified by user ID that stem from
     a (potentially recursive) decorrelation of user \texttt{p}.
     User \texttt{p} is thus authorized to speak-for any of these principals.
@@ -459,6 +493,8 @@ function and how developers would use them to support disguising and revealing.
 
 \subsection{\texttt{RecordUpdate}}
 \label{s:semantics:updates}
+\todo{example use of recordupdate (take from design)}
+
 Enables a developer to perform updates to disguised data prior to revealing it.
 Invoking \texttt{RecordUpdate} timestamps and logs a developer-provided update
 specification---a data transformation function---to reflect a global update
@@ -510,9 +546,3 @@ change \sys's design.
 %disguising shared data; and applying global updates to disguised data (albeit
 %during update execution, rather than at reveal time).  \S\ref{s:noencrypt}
 %describes how removing encryption changes \sys's design.
-
-\section{Examples}
-
-\todo{Examples of applying the API and resulting DB state with pseudoprincipals?
-Lobsters example? Shared data, composition, reveal-time updates?
-Hard to catch every edge condition...}
