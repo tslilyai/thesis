@@ -32,10 +32,12 @@ Reasoning about composition of transformations can be broken down to reasoning
 about the composition of primitive operation pairs, \eg remove after
 modify, or remove after decorrelation.
 %
+
+%
 Many pairs result in trivial composition: no operation can be composed after a
 remove (the data is gone), and any operation after a modify updates the
-data as expected. %Revealing these pairs in any order
-
+data as expected. 
+%
 However, operations after decorrelation results in more complex composition scenarios.
 %
 For instance, decorrelation after decorrelation could occur if a user
@@ -123,8 +125,8 @@ the original (subject to consistency checks).
 Handling out-of-order reveals of multiple decorrelations presents the greatest
 challenge.
 %
-\sys's semantics enforce that data that is decorrelated multiple times will not
-be recorrelated until all \xxs are removed.
+\sys's semantics (\S\ref{s:hlsemantics}) require that data that is decorrelated
+multiple times will not be recorrelated until all \xxs are removed.
 %also enables another desirable form of
 %\xxing composition: .
 %One desirable form of \xxing composition required special support:
@@ -165,7 +167,7 @@ decorrelation rewrites Ewok posts to pseudoprincipal $P_1$.
 \item[(2)] Next, the ``Star
 Wars'' decorrelation composed on top decorrelates Ewok posts from $P_1$ to
 pseudoprincipal $P_2$.  At this point, \sys has speaks-for records for Bea that
-encode a speaks-for chain from Bea$ \to P_1 \to P_2$.
+encode a speaks-for chain from Bea $\to P_1 \to P_2$.
 %
 \item[(3)] If Bea first reveals the ``bears'' anonymization---the first applied
 disguise---on their data, \sys finds all accessible speaks-for records given
@@ -199,9 +201,10 @@ diff record from any disguise still present in Bea's disguised data, \sys knows
 the pseudoprincipal has not yet been recorrelated.
 %
 
+\todo{too complex}
 %
 After determining Bea is the next valid user in the speaks-for chain to $P_2$,
-\sys rewrites the ``Ewok`` diff record to reference Bea instead of $P_1$,
+\sys rewrites the ``Ewok'' diff record to reference Bea instead of $P_1$,
 and then restores the diff record like normal.
 %
 Finally, \sys deletes the diff records for the ``Star Wars'' disguise, the

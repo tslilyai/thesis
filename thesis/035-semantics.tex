@@ -4,6 +4,7 @@ this high-level description comes a deeper dive into \sys's API and examples of
 how developers can use it.
 
 \section{High-Level Semantics}
+\label{s:hlsemantics}
 
 \subsection{Disguising and Revealing}
 Developers can think about disguising transformations as removing and rewriting
@@ -42,8 +43,8 @@ current state.
 Only when all subsequent disguises are revealed does the data revert to the
 state prior to $D$.
 %
-Thus, when multiple disguises apply to the same data, the application data state reflects the
-effects of all yet-unrevealed disguises.
+Thus, when multiple disguises apply to the same data, the application data state
+reflects the effects of all yet-unrevealed disguises.
 %
 
 %
@@ -260,16 +261,18 @@ data semantics.
 
 \subsection{Composition of Disguises.}
 Once \sys has decorrelated some user's data to a pseudoprincipal, future
-disguises applied by the user will fail to further disguise that
-data.
+disguises applied by the user will fail to further disguise that data.
 %
-If a user wants to further disguise their pseudoprincipal's data,
-then the user can grant \sys permission to reveal links to their pseudoprincipal
-by providing a reveal credential (their password, private key, or backup token). 
+If a user wants to further disguise their pseudoprincipal's data, then the user
+can grant \sys permission to reveal links to their pseudoprincipal by providing
+a reveal credential (their password, private key, or backup token). 
 %
 \sys will then treat all of the user's pseudoprincipals' data as if they belong
 to the user themself, and depending on the disguise specification, will remove,
 modify, or create a new pseudoprincipal owner for these pseudoprincipals' data.
+%
+To reveal their data back to its original state, a user must reveal all
+disguises composed atop the data.
 %
 \S\ref{s:composition} fleshes out \sys's design for disguise composition.
 

@@ -43,17 +43,17 @@ All types of diff records also contain the \xx ID.
 The original and placeholder rows contained by a diff record varies by disguise
 operation as follows:
 \begin{itemize}[nosep]
-    \item Remove diff records contain \one{} the removed original row, and \two{} no
+    \item Remove diff records contain the removed original row and no
         placeholder rows;
-    \item Modify diff records contain \one{} the unmodified row, and \two{} the
+    \item Modify diff records contain the unmodified row and the
         row with the modified value; and
-    \item Decorrelate diff records contain \one{} the referencing row with the original
-        foreign key value, and \two{} the referencing row with the placeholder
-        foreign key value pointing to a pseudoprincipal, and the pseudoprincipal's row.
+    \item Decorrelate diff records contain the referencing row with the original
+        foreign key value and---as placeholder data---the referencing row with the placeholder
+        foreign key value pointing to a pseudoprincipal and the pseudoprincipal's row.
 \end{itemize}
 %
-For each new pseudoprincipal, \sys generates a public--private keypair and adds
-a \emph{speaks-for record}, which adds a link to the original principal's
+For each new pseudoprincipal, \sys generates a public--private keypair and 
+an encrypted \emph{speaks-for record}, which adds a link to the original principal's
 \emph{speaks-for chain}.
 A speaks-for record contains a pair of (original principal,
 pseudoprincipal) IDs and the pseudoprincipal’s
@@ -104,12 +104,12 @@ foreign keys to point to the created pseudoprincipals, and
 removing Bea's votes on those stories;
 %
 \four{} creates new speaks-for records that map Bea to the created
-pseudoprincipals and create new links in Bea's speaks-for chain; diff records
+pseudoprincipals and add links to Bea's speaks-for chain; diff records
 containing Bea's votes on ``Star Wars'' stories; and diff records that document
 Bea's original ownership of ``Star Wars''-tagged comments and the placeholder
 pseudoprincipal data;
 %
-\five{} encrypts the speaks-for and diff records with Bea's public key, stores
+\five{} encrypts the speaks-for and diff records with Bea's public key and stores
 them; and
 %
 \six{} returns a unique \xx ID to the application.
@@ -151,6 +151,7 @@ $p$'s public key; \two{} stores the ciphertext in the \xx table under index
 prevent rainbow table attacks) with $p$'s public key; and \four{} appends the
 encrypted \fn{idx} to $p$'s list of encrypted \xx tables indexes
 in the principal table.
+\todo{figure}
 %an encrypted $[i \parallel \text{random-nonce}]$ (encrypted with the principal's public key).
 %encrypts $[i \parallel \text{random-nonce}]$ with the principal's public
 %key and appends the result to its principal table record.
@@ -276,7 +277,7 @@ decorrelated comments.
 
 \section{Global Database Updates}
 \label{s:design:database-updates}
-\sys's revealing as described thus far may accidentally reveal data that ignores
+\sys's revealing as described thus far may reveal data that ignores
 database updates applied since the time of disguise, such as global
 transformations to un\xxed data or schema changes.
 %
@@ -307,7 +308,7 @@ these updates to data to reveal; and \sys's consistency checks.
 \label{f:update:mod}
 \end{figure}
     
-In order for revealing to preserve application correctness, \sys must know about
+In order for revealing to preserve application correctness, \sys must obey 
 global database updates that transform application data.
 %
 Consider an example: a moderator edits all posts to remove
@@ -315,8 +316,7 @@ swear words, creating an implicit invariant that all posts created prior to the
 last moderation pass should contain no swear words.
 %
 If a user's disguise removes their posts, then a moderation pass occurs, and
-then the user wants to restore their posts, \sys would not know about these
-moderation updates to posts of the application and incorrectly restore the
+then the user wants to restore their posts, \sys might incorrectly restore the
 original post content with swear words present upon reveal.
 %
 However, \sys could correctly restore the post if it knew to remove the swear
@@ -375,6 +375,7 @@ removed.}
 
 \subsection{Schema Changes}
 
+\todo{fix figure nits from eddie}
 \begin{figure}
     \centering
     \includegraphics[width=.8\textwidth]{figs/update-migration}
@@ -450,7 +451,7 @@ For \two{}, \sys ensures that \emph{modified} \xxed data is in the same modified
 state and \emph{decorrelated} \xxed data is still affiliated with the same
 pseudoprincipal in the database using the new value stored in the diff record.
 %
-By default, \sys performs checks at column-granularity. For example, an application
+By default, \sys performs checks at column granularity. For example, an application
 database row can have two modified columns, but at the time of reveal, \sys
 finds that only one column still is at the modified state that \sys expects. The
 other column must have been updated since the time of the disguise.  \sys will
@@ -459,6 +460,7 @@ overwriting application database updates, thus partially restoring the modified 
 Developers can optionally specify that rows must be completely revealed, \ie if
 any column fails the check, \sys should not reveal \emph{any} column in the row.
 %
+\todo{clarify}
 
 %
 To ensure \three{}, \sys checks for the existence of all objects referenced by
@@ -512,7 +514,7 @@ To support these semantics, \sys creates a \emph{partially-removed} metadata
 table. The table is indexed by a data row's unique identifier columns (\eg a
 primary key id); each index maps to a (plaintext) remove diff record for a
 shared data object. The diff record contains the shared data row, but where the
-row has been fully-decorrelated: all foreign keys to owners of the object have
+row has been fully\-decorrelated: all foreign keys to owners of the object have
 been rewritten to refer to a pseudoprincipal.
 %
 Entries in the partially-removed table ensure that all owners agree on the
@@ -629,7 +631,7 @@ Furthermore, disguising transformations may affect data processing of
 application data (\eg aggregates over the number of users), or application side
 effects dependent on application data (\eg sending notifications).  \sys
 currently expects the developer to correctly handle these scenarios, and ensure
-that any modified aggregations or placeholder data does not violate application
+that any modified aggregations or placeholder data do not violate application
 correctness.
 %
 
@@ -651,10 +653,8 @@ support multiple data models;
 %developers to provide \one{} a model of data as objects with dependency edges to other objects,
 %and \two{} instantiations for update/delete/insert operations on these objects.
 %
-and K9DB's data ownership graph~\cite{k9db} to handle indirect data ownership
-%, \sys can use an approach similar to
-%K9DB's data ownership graph~\cite{k9db}. And 
-If no user owns a data item, \sys should likely perhaps refuse to disguise it, and flag
+and K9DB's data ownership graph~\cite{k9db} to handle indirect data ownership.
+If no user owns a data item, \sys should perhaps refuse to disguise it, and flag
 the developer to review the disguise specification.  
 %
 Finally, to address the unique identification requirement, \sys could add unique
@@ -736,11 +736,10 @@ multiple disguises in any order.
 
 %
 Furthermore, as described in \S\ref{s:overview:updates}, \sys assumes that
-either \one{} reveal-time updates are pure functions deterministic in their input and do not
-have side effects; or \two{} any nondeterminism or update side effects will
-maintain application correctness.
+any nondeterminism or update side effects will maintain application
+correctness.
 %
-One potential solution would be for developers to indicate the data dependencies
+One potential extension would be for developers to indicate the data dependencies
 of each update, so \sys could know to \eg restore votes before posts in the
 vote count example from \S\ref{s:overview:updates}. However, this
 requires \sys to disable foreign key checks and carefully check for referential
@@ -748,7 +747,7 @@ integrity after restoring posts, since restoring votes first can now
 inadvertently leave dangling pointers. 
 %
 A perhaps more realistic but more limited solution might require developers to
-schedule cron jobs to habitually perform the update to ``fix up'' any rows that
+schedule periodic updates to ``fix up'' any rows that
 have been revealed since the update. However, this only works for an idempotent
 update, as it should not incorrectly update already-updated rows again.  
 %
@@ -782,7 +781,7 @@ Under \sys's threat model, \sys achieves:
     \item reduced linkability between parts of a user's data, via splitting data ownership among pseudoprincipals.
 \end{enumerate}
 %
-However, an attacker sees all application database
+However, an attacker with database access could see all application database
 content and code, and \sys's \xx, principal, and deleted principal tables.
 %
 Thus, what the attacker learns includes:
@@ -812,7 +811,7 @@ However, this necessarily leaves information in the database.
 % that an attacker could use.
 %
 
-Similarly, leveraging the application database to store \xxed data increases \sys's
+Leveraging the application database to store \xxed data increases \sys's
 practicality as it reuses existing server-side storage and avoids burdening
 users with managing their disguised data, but leaves potentially
 exploitable metadata available to attackers.
