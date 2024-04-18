@@ -1,11 +1,10 @@
 This thesis envisions a world in which web services routinely
 protect, store, and reveal \xxed user data with user permission.
 %
-To move towards this goal, this thesis present \sys, a system that gives users back
-flexible privacy controls over their data via data disguising.
+To move towards this goal, this thesis presents \sys, a system that gives users 
+flexible privacy control over their data via data disguising.
 %
-With \sys, developers can provide data \xxing and revealing transformations that
-give users control over their data in web applications.
+With \sys, developers can provide data \xxing and revealing transformations.
 %
 This thesis illustrates how these transformations help users protect
 inactive accounts, selectively dissociate personal data from public profiles,
@@ -51,8 +50,8 @@ time.
 
 %
 \paragraph{Deriving Value from Disguised Data.} 
-\sys enables an application to keep as much data as possible if users exercise
-their data protection rights, and to allow users to return to the application.
+\sys enables an application to keep as much data as possible if users wish to
+protect their privacy via disguising, and to allow users to return to the application.
 For many applications, this provides a better solution than handling user data
 deletion requests via permanent user deletion, or decentralized approaches that
 move all user data out of the application.
@@ -60,7 +59,7 @@ move all user data out of the application.
 However, with \sys, applications store disguised data, but cannot derive value
 from the now-confidential data.
 %
-Some clever cryptography, such as additive homomorphic secret sharing
+Cryptographic approaches such as additive homomorphic secret sharing
 as done in Zeph~\cite{zeph}, may potentially allow \sys to support limited computation such
 as aggregations over disguised data from which an application can derive value.
 %
@@ -72,7 +71,7 @@ groups may reveal about their constituents.
 %
 
 \paragraph{\sys in Large-Scale Applications.}
-Many web services, particularly those at scale, run on machines in various
+Many web services, particularly those at scale, run on machines in multiple 
 regions and datacenters, and replicate and shard their database.
 %
 While distributed databases used by these applications (\eg
@@ -81,8 +80,8 @@ transactions, \sys's disguising and revealing transactions may potentially
 impose high burdens on distributed databases due to the size and frequency of
 these transactions.
 %
-For example, \sys may need to handle thousands or more disguising (or
-revealing) requests per second, and a disguise could touch all database tables.
+For example, a disguise could touch all database tables spread across multiple
+datacenters.
 %
 
 %
@@ -110,10 +109,11 @@ insiders.
 %
 As part of a collaboration with Hannah Gross~\cite{funhouse}, we investigated
 using disguising abstractions to allow the application to control user data
-exposure to insiders.
+exposure to insiders. Such an approach could help organizations whose employees
+need to query data, but may not need to see all of it.
 %
-Our work draws on the key observation that company employees do not \emph{always}
-need the user information that they can typically access.
+Our work draws on the key observation that company employees do not
+\emph{always} need all of the user information that they can access.
 %
 Just as \sys allows users to expose their data only while using the application,
 perhaps the application can use disguising and revealing to only expose user
@@ -190,6 +190,6 @@ today.
 
 
 \sys provides proof to both web services and regulators that flexible
-privacy features can be supported with reasonable efforts, and thus can and
+privacy features can be supported with reasonable effort, and thus can and
 should be widely implemented and enforced.
 %
