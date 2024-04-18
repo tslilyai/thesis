@@ -1,5 +1,5 @@
 
-\sys's prototype consists of $\approx6$k lines of Rust (broken down by component in
+The current \sys prototype consists of $\approx6$k lines of Rust (broken down by component in
 Figure~\ref{f:loc}). 
 %(1.6k LoC specifically added for \syscrypt).
 %
@@ -26,10 +26,10 @@ updates as reveal-time update specifications.
     examples and tests & 3.1k\\
 
 \end{tabular}
-    \caption[\sys's code components and LoC.]{Code components of \sys and the respective LoC to implement. Much
-    of the logic for reveal is embedded in the records implementation (\eg a
+    \caption[\sys's code components and LoC.]{Code components of \sys and their respective sizes. Much
+    of the logic for reveal is embedded in the record implementation (\eg a
     diff record struct implements \texttt{reveal}); the revealer handles the
-    order at which diff records are revealing and modifications of the speaks-for
+    reveal order of diff records and modifications of the speaks-for
     chain.} 
     \label{f:loc}
 \end{figure}
@@ -149,14 +149,14 @@ version of the private key encrypted with the user's password.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 \section{Reveal-Time Update Specifications}
 
-\sys's prototype accepts reveal-time update specifications as Rust functions from database objects
-($<$table, row$>$ pairs) to a new set of database objects. \sys stores the log
-as a vector of updates function pointers with timestamps, and persists the
-pointers to disk. This approach requires recompiling \sys to add new update
-functions; an alternative approach could put the functions into separate
-executables (and \sys would store executable names instead of function
-pointers). In this alternative, \sys would invoke these executables upon reveal
-with serialized input rows, and deserialize the output.
+\sys's prototype accepts reveal-time update specifications as Rust functions
+from database objects ($<$table, row$>$ pairs) to a new set of database objects.
+\sys stores the replay log as a vector of updates function pointers with
+timestamps, and persists the pointers to disk. This approach requires
+recompiling \sys to add new update functions; an alternative approach could put
+the functions into separate executables (and \sys would store executable names
+instead of function pointers). In this alternative, \sys would invoke these
+executables upon reveal with serialized input rows, and deserialize the output.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%i
 \section{Batching}
@@ -175,13 +175,13 @@ updated, or removed from the database in a single query.
 
 %
 Batching utilizes MySQL's \texttt{INSERT... ON DUPLICATE KEY UPDATE}, which
-allows batch update of different items to different row values. However, this
-also introduces potential error if an item needs to update its primary key as
-well (\eg wants to \sys disguise the user ID with a pseudoprincipal ID,
-but the user ID column also acts as a primary key). If \sys detects a change to
-a primary key, \sys will individually update rows' primary keys prior to the
-batch update, ensuring that rows sent in the \texttt{INSERT...UPDATE} query 
-appropriately match those in the database.
+allows batch updating different items to different row values. However, this
+also introduces potential errors if an item needs to update its primary key as
+well (\eg the disguise specification instructs \sys to disguise the user ID with
+a pseudoprincipal ID, but the user ID column also acts as a primary key). If
+\sys detects a change to a primary key, \sys individually updates rows'
+primary keys prior to the batch update, ensuring that rows sent in the
+\texttt{INSERT...UPDATE} query match those in the database.
 %\sys performs decorrelation and modification operations individually for each
 %row during disguise, as different rows are updated to different values.
 %%

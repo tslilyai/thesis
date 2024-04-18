@@ -19,9 +19,9 @@ and data revealing.
 \sys helps developers realize new options for users to control their data
 via \emph{\xxing transformations} and \emph{revealing transformations}.
 %
-As shown in Figure~\ref{f:edna-overview}, a developer integrates an application
-with \sys by writing \xx specifications and adding hooks to \xx or reveal data
-using \sys's API. This proceeds as follows:
+A developer integrates an application with \sys by writing \xx specifications
+and adding hooks to \xx or reveal data using \sys's API
+(Figure~\ref{f:edna-overview}). This proceeds as follows:
 
 %
 (1) An application registers users with a public--private keypair
@@ -171,7 +171,7 @@ Bea's associations with ``Star Wars'' posts.
 \sys's developer interface ensures that developers need to reason only
 about the high-level semantics of disguising expressed in the disguise
 specification. \sys takes care of applying disguise transformations, composing
-it with other disguising and revealing transformations, and creating and storing
+them with other disguising and revealing transformations, and creating and storing
 disguised data.
 
 
@@ -355,9 +355,9 @@ then when \sys reveals the disguise, \sys will first reveal disguised
 stories before revealing disguised votes in order to maintain referential
 integrity. 
 %
-But when applying a \texttt{vote\_count} update specification to story diff
-records, \sys will find 0 votes for the story, because the votes have not yet
-been restored.
+But when applying a \texttt{vote\_count} update specification to 
+stories, \sys will find 0 votes for all of them, because their votes have not yet been
+restored.
 %
 \sys supports this update only if this 0-vote state counts as correct application behavior.
 %

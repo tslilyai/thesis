@@ -5,7 +5,7 @@ This section compares \sys's performance and the effort to use \sys to an
 implementation of the same disguising and revealing functionality for WebSubmit
 using Qapla’s query rewriting and access control policies. 
 %
-Unlike \sys, Qapla's goal is not disguised data, but rather to enforce
+Unlike \sys, Qapla's goal is not to create abstractions for disguised data, but rather to enforce
 developer-specified data access policies.
 %
 This section explores the benefits of \sys---a design specifically tailored for
@@ -57,7 +57,7 @@ support.
 %HTTP endpoints).
 %
 
-Overall, we cound that Qapla requires more developer effort than \sys, particularly in writing
+Overall, we found that Qapla requires more developer effort than \sys, particularly in writing
 composable and performant predicates, and manually implementing modifications
 and decorrelations. However, Qapla's approach does make some things easier.
 %
@@ -84,8 +84,8 @@ achieve GDPR-compliant data removal. %, as the data remains in the database.
 \label{s:eval-qapla-perf}
 % comparable with \sys.
 %
-We measure Qapla's performance (Figure~\ref{f:qapla_ws_opstats}) on the same
-WebSubmit operations (Figure~\ref{f:ops-websubmit}).
+We measure Qapla's performance (Figure~\ref{f:qapla_ws_opstats}) on the 
+WebSubmit operations evaluated in \S\ref{s:eval-ops} (Figure~\ref{f:ops-websubmit}).
 %
 Qapla performs well on operations that require only writes, since Qapla does not
 rewrite write queries.  Removing and restoring accounts requires only a single

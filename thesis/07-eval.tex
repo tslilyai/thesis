@@ -29,7 +29,7 @@ This chapter seeks to answer six questions:
 \end{enumerate}
 
 %We compare Edna to three alternative settings:
-To measure the \sys's expenses (\S\ref{s:eval-ops}), we compare \sys to a manual version of each
+To measure \sys's expenses (\S\ref{s:eval-ops}), we compare \sys to a manual version of each
 \xxing transformation that directly modifies the database (\eg via SQL queries
 that remove data), which lacks support for revealing and does not support
 composition of multiple transformations. 
@@ -127,7 +127,7 @@ applications were not written with \sys in mind.
 
 %
 We next evaluate \sys's performance using WebSubmit,
-HotCRP, and Lobsters (Ch.~\ref{ch:case_studies}).
+HotCRP, and Lobsters.
 %
 %To measure the extra cost that \sys's cryptographic operations add,
 %, as a developer would do without \sys.
@@ -464,7 +464,7 @@ the number of pseudoprincipals created by anonymization.
 Figure~\ref{f:composition} shows the resulting latencies.
 %
 WebSubmit account removal and restoration latencies increase by $\approx$1ms per
-pseudoprincipal (19.4ms and 22.4ms respectively); 50\% of this increased cost
+pseudoprincipal (19.4ms and 22.4ms respectively). 50\% of this increased cost
 comes from the additional, per-pseudoprincipal encryption and decryption of
 records, the rest comes from database operations.
 
@@ -473,8 +473,8 @@ HotCRP removal latencies also increase by $\approx$1ms per pseudoprincipal
 (205.6ms) and restoration latencies increase by $\approx$2ms per pseudoprincipal
 (392.0ms). Again, cryptographic operations add $\approx$0.5ms per
 pseudoprincipal, and the remaining cost increase comes from
-per-pseudo\allowbreak principal
-database queries and updates. Restoration requires more per-pseudoprincipal
+per\-pseudoprincipal
+database queries and updates. Restoration requires additional per-pseudoprincipal
 queries to \eg perform consistency checks, resulting in a greater latency
 increase than in removal. 
 %querying-for and per-pseudopricnipal
@@ -503,7 +503,7 @@ to do so).
 %
 Importantly, \xxing latencies stabilize when \sys composes further \xxing
 transformations: since cost is proportional to the number of pseudoprincipals
-affected, latency does not grow once the application has maximally decorrelated
+affected, latency does not grow further once the application has maximally decorrelated
 data (to one pseudoprincipal per record), as done by HotCRP anonymization.
 %\lyt{XXX} HotCRP's anonymization
 %performs maximal decorrelation, and the subsequent account removal demonstrates
@@ -534,8 +534,7 @@ run disguising and revealing transformations simultaneously with normal
 application operations, increasing the load on the system and affecting normal
 application operation throughput.
 %
-This section
-measures both of these overheads.
+This section measures both these overheads.
 
 \subsection{Space Used By \sys}
 
@@ -576,7 +575,7 @@ encrypted records.
 %
 
 %
-Table~\ref{f:storage} shows the increase in space used by \sys and the
+Figure~\ref{f:storage} shows the increase in space used by \sys and the
 application after \sys disguises 10\% of Lobsters users. \sys's storage
 initially consumes 12 MB, which consists of entries in the principals table and
 user shares table from the registration of all 16k users.
@@ -603,6 +602,9 @@ In this experiment, Lobsters produces 78.1k pseudoprincipals.
 the principals table, but adding to the deleted principals table---and removes
 the principals' database data to store as encrypted diff records in the disguise
 table, which uses 2.2 MB.
+
+\todo{is this good/ok/acceptable?}
+
 %
 %These diff records amount to a small overhead (2.2MB).
 %
@@ -645,7 +647,7 @@ normal application requests.
 
 
 %
-This section thus measures the impact of \sys's operations on other concurrent requests
+This section measures the impact of \sys's operations on other concurrent requests
 in Lobsters.
 %
 In the experiment, a set of users make continuous requests to the
@@ -742,13 +744,15 @@ in a database of 16k users, and demonstrates the upper bound on Edna’s
 performance impacts when Edna runs large disguising and revealing transactions
 continuously.  Because the queries within disguise and reveal transactions touch
 16 tables, all which are commonly read by normal application operations, this
-impact is expected: transactions lock any written tables, preventing
-application operations from reading them until the transaction has completed.
+impact is expected: transactions in MariaDB's InnoDB storage engine lock any
+written tables, preventing application operations from reading them until the
+transaction has completed.
 %
 With transactions, the benchmark completes hundreds more disguising and
-revealing transformations than when run without transactions; this illustrates
-how \sys's transactions, when touching large amounts of data, can block the
-execution of normal application operations.
+revealing transformations within the same time period than when run without
+transactions. This illustrates how \sys's transactions, when touching large
+amounts of data, can block the execution of normal application operations.
+\todo{malte's comment about speed}
 
 %and operations over \xxed data
 %
@@ -794,14 +798,14 @@ exp txn restore 98 232 366
 \label{s:eval-updates}
 
 %
-If developers perform global database updates, this both increases
-developer effort and affects \sys's performance. This section answers the following
-two questions:
+Adding support for global database updates to disguised data during reveal may both
+increase developer effort and affect \sys's performance.
+This section answers the following two questions:
 \begin{enumerate}[nosep]
-    \item What categories of global database update can \sys support, and how
-        easily? 
+    \item What categories of global database update can \sys support, with how
+        much extra developer effort? 
     \item What are the performance impacts of invoking \sys's API to record an
-        update, and applying updates during reveal?
+        update, and to apply updates during reveal?
 \end{enumerate}
 
 \subsection{Supporting Updates}
@@ -830,26 +834,25 @@ However, depending on the type of update, developers may need to additionally
 write a reveal-time update specification for \sys to capture that operation.
 %
 Schema changes (\eg an \texttt{ALTER TABLE} command) require writing separate
-updates which take as input a set of rows instead of the table.
+update specifications for \sys, which take as input a set of rows instead of the table.
 %
 However, global updates may already operate on row data, and thus
 can be reused as an update specification to \sys.
 
 
 %
-Our Lobsters implementation implements the selected three global
-updates in
-Rust instead of Ruby Active Record Migration. Table~\ref{tab:updates} shows the
-amount of code required per operation, as well as the additional code required
-to add a corresponding reveal-time update specification to give \sys. We reuse
-the global URL normalization update code for the reveal-time update
-specification to \sys, since the global update changes rows one by one. Thus,
-the update specification requires no additional code.
+The Lobsters case study implements the selected three global updates (\S\ref{})
+in Rust instead of Ruby Active Record Migration. Figure~\ref{tab:updates} shows
+the amount of code required per operation, as well as the additional code
+required to add a corresponding reveal-time update specification to give \sys.
+The reveal-time update specification to \sys reuses the global URL normalization
+update code, since the global update changes rows one by one, and thus requires
+no additional code.
 %
-However, we implement the two schema migrations that respectively add
-\texttt{show\_email} and add \texttt{story\_texts} as schema changes, and
-thus write separate reveal-time updates that operate on individual rows, taking
-54 and 27 LoC respectively.
+However, the two schema changes that respectively add
+\texttt{show\_email} and add \texttt{story\_texts} require the developer to
+write separate reveal-time updates that operate on individual rows, taking 54
+and 27 LoC respectively.
 %
 %Thus, the developer needs to write either no additional code to support updates
 %if the bulk operation code can be reused, or 
@@ -898,7 +901,7 @@ Lobsters from the past three years, and classified them as:
 normalization; 
 %
 \item a schema change (which requires writing a new update specification for \sys), such as
-generating tables from other tables (\eg texttt{story\_texts} from
+generating tables from other tables (\eg \texttt{story\_texts} from
 \texttt{stories}) or altering columns; or
 %
 \item an unsupported operation, such as updating the \texttt{vote\_count} of
@@ -908,12 +911,11 @@ generating tables from other tables (\eg texttt{story\_texts} from
 Figure~\ref{tab:categories} shows the distribution of 20 global updates among these
 three categories. 
 %
-\sys can support all but those updates based on external data to the data
-disguised (such as rows of another database table).  \sys cannot ensure that
-external data has not changed since the developer applied the update, and thus
-cannot support these updates unless the update's output is correct no matter the
-state of external data. In the investigated Lobsters global database updates,
-two updates out of the 20 were unsupported, and both updated the cached
+\sys supports all updates except those that update one table's row based on
+another row's contents. Rows outside of the row to reveal may have changed since
+the developer applied the update, and thus \sys cannot guarantee the correctness
+of these potentially nondeterministic updates at the time of reveal. In the investigated Lobsters
+updates, two updates out of the 20 were unsupported, and both updated the cached
 \texttt{vote\_count} value of stories or comments.
 %This represents 2 of the 20 inspected updates.
 %
@@ -923,7 +925,8 @@ two updates out of the 20 were unsupported, and both updated the cached
 %will not correctly apply an update that sets the count of votes for comments.
 %
 These types of updates might occur in applications that optimize for
-performance by denormalizing their database schema (as did Lobsters); we
+performance by denormalizing their database schema (as the Lobsters developers
+did); we
 hypothesize that this category of update would not exist with a normalized
 schema.
 %
@@ -933,9 +936,10 @@ revealed data.
 %
 
 %
-For the large majority of global database updates, users can still reveal
+Thus, for the large majority of global database updates, users can still reveal
 their data disguised prior to these migrations, as if the migration had occurred
 with their data present in the database.
+%
 
 %
 \begin{comment}
@@ -1000,9 +1004,9 @@ Table~\ref{tab:updates-perf} shows the results.
 Overall, the effects of performing updates increases with the amount of
 disguised data a user wants to reveal.
 %
-Users with little data (\eg less than 5 stories) experience no visible increase
+Users with little data (\eg fewer than 5 stories) experience no visible increase
 in reveal latency with updates, but users with lots of data can experience a
-small effect (\eg revealing a user with 673 stories, 1971 comments, and 2000
+noticeable effect (\eg revealing a user with 673 stories, 1971 comments, and 2000
 messages takes on average 4.67s instead of 4.50s, an increase of 3.8\%).
 %
 The rest of this section breaks down these costs.
@@ -1011,7 +1015,7 @@ The rest of this section breaks down these costs.
 \paragraph{Global Update Performance.}
 First, as a baseline, this section looks at the cost of performing
 global updates, which
-applications incur without \sys (Table~\ref{tab:updates-perf}, line 1).
+applications already incur even without \sys (Table~\ref{tab:updates-perf}, line 1).
 %
 
 %
@@ -1045,7 +1049,7 @@ and removing columns.
 %
 Invoking \sys's hook to insert a new update specification in \sys's replay log
 takes on average 0.58ms (Table~\ref{tab:updates-perf}, line 2), a small 
-amount compared to the time to perform the update/migration This includes the
+amount compared to the time to perform the update/migration. This includes the
 time to persist the update (one database insert query) and add it to \sys's
 in-memory update replay log.
 %
@@ -1053,14 +1057,14 @@ in-memory update replay log.
 %
 \paragraph{Reveal with Updates.}
 %
-This section evaluates the latency of reveal operations in Lobsters when updates
-corresponding to the implemented three global updates have been applied after
+Next, we evaluate the latency of reveal operations in Lobsters when updates
+corresponding to the implemented three global updates are applied after
 reveal. \sys applies update specifications to data to reveal in batch, but the cost of
 applying updates to revealed data should still be proportional to the amount of
 data to reveal.
 
 %\paragraph{Apply Update to Diff Record.}
-First, we measure the cost to apply the various updates to diff record rows.
+First, we measure the cost to apply the updates to diff record rows.
 %
 Updating \texttt{stories} diff records is the most costly, as both URL
 normalization and the \texttt{story\_texts} updates apply: this takes 0.2--0.3ms
@@ -1103,11 +1107,11 @@ been disguised at the time. Thus, \sys moves the cost of updating these rows to
 reveal time, rather than global updates execution time (although the cost may be higher
 because the update is not batched over all table rows).}
 %
-The updates do not affect the cost of restoring rows for all tables other than
-\texttt{stories}, since the queries to restore the rows are the same.  However,
-restoring a story now requires additional queries to perform consistency checks
-for and insert \texttt{story\_texts} table rows, adding $\approx$0.6ms per
-story.
+The cost to restore rows for all tables other than \texttt{stories} remains the
+same with or without updates, since the queries to restore the rows are the
+same.  However, restoring a story now requires additional queries to perform
+consistency checks for and insert \texttt{story\_texts} table rows, which add 
+$\approx$0.6ms per story.
 %
 
 %

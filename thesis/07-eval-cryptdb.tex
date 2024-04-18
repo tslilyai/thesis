@@ -9,8 +9,8 @@ with those of encrypted databases.
 %application atop an encrypted database such as CryptDB~\cite{cryptdb}.
 %
 CryptDB protects un\xxed database contents against attackers who compromise
-the database server itself (with some limitations~\cite{grubbs}), in addition
-to \sys-like protections for \xxed data.
+the database server itself (with some limitations~\cite{grubbs}), and therefore
+provides complementary guarantees to \sys-like protections for \xxed data.
 %
 %We refer to the combination of \sys and CryptDB as \syscrypt.
 %
@@ -67,37 +67,23 @@ Queries from \sys and the application operate unchanged atop the proxy, but to
 ensure proper access to user data, the application and \sys must handle user
 sessions.
 %
-\syscrypt exposes an API to log users in and out using their credentials.  Prior to applying
-transformations to a user's data, \sys performs a login to ensure that \sys has
-legitimate access to their data (\eg the user, an admin, or someone sharing the
-data is logged in).
-
-%
-%Because the database is encrypted, \xxing transformations
-%can only operate on data that logged-in users can access.
-
-% and provide the proxy their private keys.
-%with a couple of extra requirements to provide the proxy with private keys of
-%logged-in users.
-%
-%
-%Because the database is encrypted, \xxing transformations
-%can only operate on data that logged-in users can access.
-%
-%\sys must also add an initial login before \xxing a user's data to ensure that
-%\sys has legitimate access to their data (\eg the user, an admin, or someone
-%sharing the data is logged in).
-%
-%, similar to how the application invokes \syscrypt with the user's private key
-%to reveal data.
-%
-
 \syscrypt handles keys in the same way as CryptDB: \syscrypt encrypts database rows
 with per-object keys, and object keys are themselves encrypted with the public keys
 of the users who can access the object.
 %
+
+%
+\syscrypt exposes an API to log users in and out using their credentials.
+%
 After a user logs in, the application gives the proxy their private key, thus
 allowing decryption of their accessible objects.
+%
+Logging out deletes the user's private key from the proxy and reencrypts their
+object keys, thus preventing the proxy from accessing those objects.
+%
+Prior to applying transformations to a user's data, \syscrypt performs a login to
+ensure that \syscrypt has legitimate access to their data (\eg the user, an admin, or
+someone sharing the data is logged in).
 %to the proxy, and can access only those
 %objects encrypted with their public keys.
 %\syscrypt handles keys in the same way as CryptDB, \ie encrypting objects with

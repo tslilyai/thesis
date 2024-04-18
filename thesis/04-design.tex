@@ -87,7 +87,8 @@ credentials to reveal the transformation later.
 
 %
 To perform Bea's topic-based anonymization (Figure~\ref{f:lobsters_visual}),
-which allows Bea to hide their associate with content with a particular tag,
+which allows Bea to hide their association with a particular category of
+content,
 %
 \sys thus:
 %
@@ -370,8 +371,8 @@ the removed post data in the diff record. Only then does \sys restore the post
 with no swear words.\footnote{Note that in this example, the diff
 record contains no placeholder data that replaced the removed post; in other
 scenarios such as decorrelation or modification, \sys would apply the logged
-update to placeholder data as well. The updated placeholder data would then be
-removed.}
+update to diff placeholder data as well, in order to find the matching version in the
+database and remove it.}
 
 \subsection{Schema Changes}
 
@@ -382,7 +383,10 @@ removed.}
     \caption[During reveal, \sys applies reveal-time update specifications for
     schema changes.]{Similar to a moderations update, the
     application notifies \sys of a schema change to apply to diff records
-    prior to reveal. \todo{what does schema change do.} Yellow highlights changes to the application data or \sys's
+    prior to reveal. The schema change creates an address table with a foreign
+    key to user rows, and removes the address from the user rows. This allows users to have multiple addresses.
+    %
+    Yellow highlights changes to the application data or \sys's
     data. For simplicity, the figure shows only the placeholder data of a pseudoprincipal row; in reality, placeholder data exists as part of \eg a decorrelation
     diff record.}
 \label{f:update:schema}
@@ -486,11 +490,12 @@ them so a later reveal can pass the checks.
     \includegraphics[width=\textwidth]{figs/shared_data}
     \caption[\sys implements disguising of shared data using
     pseudoprincipals and diff records.]{\sys implements joint ownership
-    semantics by storing a fully-decorrelated remove diff record for the shared data (modifications to the shared
-    message data are depicted using 
-    [owner$\to$pseudoprincipal] notation). Owners can only see
-    pseudoprincipals for the other owners in their disguised data. This allows
-    \sys to disguise and reveal in any order.}
+    semantics by storing a fully-decorrelated diff record for the removed shared
+    data (modifications to the shared message data are depicted using
+    [owner$\to$pseudoprincipal] notation). Owners can only see pseudoprincipals
+    for the other owners in their disguised data. This allows
+    \sys to disguise and reveal in any order.\todo{better caption relating to
+    example.}}
 \label{f:shared:data}
 \end{figure}
 
@@ -604,9 +609,9 @@ owner's pseudoprincipal if other owners choose to restore it.
 
 As described so far, if Bea wanted to modify a decorrelated ``Star Wars''
 comment, they would have to reveal the comment, edit it using their normal
-credentials, and then re\xx the comment.
+credentials, and then re\xx the comment again.
 %
-\sys applications can also let users modify decorrelated records without the
+Applications that use \sys can also let users modify decorrelated records without the
 reveal step.
 %
 To support this, an application accepts reveal credentials along with a
@@ -630,7 +635,7 @@ operations (remove, modify, and decorrelate).
 Furthermore, disguising transformations may affect data processing of
 application data (\eg aggregates over the number of users), or application side
 effects dependent on application data (\eg sending notifications).  \sys
-currently expects the developer to correctly handle these scenarios, and ensure
+currently expects the developer to correctly handle these scenarios, and to ensure
 that any modified aggregations or placeholder data do not violate application
 correctness.
 %
@@ -645,7 +650,7 @@ correctness.
     \item all rows can be uniquely identified (\eg via primary key).
 \end{enumerate}
 %
-Applications that do not satisfy these assumptions---\eg because they have
+Applications that fail to satisfy these assumptions---\eg because they have
 complex ownership chains or use a NoSQL database---could be supported with
 extensions to \sys's design. \sys could use techniques from DELF~\cite{delf} to
 support multiple data models; 
@@ -654,8 +659,8 @@ support multiple data models;
 %and \two{} instantiations for update/delete/insert operations on these objects.
 %
 and K9DB's data ownership graph~\cite{k9db} to handle indirect data ownership.
-If no user owns a data item, \sys should perhaps refuse to disguise it, and flag
-the developer to review the disguise specification.  
+If no user owns a data item, \sys could refuse to disguise it and flag the
+developer to review the disguise specification.  
 %
 Finally, to address the unique identification requirement, \sys could add unique
 IDs for every data object, so \sys can refind the object when revealing.
@@ -739,12 +744,15 @@ Furthermore, as described in \S\ref{s:overview:updates}, \sys assumes that
 any nondeterminism or update side effects will maintain application
 correctness.
 %
-One potential extension would be for developers to indicate the data dependencies
-of each update, so \sys could know to \eg restore votes before posts in the
-vote count example from \S\ref{s:overview:updates}. However, this
-requires \sys to disable foreign key checks and carefully check for referential
-integrity after restoring posts, since restoring votes first can now
-inadvertently leave dangling pointers. 
+One potential extension would be for developers to indicate the data
+dependencies of each update. To handle the unsupported example in
+\S\ref{s:overview:updates}, \sys can use the knowledge that posts depend on
+votes to restore disguised votes before posts. However, because votes have a
+foreign key to posts, this requires \sys to disable foreign key checks and
+carefully check for dangling votes that violate referential integrity after
+restoring posts.
+%, since restoring votes first can now inadvertently leave
+%dangling pointers. 
 %
 A perhaps more realistic but more limited solution might require developers to
 schedule periodic updates to ``fix up'' any rows that
@@ -764,9 +772,9 @@ update, as it should not incorrectly update already-updated rows again.
 \sys's design achieves confidentiality of disguised data between the time of
 disguising and revealing, its key goal.
 %
-Some aspects of \sys's design help make \sys practical and deployable without
-major application modifications, but give up stronger security in exchange for
-usability.
+By contrast, some aspects of \sys's design help make \sys practical and
+deployable without major application modifications, but give up stronger
+security in exchange for usability.
 %
 
 %Because \sys encrypts \xxed data, \sys achieves:
@@ -781,8 +789,18 @@ Under \sys's threat model, \sys achieves:
     \item reduced linkability between parts of a user's data, via splitting data ownership among pseudoprincipals.
 \end{enumerate}
 %
-However, an attacker with database access could see all application database
-content and code, and \sys's \xx, principal, and deleted principal tables.
+\sys provides decorrelation with pseudoprincipals to ease integration with
+existing applications, even though pseudoprincipals (and their mere existence)
+can reveal information to the attacker.
+%
+Pseudoprincipals preserve application data and referential integrity, ensuring
+that \eg every post always has an author, or that vote counts on posts remain
+unchanged, without requiring the developer to handle special cases of deleted
+users and orphaned data.
+%
+However, this necessarily leaves information in the database: an attacker with
+database access could see all application database content and code, and \sys's
+\xx, principal, and deleted principal tables.
 %
 Thus, what the attacker learns includes:
 \begin{enumerate}[nosep]
@@ -798,23 +816,12 @@ Thus, what the attacker learns includes:
 \end{enumerate}
 
 %
-\sys provides decorrelation with pseudoprincipals to ease integration with
-existing applications, even though pseudoprincipals (and their mere existence) can
-reveal information to the attacker.
-%
-Pseudoprincipals preserve application data and referential integrity, ensuring that
-\eg every post always has an author, or that vote counts on posts remain unchanged,
-without requiring the developer to handle special cases of deleted users and
-orphaned data.
-%
-However, this necessarily leaves information in the database.
-% that an attacker could use.
-%
 
-Leveraging the application database to store \xxed data increases \sys's
-practicality as it reuses existing server-side storage and avoids burdening
-users with managing their disguised data, but leaves potentially
-exploitable metadata available to attackers.
+
+Leveraging the application database (as opposed to separate external storage) to
+store \xxed data increases \sys's practicality as it reuses server-side storage
+resources \todo{?} and avoids burdening users with managing their disguised data.
+However, this leaves potentially exploitable metadata available to attackers.
 %
 An attacker could leverage pseudoprincipal groupings (\eg a pseudoprincipal
 owning posts in both ``CMU 2018'' and ``BayArea'' topics), un\xxed data
@@ -881,7 +888,7 @@ The attacker never has access to a user's private key unless the user actively
 provides their credentials.
 %
 The attacker also cannot access the private key of any pseudoprincipal because
-it is in an encrypted speaks-for record.
+\sys stores such keys in encrypted speaks-for records.
 %
 % By induction, the attacker cannot access any private keys.
 %

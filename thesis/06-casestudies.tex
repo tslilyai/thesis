@@ -32,7 +32,7 @@ and HotCRP~\cite{hotcrp}.
 %
 Lobsters is a Ruby-on-Rails application backed by a MySQL database.
 %
-Beyond the previously-mentioned stories, tags, etc., Lobsters also contains
+Beyond the stories, tags, etc. mentioned in \S\ref{s:design:lobsters}, Lobsters also contains
 moderations that mark inappropriate content as removed.
 %a link-sharing and discussion platform with 14.5k users~\cite{lobsters},
 %
@@ -146,8 +146,8 @@ The second changes the schema by adding a \texttt{show\_email} attribute to the
 %
 The third creates a new \texttt{story\_texts} table that stores the
 \texttt{title}, \texttt{description}, and \texttt{story\_cache} attributes of
-rows from \texttt{stories}. This enables search over story content. The
-\texttt{story\_cache} column is then removed from \texttt{stories}.
+rows from \texttt{stories}; and removes the \texttt{story\_cache} column from
+\texttt{stories}. This enables search over story content.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{WebSubmit}
