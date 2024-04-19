@@ -132,8 +132,8 @@ them; and
 \sys adds a \emph{\xx table} and a \emph{principal table} to the application
 database to store principals' \xxed data.
 %
-The \xx table contains lists of per-principal diff and speaks-for records encrypted with the
-principal's public key.
+The \xx table contains per-disguise, per-principal lists of diff and speaks-for
+records encrypted with the principal's public key.
 %(Recall that private keys are not stored in the database.)
 %; for instance, \verb+\xx_table[1]+ might be a list of \xx records
 %pertaining to Bea's \xxing of ``Star Wars'' comments.
@@ -142,17 +142,33 @@ principal's public key.
 %by Bea's public key, and thus can only be decrypted when Bea's private key is
 %available.
 %
+
+\begin{figure}
+    \centering
+    \includegraphics[width=.8\textwidth]{figs/indexes}
+    \caption[\sys stores disguised data using a layer of indirection with
+    encrypted indexes.]{When \sys applies a disguise to $P_1$'s data, diff
+    records and speaks-for records for $P_1$ are stored at some random index
+    \fn{idx} in the disguise table, and the encrypted index is appended to the
+    principal table entry for $P_1$.}
+\label{f:indexes}
+\end{figure}
+
 The principal table is indexed by application user ID; each row contains the
 principal's public key, and a list of \xx table indexes encrypted with the
 public key.
 %
-To store records for principal $p$, \sys \one{} encrypts the records with
+To store records for principal $p$ after some disguise, \sys \one{} encrypts the records with
 $p$'s public key; \two{} stores the ciphertext in the \xx table under index
 \fn{idx}; \three{} encrypts \fn{idx} (salted to
 prevent rainbow table attacks) with $p$'s public key; and \four{} appends the
 encrypted \fn{idx} to $p$'s list of encrypted \xx tables indexes
 in the principal table.
-\todo{figure}
+%
+Figure~\ref{f:indexes} shows how \sys adds a new disguise's diff records and
+speaks-for records for $P_1$ to the disguise table at some index \fn{idx}; \fn{idx} is itself
+encrypted and added to \sys's principal table for $P_1$.
+
 %an encrypted $[i \parallel \text{random-nonce}]$ (encrypted with the principal's public key).
 %encrypts $[i \parallel \text{random-nonce}]$ with the principal's public
 %key and appends the result to its principal table record.
