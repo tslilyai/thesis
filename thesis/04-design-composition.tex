@@ -220,15 +220,16 @@ However, \sys cannot reveal the diff record directly and restore the
         yet to be recorrelated. If a pseudoprincipal appears as placeholder data
         in any diff record of Bea's disguised data (from any disguise), \sys
         knows that it has not yet revealed that pseudoprincipal. Had \sys
-        revealed that pseudoprincipal, then \sys would have removed this diff
+        revealed that pseudoprincipal, then \sys would have removed its
+        corresponding diff
         record.
         %
 
-\todo{too complex}
 %
-After determining Bea is the next valid user in the speaks-for chain to $P_2$,
-\sys rewrites the ``Ewok'' diff record to reference Bea instead of $P_1$,
-and then restores the diff record like normal.
+After determining that Bea is the next valid user in the speaks-for chain to $P_2$,
+\sys rewrites the removed ``Ewok'' row in the diff record so that it
+        references Bea instead of $P_1$,
+and then restores the rewritten row to the database.
 %
 Finally, \sys deletes the diff records for the ``Star Wars'' disguise, the
 speaks-for records for $P_2$ (which no longer has any associated disguised
