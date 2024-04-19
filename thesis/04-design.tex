@@ -375,8 +375,6 @@ update to diff placeholder data as well, in order to find the matching version i
 database and remove it.}
 
 \subsection{Schema Changes}
-
-\todo{fix figure nits from eddie}
 \begin{figure}
     \centering
     \includegraphics[width=.8\textwidth]{figs/update-migration}
@@ -455,16 +453,17 @@ For \two{}, \sys ensures that \emph{modified} \xxed data is in the same modified
 state and \emph{decorrelated} \xxed data is still affiliated with the same
 pseudoprincipal in the database using the new value stored in the diff record.
 %
-By default, \sys performs checks at column granularity. For example, an application
-database row can have two modified columns, but at the time of reveal, \sys
-finds that only one column still is at the modified state that \sys expects. The
-other column must have been updated since the time of the disguise.  \sys will
-then only reveal the one matching column that passed the check in order to avoid
-overwriting application database updates, thus partially restoring the modified row.
-Developers can optionally specify that rows must be completely revealed, \ie if
-any column fails the check, \sys should not reveal \emph{any} column in the row.
+By default, \sys performs checks at column granularity. For example, a disguised
+row can have two modified columns, but at the time of reveal, \sys finds that
+only one column value remains at the modified disguised state that \sys expects.
+The application thus must have updated the other column value since the time of
+the disguise. \sys will only reveal the one column that matches the value \sys
+disguised it to, in order to avoid overwriting application database updates.
+This results in a partial restoration of the disguised row. Developers can
+optionally specify that rows must be completely revealed: if any disguised column
+has been later changed by the application, \sys should not reveal \emph{any} column in
+the row.
 %
-\todo{clarify}
 
 %
 To ensure \three{}, \sys checks for the existence of all objects referenced by
