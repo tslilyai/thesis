@@ -183,13 +183,25 @@ pseudoprincipals---preserves referential integrity, developers also inform \sys
 how to, during reveal, handle these objects added after disguising that refer
 pseudoprincipals of the disguise. 
 %
-Developers choose between three options for
-pseudoprincipal-referring objects: \one{} change the object's reference to point
-to the original principal (\texttt{RECORRELATE}); \two{} delete the object
-(\texttt{REMOVE}); or \three{} continue referring to the pseudoprincipal
-(\texttt{RETAIN}).
+Developers choose between three options for pseudoprincipal-referring objects:
+\one{} change the object's reference to point to the original principal
+(\texttt{RECORRELATE}); \two{} delete the object (\texttt{REMOVE}); or \three{}
+continue referring to the pseudoprincipal (\texttt{RETAIN}).
+Figure~\ref{f:ppreveal} demonstrates the result of each policy when revealing a post
+added to Bea's pseudoprincipal after a decorrelation disguise.
 %
-\todo{figure for each option}
+\begin{figure}
+    \centering
+    \includegraphics[width=.7\textwidth]{figs/ppreveal_policies}
+    \caption[\texttt{RECORRELATE}, \texttt{REMOVE}, and
+    \texttt{RETAIN} policies maintain referential integrity for objects added after disguising that refer to
+    a pseudoprincipal during reveal.]{After Bea decorrelates a post (red) to a pseudoprincipal,
+    AnonFox, Bea or the application may add posts or other objects that
+    reference AnonFox (yellow). When Bea reveals and recorrelates to AnonFox, developers
+    can choose to \texttt{RECORRELATE}, \texttt{REMOVE}, or \texttt{RETAIN} any
+    new content referring to AnonFox.}
+\label{f:ppreveal}
+\end{figure}
 
 This option is global; another choice of API could support a menu of
 options, such as per-table checks and fixes (where the developer specifies
