@@ -53,17 +53,51 @@ again to scrub its content---then revealing only one disguise will restore only
 that attribute (\eg a timestamp or the post content). 
 %
 This also applies for disguises that rewrite the same data attributes. For
-example, if one disguise decorrelates a post from its author to ``AnonPig''
-(\ie by rewriting its \texttt{author} foreign key to the ``AnonPig''
-pseudoprincipal) and another disguise decorrelates the post again to
-``AnonDog,'' the post will be correlated with ``AnonDog'' even if the
-first disguise decorrelating to ``AnonPig'' is revealed.
+example, if one disguise decorrelates all ``bears'' posts from their author to $P_1$
+(\ie by rewriting their \texttt{author} foreign key values to the $P_1$
+pseudoprincipal) and another disguise decorrelates all ``Star Wars'' posts to
+$P_2$, then ``Ewok'' posts will have been twice decorrelated. 
 %
-And if the second disguise decorrelating to ``AnonDog'' were revealed
-first, the data would remain decorrelated to ``AnonPig'' until the user
-also reveals that first decorrelating disguise.
-\todo{example figures for both of these.}
+This means the post will remain decorrelated to $P_1$ even if the
+``Star Wars'' disguise decorrelating to $P_2$ is revealed
+(Figure~\ref{f:composition-hl-inorder}).
 %
+And if only the ``bears'' 'disguise decorrelating to $P_1$ were revealed, but not
+the ``bears'' disguise, the data would remain decorrelated to $P_2$ until the
+user also reveals the ``Star Wars'' disguise (Figure~\ref{f:composition-hl-ooo}).
+%
+
+%
+\begin{figure}
+    \centering
+    \begin{subfigure}[t]{.47\columnwidth}
+    \centering
+    \includegraphics[width=.75\textwidth]{figs/composition-hl-inorder}
+  \caption{Bea's reveal of ``Star Wars'' posts keeps ``Ewok'' posts still
+        decorrelated under the ``bears'' disguise. Only after revealing
+        ``bears'' posts does \sys restore ownership back to Bea.}
+    \label{f:composition-hl-inorder}
+    \end{subfigure}
+    \hfill
+\begin{subfigure}[t]{.47\columnwidth}
+    \centering
+    \includegraphics[width=.75\textwidth]{figs/composition-hl-ooo}
+  \caption{Bea's reveal of ``bears'' posts keeps ``Ewok'' posts still
+    decorrelated under the ``Star Wars''
+    disguise, even though the ``Star Wars'' disguise applied after ``bears''. Only after revealing ``Star Wars'' posts does \sys restore ownership back to
+    Bea.}
+\label{f:composition-hl-ooo}
+\end{subfigure}
+    \caption[\sys only reveals the original state of data disguised multiple times once
+    all disguises appied to the data have been revealed.]{
+        If Bea decorrelates an ``Ewok'' post twice---once via a ``bears''
+        disguise, and once via a ``Star Wars'' disguise---\sys only recorrelates
+        the post back to Bea once Bea reveals \emph{both} disguises.}
+\label{f:composition-hl}
+\end{figure}
+
+
+
 
 %
 Revealing transformations also apply a developer's provided reveal-time updates
