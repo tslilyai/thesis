@@ -504,13 +504,23 @@ them so a later reveal can pass the checks.
     \centering
     \includegraphics[width=\textwidth]{figs/shared_data}
     \caption[\sys implements disguising of shared data using
-    pseudoprincipals and diff records.]{\sys implements joint ownership
-    semantics by storing a fully-decorrelated diff record for the removed shared
-    data (modifications to the shared message data are depicted using
-    [owner$\to$pseudoprincipal] notation). Owners can only see pseudoprincipals
-    for the other owners in their disguised data. This allows
-    \sys to disguise and reveal in any order.\todo{better caption relating to
-    example.}}
+    pseudoprincipals and diff records.]{(1) When Bea removes their message, \sys
+    creates and stores a fully-decorrelated diff record of the message
+    (modifications to the shared message data are depicted using
+    [owner$\to$pseudoprincipal] notation). Bea's disguised data also stores a
+    speaks-for record to AnonPig.
+    %
+    (2) When Chris later removes their message, \sys stores a fully-decorrelated
+    diff record in Chris' disguised data and a speaks-for record to AnonFox.
+    \sys also deletes the message from the database, since it has no referencing
+    users
+    %
+    (3) When one user (\eg Bea) reveals, \sys restores the
+    fully-decorrelated message and recorrelates Bea with it.
+    %
+    (4) When Chris later reveals, they find the message already restored and
+    simply recorrelate with their pseudoprincipal, AnonFox.
+    }
 \label{f:shared:data}
 \end{figure}
 
@@ -559,9 +569,11 @@ data:
 
         A matching entry must now exist; \sys takes the matching entry and
         stores a copy of the entry's fully-decorrelated diff record for the
-        disguise.  As shown in step 3, this information will let an
-        owner restore the data to the database if all owners have removed, and
-        the data no longer exists in the database.
+        disguise.  As shown in step 3, this information will let an owner
+        restore the data to the database if all owners have removed, and the
+        data no longer exists in the database.  Importantly, every owner's diff
+        record of the shared data will only reference another owner's
+        \emph{pseudoprincipal} instead of their true identifier.
 
         \sys then creates the pseudoprincipal that matches the corresponding
         decorrelated foreign key to the owner, and stores diff records recording
