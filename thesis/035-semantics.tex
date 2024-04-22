@@ -3,6 +3,7 @@ reason about the resulting state of data after a disguise and reveal, and
 includes an overview of \sys's API.  .
 
 \section{Disguising and Revealing}
+\label{s:semantics:hl}
 Developers can think about disguising transformations as removing and rewriting
 data in the application database.
 %
@@ -271,6 +272,8 @@ application modifications to log all added references to pseudoprincipals).
 \section{API}
 \label{s:api}
 
+\todo{examples?}
+
 \begin{figure}[t]
 \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
 // Generates keypair for p and returns the user's backup credential
@@ -340,7 +343,6 @@ function and how developers would use them to support disguising and revealing.
 
 
 \subsection{\texttt{DisguiseData}}
-\todo{examples?}
 
     Removes or rewrites application data according to the provided disguise
     specification (\ie disguises data). The original data is encrypted and
@@ -395,7 +397,6 @@ function and how developers would use them to support disguising and revealing.
     disguise.
 
 \subsection{\texttt{RevealData}}
-\todo{example?}
 
     Restores data disguised by the disguise corresponding to the provided ID to
     the database. Revealing the same disguise ID multiple times will do nothing
