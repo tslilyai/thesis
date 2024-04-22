@@ -1,12 +1,8 @@
 This chapter describes \sys's high-level semantics that a developer can use to
-reason about the resulting state of data after a disguise and reveal. Following
-this high-level description comes a deeper dive into \sys's API and examples of
-how developers can use it.
+reason about the resulting state of data after a disguise and reveal, and
+includes an overview of \sys's API.  .
 
-\section{High-Level Semantics}
-\label{s:hlsemantics}
-
-\subsection{Disguising and Revealing}
+\section{Disguising and Revealing}
 Developers can think about disguising transformations as removing and rewriting
 data in the application database.
 %
@@ -48,26 +44,6 @@ reflects the effects of all yet-unrevealed disguises.
 %
 
 %
-For example, if a post is disguised twice---once to modify the timestamp, and
-again to scrub its content---then revealing only one disguise will restore only
-that attribute (\eg a timestamp or the post content). 
-%
-This also applies for disguises that rewrite the same data attributes. For
-example, if one disguise decorrelates all ``bears'' posts from their author to $P_1$
-(\ie by rewriting their \texttt{author} foreign key values to the $P_1$
-pseudoprincipal) and another disguise decorrelates all ``Star Wars'' posts to
-$P_2$, then ``Ewok'' posts will have been twice decorrelated. 
-%
-This means the post will remain decorrelated to $P_1$ even if the
-``Star Wars'' disguise decorrelating to $P_2$ is revealed
-(Figure~\ref{f:composition-hl-inorder}).
-%
-And if only the ``bears'' 'disguise decorrelating to $P_1$ were revealed, but not
-the ``bears'' disguise, the data would remain decorrelated to $P_2$ until the
-user also reveals the ``Star Wars'' disguise (Figure~\ref{f:composition-hl-ooo}).
-%
-
-%
 \begin{figure}
     \centering
     \begin{subfigure}[t]{.47\columnwidth}
@@ -96,16 +72,60 @@ user also reveals the ``Star Wars'' disguise (Figure~\ref{f:composition-hl-ooo})
 \label{f:composition-hl}
 \end{figure}
 
-
-
-
+%
+For example, if a post is disguised twice---once to modify the timestamp, and
+again to scrub its content---then revealing only one disguise will restore only
+that attribute (\eg a timestamp or the post content). 
+%
+This also applies for disguises that rewrite the same data attributes. For
+example, if one disguise decorrelates all ``bears'' posts from their author to $P_1$
+(\ie by rewriting their \texttt{author} foreign key values to the $P_1$
+pseudoprincipal) and another disguise decorrelates all ``Star Wars'' posts to
+$P_2$, then ``Ewok'' posts will have been twice decorrelated. 
+%
+This means the post will remain decorrelated to $P_1$ even if the
+``Star Wars'' disguise decorrelating to $P_2$ is revealed
+(Figure~\ref{f:composition-hl-inorder}).
+%
+And if only the ``bears'' 'disguise decorrelating to $P_1$ were revealed, but not
+the ``bears'' disguise, the data would remain decorrelated to $P_2$ until the
+user also reveals the ``Star Wars'' disguise (Figure~\ref{f:composition-hl-ooo}).
+%
 %
 Revealing transformations also apply a developer's provided reveal-time updates
 (\S\ref{s:semantics:updates}) to the data to reveal, ensuring that revealed data
 reflects global application updates since the time of disguise.
 %
 
-\subsection{Disguise Specifications}
+\paragraph{Shared Data.}
+Disguising and revealing transformations may operate over shared data (\eg a
+message shared between sender and recipient). In this case, \sys implements a
+joint-ownership model, and only removes shared data once all owners have
+disguised it. If only some owners have disguised the data, \sys decorrelates the
+disguised owners to pseudoprincipals, and keeps the data around.
+\S\ref{s:sharedhl} describes \sys's joint-ownership semantics in more detail.
+%
+
+\paragraph{Disguise Composition.}
+Users may also wish to disguise data previously decorrelated from their
+account. In this scenario, \sys requires users to reveal their correlations to
+pseudoprincipals in order to further disguise their pseudoprincipals' data.
+\S\ref{s:compositionhl} describes how \sys's API allows this scenario. 
+
+\paragraph{\sys Without Encryption.}
+\label{s:semantics:noencrypt}
+
+Developers may find \sys's threat model unnecessarily strong: perhaps they do
+not worry about data breaches, care about regulations like the GDPR, or trust
+their application code to not expose disguised data. Instead, these developers
+may want to add disuising and revealing without encryption.
+%
+\S\ref{s:noencrypt-api} describes how removing encryption would change \sys's
+API, and \S\ref{s:noencrypt} describes how it would change
+\sys's design.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Disguise Specifications}
 \label{s:spec:semantics}
 
 %
@@ -210,19 +230,6 @@ the same pseudoprincipals.
 %
 \paragraph{Revealing Decorrelate.}
 %
-Pseudoprincipals may acquire new references from application objects inserted
-after the time of disguise---for example, a decorrelated comment might have new
-responses. To ensure that revealing a decorrelate operation---which deletes
-pseudoprincipals---preserves referential integrity, developers also inform \sys
-how to, during reveal, handle these objects added after disguising that refer
-pseudoprincipals of the disguise. 
-%
-Developers choose between three options for pseudoprincipal-referring objects:
-\one{} change the object's reference to point to the original principal
-(\texttt{RECORRELATE}); \two{} delete the object (\texttt{REMOVE}); or \three{}
-continue referring to the pseudoprincipal (\texttt{RETAIN}).
-Figure~\ref{f:ppreveal} demonstrates the result of each policy when revealing a post
-added to Bea's pseudoprincipal after a decorrelation disguise.
 %
 \begin{figure}
     \centering
@@ -236,95 +243,32 @@ added to Bea's pseudoprincipal after a decorrelation disguise.
     new content referring to AnonFox.}
 \label{f:ppreveal}
 \end{figure}
+%
+
+Pseudoprincipals may acquire new references from application objects inserted
+after the time of disguise---for example, a decorrelated comment might have new
+responses. To ensure that revealing a decorrelate operation---which deletes
+pseudoprincipals---preserves referential integrity, developers also inform \sys
+how to, during reveal, handle these objects added after disguising that refer
+pseudoprincipals of the disguise. 
+%
+Developers choose between three options for pseudoprincipal-referring objects:
+\one{} change the object's reference to point to the original principal
+(\texttt{RECORRELATE}); \two{} delete the object (\texttt{REMOVE}); or \three{}
+continue referring to the pseudoprincipal (\texttt{RETAIN}).
+Figure~\ref{f:ppreveal} demonstrates the result of each policy when revealing a post
+added to Bea's pseudoprincipal after a decorrelation disguise.
 
 This option is global; another choice of API could support a menu of
 options, such as per-table checks and fixes (where the developer specifies
 per-table policies) or per-inserted-object ones (where the developer makes
 application modifications to log all added references to pseudoprincipals).
 %
+%
+   
 
-\subsection{Shared Data.}
-
-%
-Many applications support shared data; in Lobsters, for example, messages
-between users are owned by both users.
-%or co-authored papers in HotCRP.
-%
-\sys's default semantics for shared data implement an ownership model inspired
-by a common treatment of shared data as jointly owned.
-%
-When a user's disguise removes shared data, \sys decorrelates the data from the \xxing user,
-but preserves the data and its association with other owners.
-%
-\sys removes the data once all users have \xxed it and all ownership links are
-to pseudoprincipals.
-%
-Any owner can reveal the message, which restores the message to the database if
-it does not exist, and recorrelates only the revealing user; all disguised
-owners remain decorrelated as pseudoprincipals until they also choose to reveal
-the message.
-%
-Regardless of the reveal order, if all owners reveal the message, \sys returns
-the message to its original state.
-%
-
-%
-For each shared data object, each owner has an associated unique
-pseudoprincipal. If ony some owners have disguised the row, the row will refer
-to the disguised owners' unique pseudoprincipals' identifiers instead of the
-owners'.
-%
-When a user reveals a shared data row, all users still disguised remain 
-associated with their unique pseudoprincipal (which can be reused over
-multiple remove disguises).
-%
-
-\begin{figure}
-    \centering
-    \includegraphics[width=.4\textwidth]{figs/shared_hl}
-    \caption[\sys supports joint ownership semantics when disguising shared data.]{\sys supports joint ownership semantics, where shared data is not
-    removed until all users have disguised their accounts. Owners can return in
-    any order, and the message remains decorrelated from unrevealed owners.}
-\label{f:shared:hl}
-\end{figure}
-
-%
-For instance, consider the scenario in Figure~\ref{f:shared:hl} where Bea and
-Chris share a Lobsters message. Bea maps to unique pseudoprincipal AnonPig for this
-shared message, and Chris to AnonFox.
-\begin{enumerate}[nosep]
-    \item[(1)] When Bea \xxs the message, the message is owned by
-Chris and a pseudoprincipal;
-    \item[(2)] If Chris then \xxs the message, \sys removes it.
-    \item[(3)] If Bea reveals the message, this restores the message to the database
-and recorrelates only Bea; Chris remains decorrelated as a pseudoprincipal.
-\item[(4)] When Chris reveals the message, \sys returns
-the message to its original state.
-\end{enumerate}
-%
-\S\ref{s:design:shared} dives deeper in how \sys's design achieves these shared
-data semantics.
-
-\subsection{Composition of Disguises.}
-Once \sys has decorrelated some user's data to a pseudoprincipal, future
-disguises applied by the user will fail to further disguise that data.
-%
-If a user wants to further disguise their pseudoprincipal's data, then the user
-can grant \sys permission to reveal links to their pseudoprincipal by providing
-a reveal credential (their password, private key, or backup token). 
-%
-\sys will then treat all of the user's pseudoprincipals' data as if they belong
-to the user themself, and depending on the disguise specification, will remove,
-modify, or create a new pseudoprincipal owner for these pseudoprincipals' data.
-%
-To reveal their data back to its original state, a user must reveal all
-disguises composed atop the data.
-%
-\S\ref{s:composition} fleshes out \sys's design for disguise composition.
-
-%
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{API Developer Manual}
+\section{API}
 \label{s:api}
 
 \begin{figure}[t]
@@ -371,7 +315,7 @@ disguises composed atop the data.
 Developers add hooks to their application to invoke \sys's API, which consists
 of the functions shown in Figure~\ref{f:api-high}. This section describes each
 function and how developers would use them to support disguising and revealing.
-    
+ 
 
 \subsection{\texttt{RegisterPrincipal}}
 
@@ -451,16 +395,6 @@ remove/modify/decorrelate sections?}
     should be returned to affected users in case they wish to later reveal the
     disguise.
 
-    \paragraph{Shared Data.}
-    \todo{repetition?}
-    If rows to remove are shared among multiple users, they are only deleted
-    from the database once all users have disguised the row. This occurs if
-    \one{} all users individually disguise the data, or \two{} the disguise is
-    applied over all users (\texttt{p = None}).
-   
-    If the row is not removed (some owning users have not disguised the row),
-    the row will refer to a pseudoprincipal for users who have disguised.
-
 \subsection{\texttt{RevealData}}
 \todo{example effects of reveals---or add examples in
 remove/modify/decorrelate sections?}
@@ -521,9 +455,6 @@ remove/modify/decorrelate sections?}
     \paragraph{Return Value.} 
     Returns true if all rows to reveal pass database constraint checks, and false otherwise.
 
-    \paragraph{Shared Data.}
-    \todo{repetition here too?}
-
 \subsection{\texttt{CanSpeakFor}}
 \todo{example use of canspeakfor for editing data?}
 
@@ -561,36 +492,97 @@ reveal time.
     \paragraph{Return Value.} Returns true on successful recording in \sys's
     log, and false on failure.
 
-\section{\sys Without Encryption}
-\label{s:semantics:noencrypt}
-
-Developers may find \sys's threat model unnecessarily strong: perhaps they do
-not worry about data breaches, care about regulations like the GDPR, or trust
-their application code to not expose disguised data. Instead, these developers
-may want to add disuising and revealing without encryption.
-%
-
-%
+\subsection{\sys's API Without Encryption}
+\label{s:noencrypt-api}
 A subset of Edna's API suffices to provide the same semantics for disguises
 without encryption. Users do not need to register with \sys; applications can
 use normal user authentication to authorize revealing; disguising
 already-disguised data no longer requires a user's reveal credential; and
 reveal-time updates can be applied immediately to disguised data instead of
 logged and applied at reveal time.
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Shared Data and Composition.}
+
+\subsection{Shared Data}
+\label{s:sharedhl}
 %
-\S\ref{s:noencrypt} describes how removing encryption changes would
-change \sys's design.
+Many applications support shared data; in Lobsters, for example, messages
+between users are owned by both users.
+%or co-authored papers in HotCRP.
+%
+\sys's default semantics for shared data implement an ownership model inspired
+by a common treatment of shared data as jointly owned.
+%
+When a user's disguise removes shared data, \sys decorrelates the data from the \xxing user,
+but preserves the data and its association with other owners.
+%
+\sys removes the data once all users have \xxed it and all ownership links are
+to pseudoprincipals.
+%
+Any owner can reveal the message, which restores the message to the database if
+it does not exist, and recorrelates only the revealing user; all disguised
+owners remain decorrelated as pseudoprincipals until they also choose to reveal
+the message.
+%
+Regardless of the reveal order, if all owners reveal the message, \sys returns
+the message to its original state.
+%
 
 %
-%Users would provide their application credentials (\eg a username and password)
-%to authorize the application to reveal their data.\footnote{While the
-%application could reveal data without user permission, this would change the
-%semantics of disguise and reveal for a user, causing them to lose control over
-%their data's exposure.}
+For each shared data object, each owner has an associated unique
+pseudoprincipal. If ony some owners have disguised the row, the row will refer
+to the disguised owners' unique pseudoprincipals' identifiers instead of the
+owners'.
 %
-%This simplified API still helps address the challenges of maintaining
-%referential integrity when a disguise is performed (creating pseudoprincipals as
-%placeholder users); composing disguises and reveals in arbitrary orders;
-%disguising shared data; and applying global updates to disguised data (albeit
-%during update execution, rather than at reveal time).  \S\ref{s:noencrypt}
-%describes how removing encryption changes \sys's design.
+When a user reveals a shared data row, all users still disguised remain 
+associated with their unique pseudoprincipal (which can be reused over
+multiple remove disguises).
+%
+
+\begin{figure}
+    \centering
+    \includegraphics[width=.4\textwidth]{figs/shared_hl}
+    \caption[\sys supports joint ownership semantics when disguising shared data.]{\sys supports joint ownership semantics, where shared data is not
+    removed until all users have disguised their accounts. Owners can return in
+    any order, and the message remains decorrelated from unrevealed owners.}
+\label{f:shared:hl}
+\end{figure}
+
+%
+For instance, consider the scenario in Figure~\ref{f:shared:hl} where Bea and
+Chris share a Lobsters message. Bea maps to unique pseudoprincipal AnonPig for this
+shared message, and Chris to AnonFox.
+\begin{enumerate}[nosep]
+    \item[(1)] When Bea \xxs the message, the message is owned by
+Chris and a pseudoprincipal;
+    \item[(2)] If Chris then \xxs the message, \sys removes it.
+    \item[(3)] If Bea reveals the message, this restores the message to the database
+and recorrelates only Bea; Chris remains decorrelated as a pseudoprincipal.
+\item[(4)] When Chris reveals the message, \sys returns
+the message to its original state.
+\end{enumerate}
+%
+\S\ref{s:design:shared} dives deeper in how \sys's design achieves these shared
+data semantics.
+
+\subsection{Composition of Disguises.}
+\label{s:compositionhl}
+Once \sys has decorrelated some user's data to a pseudoprincipal, future
+disguises applied by the user will fail to further disguise that data.
+%
+If a user wants to further disguise their pseudoprincipal's data, then the user
+can grant \sys permission to reveal links to their pseudoprincipal by providing
+a reveal credential (their password, private key, or backup token). 
+%
+\sys will then treat all of the user's pseudoprincipals' data as if they belong
+to the user themself, and depending on the disguise specification, will remove,
+modify, or create a new pseudoprincipal owner for these pseudoprincipals' data.
+%
+To reveal their data back to its original state, a user must reveal all
+disguises composed atop the data.
+%
+\S\ref{s:composition} fleshes out \sys's design for disguise composition.
+
+

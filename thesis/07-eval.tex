@@ -601,14 +601,22 @@ In this experiment, Lobsters produces 78.1k pseudoprincipals.
 \sys removes the public keys for the 1.6k removed principals---subtracting from
 the principals table, but adding to the deleted principals table---and removes
 the principals' database data to store as encrypted diff records in the disguise
-table, which uses 2.2 MB.
-
-\todo{is this good/ok/acceptable?}
-
+table, which uses 2.2 MB (0.8\% of the original Lobsters database size of 261
+MB).
 %
-%These diff records amount to a small overhead (2.2MB).
+
+\todo{\sys's storage thus produce noticeable overheads, but allow users to
+reveal their data without storing disguised data external to the application.
 %
-%2.2MB is 0.8\% of the original Lobsters database size of 261 MB.
+Furthermore, a substantial (30MB) portion of the added applications storage
+would already incur with \sys for an application to perform fine-grained
+decorrelation, such as adding pseudoprincipals to the application database.
+%
+These overheads also mostly lie in disk storage---a historically cheap medium---but
+\S\ref{s:deploying} discusses potential ways to prevent \sys overheads from
+overly costing applications.
+%
+}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Impact On Concurrent Application Use}
