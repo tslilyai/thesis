@@ -1,6 +1,6 @@
 This chapter describes \sys's high-level semantics that a developer can use to
-reason about the resulting state of data after a disguise and reveal, and
-includes an overview of \sys's API.  .
+reason about the resulting state of data after a disguise and reveal. It then
+provides an overview of \sys's API.
 
 \section{Disguising and Revealing}
 \label{s:semantics:hl}
@@ -8,7 +8,7 @@ Developers can think about disguising transformations as removing and rewriting
 data in the application database.
 %
 The database starts at some original application state, and alters application
-data depending on the disguise specification (\S\ref{s:spec:semantics}).  The resulting
+data depending on the disguise specification (\S\ref{s:semantics:spec}).  The resulting
 state---the disguised data state---is changed only by another disguise, by
 revealing the applied disguise, or by normal application updates.
 %
@@ -193,7 +193,7 @@ API, and \S\ref{s:noencrypt} describes how it would change
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Disguise Specifications}
-\label{s:spec:semantics}
+\label{s:semantics:spec}
 
 %
 A developer describes the effects of a disguise (and undone by a
