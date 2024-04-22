@@ -334,14 +334,13 @@ function and how developers would use them to support disguising and revealing.
     either the private key or password.
 
     \paragraph{Return Value.} 
-    The function returns a backup token that the application should return to
-    the user client. This token enables the user to reveal in the case they lose
+    Returns a backup \emph{reveal credential} token that the application should return to
+    the user client. This credential enables the user to reveal in the case they lose
     their password or private key.
 
 
 \subsection{\texttt{DisguiseData}}
-\todo{example effects of disguises---or add examples in
-remove/modify/decorrelate sections?}
+\todo{examples?}
 
     Removes or rewrites application data according to the provided disguise
     specification (\ie disguises data). The original data is encrypted and
@@ -369,7 +368,7 @@ remove/modify/decorrelate sections?}
     %
     If a user invokes a disguise through the application and provides a reveal
     credential (their password, private key, or backup token), the function will
-    disguise data that has already been disguised (\S\ref{s:composition}).
+    disguise data that has already been disguised (\S\ref{s:compositionhl}).
     Depending on the disguise specification, this will remove, modify, or create
     a new pseudoprincipal owner for data with a foreign key to a pseudoprincipal
     instead of the user.
@@ -391,14 +390,12 @@ remove/modify/decorrelate sections?}
     \end{itemize}
 
     \paragraph{Return Value.} 
-    The function returns a unique disguise ID for the applied disguise, which
-    should be returned to affected users in case they wish to later reveal the
+    Returns a unique disguise ID for the applied disguise, which should be
+    forwarded to disguised users in case they wish to later reveal the
     disguise.
 
 \subsection{\texttt{RevealData}}
-\todo{example effects of reveals---or add examples in
-remove/modify/decorrelate sections?}
-
+\todo{example?}
 
     Restores data disguised by the disguise corresponding to the provided ID to
     the database. Revealing the same disguise ID multiple times will do nothing
@@ -417,7 +414,7 @@ remove/modify/decorrelate sections?}
     from overwriting an application change since the time of disguise. 
     %
     \texttt{RevealData} will still reveal matching attributes for the row unless
-    developers diable partial row removal
+    developers disable partial row removal
     (\texttt{allow\_partial\_row\_reveal}).
 
     Revealed data will reflect all of the updates registered via
@@ -425,12 +422,11 @@ remove/modify/decorrelate sections?}
     chronological order.
 
     \paragraph{Arguments.} 
-    A reveal is invoked by a specific
-    user of the application identified by user ID. 
+    A reveal is invoked by a specific user of the application identified by user
+    ID. 
     % 
-    The user also provides a reveal
-    credential (their password, private key, or backup token) and the 
-    identifier for the disguise to reveal.
+    The user also provides a reveal credential (their password, private key, or
+    backup token) and the identifier for the disguise to reveal.
 
     The developer provides three arguments:
     \begin{itemize}[nosep]
@@ -456,8 +452,6 @@ remove/modify/decorrelate sections?}
     Returns true if all rows to reveal pass database constraint checks, and false otherwise.
 
 \subsection{\texttt{CanSpeakFor}}
-\todo{example use of canspeakfor for editing data?}
-
     Finds all principals in the application identified by user ID that stem from
     a (potentially recursive) decorrelation of user \texttt{p}.
     User \texttt{p} is thus authorized to speak-for any of these principals.
@@ -467,12 +461,12 @@ remove/modify/decorrelate sections?}
     and with the user's password.
 
     \paragraph{Return Value.} 
-    A list of all user IDs of principals that \texttt{p} can
+    Returns a list of all user IDs of principals that \texttt{p} can
     speak-for.
 
 \subsection{\texttt{RecordUpdate}}
 \label{s:semantics:updates}
-\todo{example use of recordupdate (take from design)}
+\todo{example use of recordupdate (take from design?)}
 
 Enables a developer to perform updates to disguised data prior to revealing it.
 Invoking \texttt{RecordUpdate} timestamps and logs a developer-provided update
