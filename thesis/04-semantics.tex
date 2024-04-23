@@ -1,6 +1,6 @@
 This chapter describes \sys's high-level semantics that a developer can use to
-reason about the resulting state of data after a disguise and reveal. It then
-provides an overview of \sys's API.
+reason about the resulting state of data after a disguise and reveal, as well as 
+an overview of \sys's API.
 
 \section{Disguising and Revealing}
 \label{s:semantics:hl}
@@ -20,6 +20,15 @@ disguised again. If the original data has been rewritten by prior disguises,
 future disguises of the disguised state have access only to the disguised state,
 and thus can only further remove aspects of the original data state.
 %
+
+Disguises may insert pseudoprincipals (anonymous users) into the application
+database if the disguise's specification includes a decorrelation---a rewriting
+of a foreign key to point to an anonymous pseudoprincipal instead of the
+original principal user. Data disguised within the same disguise and from the
+same table may refer to (via a foreign key) the same pseudoprincipal.
+%
+No two objects from different database tables refer to the same pseudoprincipal,
+and no two disguises' sets of produced pseudoprincipals overlap.
 
 %
 \sys applies disguises on behalf of either a single user or all users. However,
@@ -44,142 +53,12 @@ Thus, when multiple disguises apply to the same data, the application data state
 reflects the effects of all yet-unrevealed disguises.
 %
 
-%
-\begin{figure}
-    \centering
-    \begin{subfigure}[t]{.47\columnwidth}
-    \centering
-    \includegraphics[width=.75\textwidth]{figs/composition-hl-inorder}
-  \caption{Bea's reveal of ``Star Wars'' posts keeps ``Ewok'' posts still
-        decorrelated under the ``bears'' disguise. Only after revealing
-        ``bears'' posts does \sys restore ownership back to Bea.}
-    \label{f:composition-hl-inorder}
-    \end{subfigure}
-    \hfill
-\begin{subfigure}[t]{.47\columnwidth}
-    \centering
-    \includegraphics[width=.75\textwidth]{figs/composition-hl-ooo}
-  \caption{Bea's reveal of ``bears'' posts keeps ``Ewok'' posts still
-    decorrelated under the ``Star Wars''
-    disguise, even though the ``Star Wars'' disguise applied after ``bears''. Only after revealing ``Star Wars'' posts does \sys restore ownership back to
-    Bea.}
-\label{f:composition-hl-ooo}
-\end{subfigure}
-    \caption[\sys only reveals the original state of data disguised multiple times once
-    all disguises appied to the data have been revealed.]{
-        If Bea decorrelates an ``Ewok'' post twice---once via a ``bears''
-        disguise, and once via a ``Star Wars'' disguise---\sys only recorrelates
-        the post back to Bea once Bea reveals \emph{both} disguises.}
-\label{f:composition-hl}
-\end{figure}
-
-%
-For example, if a post is disguised twice---once to modify the timestamp, and
-again to scrub its content---then revealing only one disguise will restore only
-that attribute (\eg a timestamp or the post content). 
-%
-This also applies for disguises that rewrite the same data attributes. For
-example, if one disguise decorrelates all ``bears'' posts from their author to $P_1$
-(\ie by rewriting their \texttt{author} foreign key values to the $P_1$
-pseudoprincipal) and another disguise decorrelates all ``Star Wars'' posts to
-$P_2$, then ``Ewok'' posts will have been twice decorrelated. 
-%
-This means the post will remain decorrelated to $P_1$ even if the
-``Star Wars'' disguise decorrelating to $P_2$ is revealed
-(Figure~\ref{f:composition-hl-inorder}).
-%
-And if only the ``bears'' 'disguise decorrelating to $P_1$ were revealed, but not
-the ``bears'' disguise, the data would remain decorrelated to $P_2$ until the
-user also reveals the ``Star Wars'' disguise (Figure~\ref{f:composition-hl-ooo}).
-%
-%
-Revealing transformations also apply a developer's provided reveal-time updates
-(\S\ref{s:semantics:updates}) to the data to reveal, ensuring that revealed data
-reflects global application updates since the time of disguise.
-%
-
-\subsection{Shared Data}
-Many applications support shared data; in Lobsters, for example, messages
-between users are owned by both users.
-%or co-authored papers in HotCRP.
-%
-\sys's default semantics for shared data implement an ownership model inspired
-by a common treatment of shared data as jointly owned.
-%
-When a user's disguise removes shared data, \sys decorrelates the data from the
-\xxing user, but preserves the data and its association with other owners.
-%
-\sys removes the data once all users have \xxed it and all ownership links are
-to pseudoprincipals.
-%
-Any owner can reveal the message, which restores the message to the database if
-it does not exist, and recorrelates only the revealing user; all disguised
-owners remain decorrelated as pseudoprincipals until they also choose to reveal
-the message.
-%
-Regardless of the reveal order, if all owners reveal the message, \sys returns
-the message to its original state.
-%
-
-%
-For each shared data object, each owner has an associated unique
-pseudoprincipal. If ony some owners have disguised the row, the row will refer
-to the disguised owners' unique pseudoprincipals' identifiers instead of the
-owners'.
-%
-When a user reveals a shared data row, all users still disguised remain
-associated with their unique pseudoprincipal (which can be reused over multiple
-remove disguises).
-%
-
-\begin{figure}
-    \centering
-    \includegraphics[width=.4\textwidth]{figs/shared_hl}
-    \caption[\sys supports joint ownership semantics when disguising shared data.]{\sys supports joint ownership semantics, where shared data is not
-    removed until all users have disguised their accounts. Owners can return in
-    any order, and the message remains decorrelated from unrevealed owners.}
-\label{f:shared:hl}
-\end{figure}
-
-%
-For instance, consider the scenario in Figure~\ref{f:shared:hl} where Bea and
-Chris share a Lobsters message. Bea maps to unique pseudoprincipal AnonPig for this
-shared message, and Chris to AnonFox.
-\begin{enumerate}[nosep]
-    \item[(1)] When Bea \xxs the message, the message is owned by
-Chris and a pseudoprincipal;
-    \item[(2)] If Chris then \xxs the message, \sys removes it.
-    \item[(3)] If Bea reveals the message, this restores the message to the database
-and recorrelates only Bea; Chris remains decorrelated as a pseudoprincipal.
-\item[(4)] When Chris reveals the message, \sys returns
-the message to its original state.
-\end{enumerate}
-%
-\S\ref{s:design:shared} dives deeper in how \sys's design achieves these shared
-data semantics.
+Revealed data will also reflect all global database updates (such as schema
+migrations) registered by the developer since the time of disguise, applied in
+chronological order.
 
 
-\subsection{Disguise Composition}
-\label{s:semantics:hl:composition}
-
-Users may also wish to disguise data previously decorrelated from their
-account. In this scenario, \sys requires users to reveal their correlations to
-pseudoprincipals in order to further disguise their pseudoprincipals' data.
-%
-If a user wants to further disguise their pseudoprincipal's data, then the user
-can grant \sys permission to reveal links to their pseudoprincipal by providing
-a reveal credential (their password, private key, or backup token). 
-%
-\sys will then treat all of the user's pseudoprincipals' data as if they belong
-to the user themself, and depending on the disguise specification, will remove,
-modify, or create a new pseudoprincipal owner for these pseudoprincipals' data.
-%
-To reveal their data back to its original state, a user must reveal all
-disguises composed atop the data.
-%
-\S\ref{s:composition} fleshes out \sys's design for disguise composition.
-
-\subsection{\sys Without Encryption.}
+\paragraph{\sys without encryption.}
 \label{s:semantics:noencrypt}
 
 Developers may find \sys's threat model unnecessarily strong: perhaps they do
@@ -190,6 +69,230 @@ may want to add disuising and revealing without encryption.
 \S\ref{s:noencrypt-api} describes how removing encryption would change \sys's
 API, and \S\ref{s:noencrypt} describes how it would change
 \sys's design.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{API}
+\label{s:api}
+
+\begin{figure}[t]
+\begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
+// Generates keypair for p and returns the user's backup credential
+(*\textbf{RegisterPrincipal}*)(
+        p: UID, 
+        pw: Password,
+        pubkey: PublicKey, 
+        privkey: PrivKey)
+    -> RevealCredential;
+
+// disguises principal p according to the spec, 
+// optionally over already-disguised data ((*\S\ref{s:composition}*))
+(*\textbf{DisguiseData}*)(
+        p: Option<UID>, 
+        spec: DisguiseSpec,
+        principal_gen: PrincipalGenerator,
+        schema: Schema,
+        disguise_over: Option<RevealCredential>) 
+    -> disguiseID;
+
+// Reveals data disguised by s for p with p's password. 
+(*\textbf{RevealData}*)(
+        p: Option<UID>, 
+        did: disguiseID, 
+        pp_ref_policy: PseudoprincipalReferencePolicy,
+        allow_partial_row_reveal: bool,
+        schema: Schema,
+        cred: RevealCredential>)
+    -> bool;
+
+// Gets principals that p can speak-for.
+(*\textbf{CanSpeakFor}*)(p: UID, cred: RevealCredential) -> Vec<UID>;
+
+// Records a reveal-time update spec in the replay log.
+(*\textbf{RecordUpdate}*)(update_spec: RevealTimeUpdateSpec) -> bool;
+\end{lstlisting}
+\caption{\sys's API (Rust-like syntax).}
+\label{f:api-high}
+\end{figure}
+%
+
+Developers add hooks to their application to invoke \sys's API, which consists
+of the functions shown in Figure~\ref{f:api-high}. This section describes each
+function and how developers would use them to support disguising and revealing.
+ 
+
+\subsection{\texttt{RegisterPrincipal}}
+
+    Registers an application user as a principal whose data can be disguised and
+    revealed. Unique users should not be registered multiple times.  Once
+    registered, data of an undeleted user that exists in the database can always
+    be disguised and revealed.  Users deleted by a disguise do not need to
+    reregister if revealed.
+
+    \paragraph{Arguments.} Takes the user's associated unique identifier and unique
+    public-private keypair (generated by the user
+    client or application).
+    %
+    The provided public key is used to encrypt the user's disguised data. The
+    provided private key and password enable clients to later reveal data using
+    either the private key or password.
+
+    \paragraph{Return Value.} 
+    Returns a backup \emph{reveal credential} token that the application should return to
+    the user client. This credential enables the user to reveal in the case they lose
+    their password or private key.
+
+
+\subsection{\texttt{DisguiseData}}
+    Removes or rewrites application data according to the provided disguise
+    specification (\ie disguises data). The original data is encrypted and
+    stored within the application database; a user must provide credentials to
+    invoke with a \texttt{RevealData} call in order to restore the data.
+
+    \paragraph{Arguments.} 
+    A disguise is invoked either automatically by the application, or a specific
+    user of the application identified by user ID. 
+    % 
+    If the disguise is invoked on behalf of a specific user, then all predicates
+    on specified disguise operations include an "\texttt{AND [fk\_col] = [uid]}"
+    clause for all foreign keys to the application's principals table.
+    %
+
+    %
+    If a user invokes a disguise through the application and provides a reveal
+    credential (their password, private key, or backup token), the function will
+    disguise data that has already been disguised
+    (\S\ref{s:semantics:hl:composition}).  Depending on the disguise
+    specification, this will remove, modify, or create a new pseudoprincipal
+    owner for data with a foreign key to a pseudoprincipal instead of the user.
+    %
+
+    %
+    The developer provides three arguments:
+    \begin{itemize}[nosep]
+    \item A disguise specification that describes how to disguise data by
+    removing, modifying (replacing some or all of its contents with placeholder
+    values), or decorrelating, replacing links to users with links to
+    pseudoprincipals.
+    
+    \item A principal generator, which describes how to create a
+    pseudoprincipal in the application (global across all disguises).
+    
+    \item The database schema, which specifies ownership links from data tables to user
+    tables via foreign key relationships (global across all disguises).
+    \end{itemize}
+
+    \paragraph{Return Value.} 
+    Returns a unique disguise ID for the applied disguise, which should be
+    forwarded to disguised users in case they wish to later reveal the
+    disguise.
+
+\subsection{\texttt{RevealData}}
+
+    Restores data disguised by the disguise corresponding to the provided ID to
+    the database. Revealing the same disguise ID multiple times will do nothing
+    after the first reveal.
+
+    \paragraph{Arguments.} 
+    A reveal is invoked by a specific user of the application identified by user
+    ID. 
+    % 
+    The user also provides a reveal credential (their password, private key, or
+    backup token) and the identifier for the disguise to reveal.
+
+    %
+\begin{figure}
+    \centering
+    \includegraphics[width=.7\textwidth]{figs/ppreveal_policies}
+    \caption[\texttt{RECORRELATE}, \texttt{REMOVE}, and
+    \texttt{RETAIN} policies maintain referential integrity for objects added after disguising that refer to
+    a pseudoprincipal during reveal.]{After Bea decorrelates a post (red) to a pseudoprincipal,
+    AnonFox, Bea or the application may add posts or other objects that
+    reference AnonFox (yellow). When Bea reveals and recorrelates to AnonFox, developers
+    can choose to \texttt{RECORRELATE}, \texttt{REMOVE}, or \texttt{RETAIN} any
+    new content referring to AnonFox.}
+\label{f:ppreveal}
+\end{figure}
+%
+    The developer provides three arguments:
+    \begin{itemize}[nosep]
+    \item A pseudoprincipal reference policy (\texttt{RECORRELATE}, \texttt{REMOVE},
+    or \texttt{RETAIN}) to ensure that reveals of decorrelations preserve
+        referential integrity. 
+            %
+            \sys requires this argument because pseudoprincipals may acquire new references
+            from application objects inserted after the time of disguise---for
+            example, a decorrelated comment might have new responses. To ensure
+            that revealing a decorrelate operation---which deletes
+            pseudoprincipals---preserves referential integrity, developers 
+            inform \sys how to, during reveal, handle these objects added after
+            disguising that refer pseudoprincipals of the disguise.%
+
+            Developers choose between three options for pseudoprincipal-referring objects:
+            \one{} change the object's reference to point to the original principal
+            (\texttt{RECORRELATE}); \two{} delete the object (\texttt{REMOVE}); or \three{}
+            continue referring to the pseudoprincipal (\texttt{RETAIN}).
+            Figure~\ref{f:ppreveal} demonstrates the result of each policy when revealing a post
+            added to Bea's pseudoprincipal after a decorrelation disguise.
+
+            This option applies to all rows to reveal; another choice of API
+            could support a menu of options, such as per-table checks and fixes
+            (where the developer specifies per-table policies) or
+            per-inserted-object ones (where the developer makes application
+            modifications to log all added references to pseudoprincipals).
+     
+    \item A flag specifying whether a row can be partially restored if some
+    attributes at the time of reveal differ from the attribute values set when
+    disguising the row.
+
+    \item The database schema, which specifies ownership links from data tables to user
+    tables via foreign key relationships (global across all disguises).
+    \end{itemize}
+
+    \paragraph{Return Value.} 
+    Returns true if \sys reveals all rows disguised by \texttt{did} successfully, and false otherwise.
+
+\subsection{\texttt{CanSpeakFor}}
+    Finds all principals in the application identified by user ID that stem from
+    a (potentially recursive) decorrelation of user \texttt{p}, authorizing user \texttt{p}
+    to speak-for any of these principals.
+
+    \paragraph{Arguments.} 
+    \texttt{CanSpeakFor} is invoked on behalf of some user with UID \texttt{p},
+    and with the user's password.
+
+    \paragraph{Return Value.} 
+    Returns a list of all user IDs of principals that \texttt{p} can
+    speak-for.
+
+\subsection{\texttt{RecordUpdate}}
+\label{s:semantics:updates}
+
+Enables a developer to perform updates to disguised data prior to revealing it.
+%Invoking \texttt{RecordUpdate} timestamps and logs a developer-provided update
+%specification---a data transformation function---to reflect a global update
+%performed on undisguised data. All updates since the time of disguise will be
+%performed in chronological order on disguised data prior to revealing it.
+If the provided reveal-time update specification relies on data external to the
+disguised data to reveal (\eg the current time or state of undisguised data),
+\sys cannot ensure correctness when applying the update to disguised data at
+reveal time.
+
+    \paragraph{Arguments.} Takes a reveal-time update specification reflecting
+    the data transformations performed on table rows. The specification maps a
+    set of table rows to a set of updated table rows.
+
+    \paragraph{Return Value.} Returns true on successful recording in \sys's
+    log, and false on failure.
+
+\subsection{\sys's API Without Encryption}
+\label{s:noencrypt-api}
+A subset of Edna's API suffices to provide the same semantics for disguises
+without encryption. Users do not need to register with \sys; applications can
+use normal user authentication to authorize revealing; disguising
+already-disguised data no longer requires a user's reveal credential; and
+reveal-time updates can be applied immediately to disguised data instead of
+logged and applied at reveal time.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Disguise Specifications}
@@ -294,273 +397,145 @@ Thus, no two disguises share the same pseudoprincipals, and no two tables share
 the same pseudoprincipals.
 %
 
-%
-\paragraph{Revealing Decorrelate.}
-%
+\section{Disguising and Revealing Example}
+   
 %
 \begin{figure}
     \centering
-    \includegraphics[width=.7\textwidth]{figs/ppreveal_policies}
-    \caption[\texttt{RECORRELATE}, \texttt{REMOVE}, and
-    \texttt{RETAIN} policies maintain referential integrity for objects added after disguising that refer to
-    a pseudoprincipal during reveal.]{After Bea decorrelates a post (red) to a pseudoprincipal,
-    AnonFox, Bea or the application may add posts or other objects that
-    reference AnonFox (yellow). When Bea reveals and recorrelates to AnonFox, developers
-    can choose to \texttt{RECORRELATE}, \texttt{REMOVE}, or \texttt{RETAIN} any
-    new content referring to AnonFox.}
-\label{f:ppreveal}
+    \begin{subfigure}[t]{.47\columnwidth}
+    \centering
+    \includegraphics[width=.75\textwidth]{figs/composition-hl-inorder}
+  \caption{Bea's reveal of ``Star Wars'' posts keeps ``Ewok'' posts still
+        decorrelated under the ``bears'' disguise. Only after revealing
+        ``bears'' posts does \sys restore ownership back to Bea.}
+    \label{f:composition-hl-inorder}
+    \end{subfigure}
+    \hfill
+\begin{subfigure}[t]{.47\columnwidth}
+    \centering
+    \includegraphics[width=.75\textwidth]{figs/composition-hl-ooo}
+  \caption{Bea's reveal of ``bears'' posts keeps ``Ewok'' posts still
+    decorrelated under the ``Star Wars''
+    disguise, even though the ``Star Wars'' disguise applied after ``bears''. Only after revealing ``Star Wars'' posts does \sys restore ownership back to
+    Bea.}
+\label{f:composition-hl-ooo}
+\end{subfigure}
+    \caption[\sys only reveals the original state of data disguised multiple times once
+    all disguises appied to the data have been revealed.]{
+        If Bea decorrelates an ``Ewok'' post twice---once via a ``bears''
+        disguise, and once via a ``Star Wars'' disguise---\sys only recorrelates
+        the post back to Bea once Bea reveals \emph{both} disguises.}
+\label{f:composition-hl}
 \end{figure}
+
+%
+For example, if a post is disguised twice---once to modify the timestamp, and
+again to scrub its content---then revealing only one disguise will restore only
+that attribute (\eg a timestamp or the post content). 
+%
+This also applies for disguises that rewrite the same data attributes. For
+example, if one disguise decorrelates all ``bears'' posts from their author to
+$P_1$ (\ie by rewriting their \texttt{author} foreign key values to the $P_1$
+pseudoprincipal) and another disguise decorrelates all ``Star Wars'' posts to
+$P_2$, then ``Ewok'' posts will have been twice decorrelated. 
+%
+This means the post will remain decorrelated to $P_1$ even if the ``Star Wars''
+disguise decorrelating to $P_2$ is revealed
+(Figure~\ref{f:composition-hl-inorder}).
+%
+And if only the ``bears'' 'disguise decorrelating to $P_1$ were revealed, but
+not the ``bears'' disguise, the data would remain decorrelated to $P_2$ until
+the user also reveals the ``Star Wars'' disguise
+(Figure~\ref{f:composition-hl-ooo}).
+%
+%
+Revealing transformations also apply a developer's provided reveal-time updates
+(\S\ref{s:semantics:updates}) to the data to reveal, ensuring that revealed data
+reflects global application updates since the time of disguise.
 %
 
-Pseudoprincipals may acquire new references from application objects inserted
-after the time of disguise---for example, a decorrelated comment might have new
-responses. To ensure that revealing a decorrelate operation---which deletes
-pseudoprincipals---preserves referential integrity, developers also inform \sys
-how to, during reveal, handle these objects added after disguising that refer
-pseudoprincipals of the disguise. 
-%
-Developers choose between three options for pseudoprincipal-referring objects:
-\one{} change the object's reference to point to the original principal
-(\texttt{RECORRELATE}); \two{} delete the object (\texttt{REMOVE}); or \three{}
-continue referring to the pseudoprincipal (\texttt{RETAIN}).
-Figure~\ref{f:ppreveal} demonstrates the result of each policy when revealing a post
-added to Bea's pseudoprincipal after a decorrelation disguise.
-
-This option is global; another choice of API could support a menu of
-options, such as per-table checks and fixes (where the developer specifies
-per-table policies) or per-inserted-object ones (where the developer makes
-application modifications to log all added references to pseudoprincipals).
-%
-%
-   
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-\section{API}
-\label{s:api}
 
-\todo{examples?}
-
-\begin{figure}[t]
-\begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
-// Generates keypair for p and returns the user's backup credential
-(*\textbf{RegisterPrincipal}*)(
-        p: UID, 
-        pw: Password,
-        pubkey: PublicKey, 
-        privkey: PrivKey)
-    -> RevealCredential;
-
-// disguises principal p according to the spec, 
-// optionally over already-disguised data ((*\S\ref{s:composition}*))
-(*\textbf{DisguiseData}*)(
-        p: Option<UID>, 
-        spec: DisguiseSpec,
-        principal_gen: PrincipalGenerator,
-        schema: Schema,
-        disguise_over: Option<RevealCredential>) 
-    -> disguiseID;
-
-// Reveals data disguised by s for p with p's password. 
-(*\textbf{RevealData}*)(
-        p: Option<UID>, 
-        did: disguiseID, 
-        pp_ref_policy: PseudoprincipalReferencePolicy,
-        allow_partial_row_reveal: bool,
-        schema: Schema,
-        cred: RevealCredential>)
-    -> bool;
-
-// Gets principals that p can speak-for.
-(*\textbf{CanSpeakFor}*)(p: UID, cred: RevealCredential) -> Vec<UID>;
-
-// Records a reveal-time update spec in the replay log.
-(*\textbf{RecordUpdate}*)(update_spec: RevealTimeUpdateSpec) -> bool;
-\end{lstlisting}
-\caption{\sys's API (Rust-like syntax).}
-\label{f:api-high}
-\end{figure}
+\section{Shared Data}
+Many applications support shared data; in Lobsters, for example, messages
+between users are owned by both users.
+%or co-authored papers in HotCRP.
+%
+\sys's default semantics for shared data implement an ownership model inspired
+by a common treatment of shared data as jointly owned.
+%
+When a user's disguise removes shared data, \sys decorrelates the data from the
+\xxing user, but preserves the data and its association with other owners.
+%
+\sys removes the data once all users have \xxed it and all ownership links are
+to pseudoprincipals.
+%
+Any owner can reveal the message, which restores the message to the database if
+it does not exist, and recorrelates only the revealing user; all disguised
+owners remain decorrelated as pseudoprincipals until they also choose to reveal
+the message.
+%
+Regardless of the reveal order, if all owners reveal the message, \sys returns
+the message to its original state.
 %
 
-Developers add hooks to their application to invoke \sys's API, which consists
-of the functions shown in Figure~\ref{f:api-high}. This section describes each
-function and how developers would use them to support disguising and revealing.
- 
+%
+For each shared data object, each owner has an associated unique
+pseudoprincipal. If ony some owners have disguised the row, the row will refer
+to the disguised owners' unique pseudoprincipals' identifiers instead of the
+owners'.
+%
+When a user reveals a shared data row, all users still disguised remain
+associated with their unique pseudoprincipal (which can be reused over multiple
+remove disguises).
+%
 
-\subsection{\texttt{RegisterPrincipal}}
+\begin{figure}
+    \centering
+    \includegraphics[width=.4\textwidth]{figs/shared_hl}
+    \caption[\sys supports joint ownership semantics when disguising shared data.]{\sys supports joint ownership semantics, where shared data is not
+    removed until all users have disguised their accounts. Owners can return in
+    any order, and the message remains decorrelated from unrevealed owners.}
+\label{f:shared:hl}
+\end{figure}
 
-    Registers an application user as a principal whose data can be disguised and
-    revealed. Unique users should not be registered multiple times.  Once
-    registered, data of an undeleted user that exists in the database can always
-    be disguised and revealed.
-    Users deleted by a disguise do not need to reregister if revealed.
-
-    \paragraph{Arguments.} Takes the user's associated unique identifier and unique
-    public-private keypair (generated by the user
-    client or application).
-    %
-    The provided public key is used to encrypt the user's disguised data. The
-    provided private key and password enable clients to later reveal data using
-    either the private key or password.
-
-    \paragraph{Return Value.} 
-    Returns a backup \emph{reveal credential} token that the application should return to
-    the user client. This credential enables the user to reveal in the case they lose
-    their password or private key.
-
-
-\subsection{\texttt{DisguiseData}}
-
-    Removes or rewrites application data according to the provided disguise
-    specification (\ie disguises data). The original data is encrypted and
-    stored within the application database; a user must provide credentials to
-    invoke with a \texttt{RevealData} call in order to restore the data.
-    
-    This function may insert pseudoprincipals (anonymous users) into the
-    application database if a decorrelation---a rewriting of a foreign key to
-    point to an anonymous principal instead of an original principal user---is
-    specified by the disguise.  Data disguised within the same disguise and from
-    the same table may refer to (via a foreign key) the same pseudoprincipal.
-    %
-    No two objects from different database tables refer to the same
-    pseudoprincipal, and no two disguises' sets of produced pseudoprincipals overlap.
-
-    \paragraph{Arguments.} 
-    A disguise is invoked either automatically by the application, or a specific
-    user of the application identified by user ID. 
-    % 
-    If the disguise is invoked on behalf of a specific user, then all predicates
-    on specified disguise operations include an "\texttt{AND [fk\_col] = [uid]}"
-    clause for all foreign keys to the application's principals table.
-    %
-
-    %
-    If a user invokes a disguise through the application and provides a reveal
-    credential (their password, private key, or backup token), the function will
-    disguise data that has already been disguised
-    (\S\ref{s:semantics:hl:composition}).
-    Depending on the disguise specification, this will remove, modify, or create
-    a new pseudoprincipal owner for data with a foreign key to a pseudoprincipal
-    instead of the user.
-    %
-
-    %
-    The developer provides three arguments:
-    \begin{itemize}[nosep]
-    \item A disguise specification that describes how to disguise data by
-    removing, modifying (replacing some or all of its contents with placeholder
-    values), or decorrelating, replacing links to users with links to
-    pseudoprincipals.
-    
-    \item A principal generator, which describes how to create a
-    pseudoprincipal in the application (global across all disguises).
-    
-    \item The database schema, which specifies ownership links from data tables to user
-    tables via foreign key relationships (global across all disguises).
-    \end{itemize}
-
-    \paragraph{Return Value.} 
-    Returns a unique disguise ID for the applied disguise, which should be
-    forwarded to disguised users in case they wish to later reveal the
-    disguise.
-
-\subsection{\texttt{RevealData}}
-
-    Restores data disguised by the disguise corresponding to the provided ID to
-    the database. Revealing the same disguise ID multiple times will do nothing
-    after the first reveal.
-
-    If revealing a row violates database constraints specified in the schema
-    (\eg uniqueness, referential integrity, NULl checks), \texttt{RevealData}
-    will not restore that row.  \texttt{RevealData} may fail to restore some
-    rows, but will still reveal others that successfully pass all constraints
-    checks.
-
-    Revealing a row operates on a per-attribute granularity. If an attribute of
-    a row at the time of reveal differs from the attribute value set when
-    \texttt{DisguiseData} disguised the row, then that attribute of the row will
-    not be restored to the original value. This prevents \texttt{RevealData}
-    from overwriting an application change since the time of disguise. 
-    %
-    \texttt{RevealData} will still reveal matching attributes for the row unless
-    developers disable partial row removal
-    (\texttt{allow\_partial\_row\_reveal}).
-
-    Revealed data will reflect all of the updates registered via
-    \texttt{RecordUpdate} since the time of disguise \texttt{did}, applied in
-    chronological order.
-
-    \paragraph{Arguments.} 
-    A reveal is invoked by a specific user of the application identified by user
-    ID. 
-    % 
-    The user also provides a reveal credential (their password, private key, or
-    backup token) and the identifier for the disguise to reveal.
-
-    The developer provides three arguments:
-    \begin{itemize}[nosep]
-    \item A pseudoprincipal reference policy (\texttt{RECORRELATE}, \texttt{REMOVE},
-    or \texttt{RETAIN}) to ensure that reveals of decorrelations preserve
-    referential integrity. \texttt{RECORRELATE} ensures that any table rows that
-    have been added since the time of disguise, and which have foreign
-    key references to a pseudoprincipal row that is removed by the reveal, will
-    reference the revealed user replacing the pseudoprincipal.
-    \texttt{REMOVE} removes such new references to removed pseudoprincipal rows,
-    and \texttt{RETAIN} prevents \texttt{RevealData} from the removing
-    pseudoprincipal row and retains any new references to it.
-     
-    \item A flag specifying whether a row can be partially restored if some
-    attributes at the time of reveal differ from the attribute values set when
-    disguising the row.
-
-    \item The database schema, which specifies ownership links from data tables to user
-    tables via foreign key relationships (global across all disguises).
-    \end{itemize}
-
-    \paragraph{Return Value.} 
-    Returns true if all rows to reveal pass database constraint checks, and false otherwise.
-
-\subsection{\texttt{CanSpeakFor}}
-    Finds all principals in the application identified by user ID that stem from
-    a (potentially recursive) decorrelation of user \texttt{p}.
-    User \texttt{p} is thus authorized to speak-for any of these principals.
-
-    \paragraph{Arguments.} 
-    \texttt{CanSpeakFor} is invoked on behalf of some user with UID \texttt{p},
-    and with the user's password.
-
-    \paragraph{Return Value.} 
-    Returns a list of all user IDs of principals that \texttt{p} can
-    speak-for.
-
-\subsection{\texttt{RecordUpdate}}
-\label{s:semantics:updates}
-\todo{example use of recordupdate (take from design?)}
-
-Enables a developer to perform updates to disguised data prior to revealing it.
-Invoking \texttt{RecordUpdate} timestamps and logs a developer-provided update
-specification---a data transformation function---to reflect a global update
-performed on undisguised data. All updates since the time of disguise will be
-performed in chronological order on disguised data prior to revealing it.
-
-If the provided reveal-time update specification relies on data external to the
-disguised data to reveal (\eg the current time or state of undisguised data),
-\sys cannot ensure correctness when applying the update to disguised data at
-reveal time.
-
-    \paragraph{Arguments.} Takes a reveal-time update specification reflecting
-    the data transformations performed on table rows. The specification maps a
-    set of table rows to a set of updated table rows.
-
-    \paragraph{Return Value.} Returns true on successful recording in \sys's
-    log, and false on failure.
-
-\subsection{\sys's API Without Encryption}
-\label{s:noencrypt-api}
-A subset of Edna's API suffices to provide the same semantics for disguises
-without encryption. Users do not need to register with \sys; applications can
-use normal user authentication to authorize revealing; disguising
-already-disguised data no longer requires a user's reveal credential; and
-reveal-time updates can be applied immediately to disguised data instead of
-logged and applied at reveal time.
+%
+For instance, consider the scenario in Figure~\ref{f:shared:hl} where Bea and
+Chris share a Lobsters message. Bea maps to unique pseudoprincipal AnonPig for this
+shared message, and Chris to AnonFox.
+\begin{enumerate}[nosep]
+    \item[(1)] When Bea \xxs the message, the message is owned by
+Chris and a pseudoprincipal;
+    \item[(2)] If Chris then \xxs the message, \sys removes it.
+    \item[(3)] If Bea reveals the message, this restores the message to the database
+and recorrelates only Bea; Chris remains decorrelated as a pseudoprincipal.
+\item[(4)] When Chris reveals the message, \sys returns
+the message to its original state.
+\end{enumerate}
+%
+\S\ref{s:design:shared} dives deeper in how \sys's design achieves these shared
+data semantics.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\section{Disguise Composition}
+\label{s:semantics:hl:composition}
+
+Users may also wish to disguise data previously decorrelated from their
+account. In this scenario, \sys requires users to reveal their correlations to
+pseudoprincipals in order to further disguise their pseudoprincipals' data.
+%
+If a user wants to further disguise their pseudoprincipal's data, then the user
+can grant \sys permission to reveal links to their pseudoprincipal by providing
+a reveal credential (their password, private key, or backup token). 
+%
+\sys will then treat all of the user's pseudoprincipals' data as if they belong
+to the user themself, and depending on the disguise specification, will remove,
+modify, or create a new pseudoprincipal owner for these pseudoprincipals' data.
+%
+To reveal their data back to its original state, a user must reveal all
+disguises composed atop the data.
+%
+\S\ref{s:composition} fleshes out \sys's design for disguise composition.
+

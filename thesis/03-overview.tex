@@ -37,7 +37,8 @@ parameters (such as a user ID).
 %
 \Xx specifications can remove data, modify data (replacing some or all of its
 contents with placeholder values), or decorrelate data, replacing
-links to users with links to pseudoprincipals (fake users).
+links to users with links to \emph{pseudoprincipals} (fake users generated as
+application users with random IDs).
 %
 % Decorrelation preserves the structure of the application database, and avoids
 % integrity issues like dangling foreign keys, while obscuring the data's
@@ -62,9 +63,9 @@ application database that \xxing introduced.
 %
 
 %
-\sys provides the developer with sensible default \xxing and revealing
-semantics (\eg revealing makes sure not to overwrite changes made since
-\xxing).
+%\sys provides the developer with sensible default \xxing and revealing
+%semantics (\eg revealing makes sure not to overwrite changes made since
+%\xxing).
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Example: Lobsters Topic Anonymization}
@@ -392,8 +393,11 @@ SQL injection).
 \sys encrypts \xxed data, so its confidentiality stems from ``crypto
 shredding,'' a GDPR-compliant data deletion approach based on the fact that
 ciphertexts are indistinguishable from garbage data if the key material is
-unavailable~\cite{dnefs,townsend:cryptoshredding,aws:cryptoshredding,gtr:cryptoshredding}.
-\todo{might depend on private key being separate from password?}
+unavailable~\cite{dnefs,townsend:cryptoshredding,aws:cryptoshredding,gtr:cryptoshredding}.\footnote{For
+usability, \sys accepts as credentials either a user's private key, or a user's
+password from which \sys can derive the private key. Crypto shredding assumes
+sufficiently random key material, so \sys here assumes the user's password to be
+as strong as the private key.}
 %
 
 % STANDARD CLAIMS ABOUT CRYPTO ASSUMPTIONS

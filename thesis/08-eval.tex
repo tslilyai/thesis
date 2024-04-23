@@ -589,7 +589,8 @@ The space used is primarily proportional to the number of pseudoprincipals
 produced: each pseudoprincipal requires storing an application database record,
 a speaks-for record, and row in the principal table.
 %
-In this experiment, Lobsters produces 78.1k pseudoprincipals.
+In this experiment, Lobsters produces 78.1k pseudoprincipals, which accounts for
+the 29MB growth in application database size.
 %
 %Storing a private key is necessary if the application wants to further
 %disguise decorrelated data, but avoidable if disguises cannot compose.
@@ -605,18 +606,11 @@ table, which uses 2.2 MB (0.8\% of the original Lobsters database size of 261
 MB).
 %
 
-\todo{\sys's storage thus produce noticeable overheads, but allow users to
-reveal their data without storing disguised data external to the application.
+\sys's storage thus produce noticeable overheads, but these overheads also
+mostly lie in disk storage---a historically cheap medium.  \S\ref{s:deploying}
+discusses potential ways to prevent \sys overheads from overly costing
+applications.
 %
-Furthermore, a substantial (30MB) portion of the added applications storage
-would already incur with \sys for an application to perform fine-grained
-decorrelation, such as adding pseudoprincipals to the application database.
-%
-These overheads also mostly lie in disk storage---a historically cheap medium---but
-\S\ref{s:deploying} discusses potential ways to prevent \sys overheads from
-overly costing applications.
-%
-}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \subsection{Impact On Concurrent Application Use}
@@ -639,7 +633,7 @@ normal application requests.
 %be rightly leery of \sys.
 %
 
-\todo{font?}
+\todo{font for figures}
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figs/lobsters_concurrent_results}
@@ -780,10 +774,18 @@ revealing take 2.7 and 5.4 seconds under high load.
 %Revealing takes significantly longer than disguising due to the many more
 %queries required to perform consistency checks. 
 %
-\todo{not comparable to facebook!}
-This is acceptable: 50\% of data deletions at Facebook take five minutes or
-longer to complete~\cite{delf}.
+%\todo{not comparable to facebook!}
+%This is acceptable: 50\% of data deletions at Facebook take five minutes or
+%longer to complete~\cite{delf}.
 %
+\todo{
+This is acceptable under the expectation that users leave and
+return to a service infrequently. 
+Furthermore, users will likely wait for a couple seconds for account
+restoration, and raAccount removal can run in the background, so
+latency has no impact on the disguising user (and a couple seconds falls far
+below the requirement of the GDPR of completing under 30 days).  
+}
 
 \begin{comment}
 high load disguise 2697 2790 2884
