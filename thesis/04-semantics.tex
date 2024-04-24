@@ -88,7 +88,7 @@ API, and \S\ref{s:noencrypt} describes how it would change
 // disguises principal p according to the spec, 
 // optionally over already-disguised data ((*\S\ref{s:composition}*))
 (*\textbf{DisguiseData}*)(
-        uopt: Option<UID>, 
+        u_opt: Option<UID>, 
         spec: DisguiseSpec,
         principal_gen: PrincipalGenerator,
         schema: Schema,
@@ -164,8 +164,8 @@ and revealing.
         \hline
         \textbf{Argument} & \textbf{Description} \\
         \hline
-        \texttt{uopt}& (Optional) the disguising user's unique identifier. If
-            \texttt{uopt} is \texttt{Some(uid)}, then only data to disguise with
+        \texttt{u\_opt}& (Optional) the disguising user's unique identifier. If
+            \texttt{u\_opt} is \texttt{Some(uid)}, then only data to disguise with
             a foreign key to \texttt{uid} is disguised.\\
 
         \hline
@@ -188,7 +188,7 @@ and revealing.
         \hline
         \texttt{disguise\_over}& (Optional) A reveal credential provided by an
         invoking user (their password, private key, or backup token).
-    If \texttt{disguise\_over} is \texttt{Some(cred)}, \texttt{upot} must be
+    If \texttt{disguise\_over} is \texttt{Some(cred)}, \texttt{u\_opt} must be
     \texttt{Some(uid)}. \texttt{DisguiseData} will use \texttt{cred} and
     \texttt{uid} to disguise data that has already been disguised
     (\S\ref{s:semantics:hl:composition}).\\
@@ -334,40 +334,40 @@ logged and applied at reveal time.
 \section{Disguise Specifications}
 \label{s:semantics:spec}
 
+\sys's API requires a developer to provide a disguise specification when
+invoking \texttt{DisguiseData}, which describes the effects of a disguise (and
+undone by a reveal).  As previously shown in Figure~\ref{f:spec}, each
+specification operation consists of the disguise operation type, the database
+table name, and a SQL \fn{WHERE} predicate.
 %
-A developer describes the effects of a disguise (and undone by a
-reveal) via disguise specifications.  As previously shown in
-Figure~\ref{f:spec}, each specification operation consists of the disguise
-operation type, the database table name, 
-and a SQL \fn{WHERE} predicate.
 
 %
 A disguise is invoked either automatically by the application, or by a specific
-user of the application identified by their user ID. 
+user of the application identified by their user ID (\texttt{u\_opt = Some(uid)}).
 % 
-If disguise is user-specific, then only data that has a foreign key to that
+If not invoked by a specific user, the disguise applies to all data matching the
+disguise specification's predicate.
+%
+If a disguise is user-specific, then only data that has a foreign key to that
 user's identifier (is ``owned'' by that user) and matches the disguise
 specification's predicate will be disguised. Invoking a disguise with
-\texttt{uopt = Some(uid)} will thus add a condition on a disjunction of
+\texttt{u\_opt = Some(uid)} will thus add a condition on a disjunction of
 "\texttt{[fk\_col] = [uid]}" clauses for all foreign keys \texttt{fk\_col} to
 the application's principals table. For example, a predicate of \texttt{WHERE
 true} to disguise all data of a table will turn into \texttt{WHERE true AND
 (author1 = uid OR author2 = uid)}.
 
-If not invoked by a specific user, the disguise applies to
-all data matching the disguise specification's predicate.
-
 This section next dives into the semantics of each disguise operation type.
 %
 
-\paragraph{Remove.}
+\paragraph{\texttt{REMOVE(table, pred)}.}
 A remove operation removes the entire row that matches the operation's
 predicate.
 %
 Developers should take care to handle referential integrity to removed rows, as
 \sys will not cascade-delete referencing rows or introduce placeholders.
-(Developers should instead use decorrelate operations to remove principal
-rows and replace them with pseudoprincipals).
+(Developers should instead use decorrelate operations to remove principal rows
+and replace them with pseudoprincipals).
 %
 
 %
@@ -377,8 +377,8 @@ application.
 %
 
 %
-\paragraph{Modify.}
-A modify operation works at per-column granularity, and requires developers to
+\paragraph{\texttt{MODIFY(table, column, modification\_pol, pred)}.}
+A modify operation works at per\-column granularity, and requires developers to
 specify a modification policy for each column to modify in addition to the table
 name and predicate.
 %
@@ -403,28 +403,28 @@ in a row with at least one conflicting column value.
 %
 
 %
-\paragraph{Decorrelate.}
+\paragraph{\texttt{DECORRELATE(table, fk\_keys, group\_by, pred)}.}
 %
-A decorrelate operation requires developers to additionally specify \one{} which
-foreign keys for the table rows to rewrite, and \two{} a
-\texttt{group\_by} attribute if rows with the same value for that attribute
-should refer to the same pseudoprincipal after decorrelation.
+A decorrelate operation requires developers to additionally specify which
+foreign keys for the table rows to rewrite, and a \texttt{group\_by} attribute
+if rows with the same value for that attribute should refer to the same
+pseudoprincipal after decorrelation.
 %
 A decorrelate operation only applies to rows with foreign key relationships to
 the principals table (if specified on other foreign keys, the operation will do
 nothing).
 %
-Developers also provide a global pseudoprincipal-generation policy
-(using \sys's value generation policies) to tell \sys how to generate per-column
-placeholder values.
+Developers also provide a global pseudoprincipal-generation policy (using \sys's
+value generation policies) to tell \sys how to generate per-column placeholder
+values.
 %
 
 %
-If a user invokes the disguise, then \sys only decorrelates the specified
-foreign key attributes that refer to that user's identifier, and whose
+If the application invokes \texttt{DisguiseData} with \texttt{u\_opt = Some(uid)}, then \sys only decorrelates the specified
+foreign key attributes that refer to \texttt{uid}, and whose
 rows match the predicate. 
 %
-Otherwise, if the disguise applies over all users, then \sys decorrelates all
+Otherwise, the disguise applies over all users and \sys decorrelates all
 specified foreign keys for all rows matching the predicate.
 %
 
@@ -440,7 +440,7 @@ Thus, no two disguises share the same pseudoprincipals, and no two tables share
 the same pseudoprincipals.
 %
 
-\section{Disguising and Revealing Example}
+\section{Example}
    
 %
 \begin{figure}
@@ -458,9 +458,9 @@ the same pseudoprincipals.
     \centering
     \includegraphics[width=.75\textwidth]{figs/composition-hl-ooo}
   \caption{Bea's reveal of ``bears'' posts keeps ``Ewok'' posts still
-    decorrelated under the ``Star Wars''
-    disguise, even though the ``Star Wars'' disguise applied after ``bears''. Only after revealing ``Star Wars'' posts does \sys restore ownership back to
-    Bea.}
+    decorrelated under the ``Star Wars'' disguise, which was applied after
+    disguising ``bears''. Only after revealing ``Star Wars'' posts does \sys
+    restore ownership back to Bea.}
 \label{f:composition-hl-ooo}
 \end{subfigure}
     \caption[\sys only reveals the original state of data disguised multiple times once
@@ -472,31 +472,99 @@ the same pseudoprincipals.
 \end{figure}
 
 %
-For example, if a post is disguised twice---once to modify the timestamp, and
-again to scrub its content---then revealing only one disguise will restore only
-that attribute (\eg a timestamp or the post content). 
-%
-This also applies for disguises that rewrite the same data attributes. For
-example, if one disguise decorrelates all ``bears'' posts from their author to
-$P_1$ (\ie by rewriting their \texttt{author} foreign key values to the $P_1$
-pseudoprincipal) and another disguise decorrelates all ``Star Wars'' posts to
-$P_2$, then ``Ewok'' posts will have been twice decorrelated. 
-%
-This means the post will remain decorrelated to $P_1$ even if the ``Star Wars''
-disguise decorrelating to $P_2$ is revealed
-(Figure~\ref{f:composition-hl-inorder}).
-%
-And if only the ``bears'' 'disguise decorrelating to $P_1$ were revealed, but
-not the ``bears'' disguise, the data would remain decorrelated to $P_2$ until
-the user also reveals the ``Star Wars'' disguise
-(Figure~\ref{f:composition-hl-ooo}).
-%
-%
-Revealing transformations also apply a developer's provided reveal-time updates
-(\S\ref{s:semantics:updates}) to the data to reveal, ensuring that revealed data
-reflects global application updates since the time of disguise.
-%
+To illustrate use of \sys's API and semantics, this example revisits the disguise 
+specification for Lobsters topic-based anonymization (Figure~\ref{f:spec}). 
+Figure~\ref{f:composition-hl} illustrates the various steps a user Bea would
+take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
 
+\begin{enumerate}[nosep]
+    \item[0)] Initially, the application starts out with Bea registered as an
+        \sys principal via a call to \texttt{RegisterPrincipal} with Bea's
+        password and keypair. Bea owns one post, with topic ``Ewoks''.
+
+    \item[(1)] Bea invokes the application to decorrelate all ``bears'' posts
+        from their account, which causes the application to instantiate the
+        topic-based anonymization disguise specification with tag ``bears''.
+        \sys rewrites the \texttt{author} foreign key values of ``bears''
+        posts---which include Bea's ``Ewok post'''---to refer to generated
+        pseudoprincipal $P_1$.
+
+            \vspace{12pt}
+            \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
+                let did_bears = DisguiseData(
+                    u_opt: Some("Bea"), 
+                    spec: topic_anon_spec[Tag="bears"],
+                    principal_gen: global_pp_generator,
+                    schema: global_schema,
+                    disguise_over: None
+                )
+            \end{lstlisting}
+
+        \item[(2)] Bea invokes the application to decorrelate all ``Star Wars'' posts from
+        their account, which again causes the application to instantiate the topic-based
+        anonymization disguise specification with tag ``Star Wars''. Bea also
+        provides a reveal credential (\eg their password) so that any of their existing
+        disguised posts can be disguised again. \sys rewrites the
+        \texttt{author} foreign key values of ``Star Wars'' posts---again including
+        Bea's ``Ewok post''---to generated
+        pseudoprincipal $P_2$.
+
+        \vspace{12pt}
+        \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
+            let did_star_wars = DisguiseData(
+                u_opt: Some("Bea"), 
+                spec: topic_anon_spec[Tag="Star Wars"],
+                principal_gen: global_pp_generator,
+                schema: global_schema,
+                disguise_over: Some("bea_password")
+            )}
+        \end{lstlisting}
+    
+    \item[(3)] Bea reveals one of their disguises; any unrevealed disguises remain applied to the ``Ewoks'' post.
+        %
+    This means the post will remain decorrelated to $P_1$ even if the ``Star Wars''
+    disguise decorrelating to $P_2$ is revealed
+    (Figure~\ref{f:composition-hl-inorder}).
+    %
+    And if only the ``bears'' 'disguise decorrelating to $P_1$ were revealed, but
+    not the ``bears'' disguise, the data would remain decorrelated to $P_2$.
+    (Figure~\ref{f:composition-hl-ooo}).
+
+        \vspace{12pt}
+        \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
+            RevealData(
+                u: "Bea", 
+                cred: "bea_password",
+                did: did_bears,  // or did_star_wars
+                pp_ref_policy: RECORRELATE,
+                allow_partial_row_reveal: true,
+                schema: global_schema
+            )
+        \end{lstlisting}
+
+    \item[(4)] Bea reveals the remaining disguise applied to ``Ewok'' posts,
+        restoring ownership of the post back to Bea's account.
+
+        \vspace{12pt}
+        \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
+            RevealData(
+                u: "Bea", 
+                cred: "bea_password",
+                did: did_star_wars,  // or did_bears
+                pp_ref_policy: RECORRELATE,
+                allow_partial_row_reveal: true,
+                schema: global_schema
+            )
+        \end{lstlisting}
+
+\end{enumerate}
+
+\todo{Although this example demonstrates composition of two decorrelation disguises on
+Bea's data (\S\ref{s:semantics:hl:composition}), the same semantics would occur
+had multiple disguises been applied to all users' data, including Bea's data.
+This can happen, for example, if an
+application admin decides to globally anonymize all posts. However, these disguises must still be revealed with one of Bea's
+reveal credentials.}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -557,6 +625,7 @@ and recorrelates only Bea; Chris remains decorrelated as a pseudoprincipal.
 the message to its original state.
 \end{enumerate}
 %
+
 \S\ref{s:design:shared} dives deeper in how \sys's design achieves these shared
 data semantics.
 
@@ -565,16 +634,17 @@ data semantics.
 \section{Disguise Composition}
 \label{s:semantics:hl:composition}
 
-Users may also wish to disguise data previously decorrelated from their
+Like Bea in the example shown in Figure~\ref{f:composition-hl}, users may
+sometimes wish to further disguise data previously decorrelated from their
 account. In this scenario, \sys requires users to reveal their correlations to
-pseudoprincipals in order to further disguise their pseudoprincipals' data.
+pseudoprincipals in order to disguise their pseudoprincipals' data.
 %
-If a user wants to further disguise their pseudoprincipal's data, then the user
-can grant \sys permission to reveal links to their pseudoprincipal by providing
+If a user wants to further disguise their pseudoprincipals' data, then the user
+can grant \sys permission to reveal links to their pseudoprincipals by providing
 a reveal credential (their password, private key, or backup token). 
 %
 \sys will then treat all of the user's pseudoprincipals' data as if they belong
-to the user themself, and depending on the disguise specification, will remove,
+to the user themself, and---depending on the disguise specification---will remove,
 modify, or create a new pseudoprincipal owner for these pseudoprincipals' data.
 %
 To reveal their data back to its original state, a user must reveal all
