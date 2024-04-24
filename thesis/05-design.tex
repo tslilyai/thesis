@@ -241,13 +241,15 @@ Reveal(disgID, uid, privkey):
   \label{f:revealpseudo}
 \end{figure}
 
-\sys's reveal procedure (Figure~\ref{f:revealpseudo}) first looks up all \xx
-records related to the provided reveal credentials via \sys's principal and \xx
-tables.
+\texttt{RevealData} first derives the user's private key from their provided
+reveal credentials, and invokes \sys's reveal procedure
+(Figure~\ref{f:revealpseudo}) with this key. The procedure first looks up all
+\xx records related to the provided reveal credentials via \sys's principal and
+\xx tables.
 %
 \sys then applies diff records created for the \verb+disgID+ \xx transformation
-to the database, thus restoring the relevant
-application objects to their pre-\xxed state.
+to the database, thus restoring the relevant application objects to their
+pre-\xxed state.
 % Additionally, \sys recursively applies the procedure for
 % pseudoprincipals that the current user speaks-for; this supports the
 % composition of \xxing transformations, such as a Lobsters user who removes
@@ -469,16 +471,19 @@ For \two{}, \sys ensures that \emph{modified} \xxed data is in the same modified
 state and \emph{decorrelated} \xxed data is still affiliated with the same
 pseudoprincipal in the database using the new value stored in the diff record.
 %
-By default, \sys performs checks at column granularity. For example, a disguised
+\sys performs checks at column granularity. For example, a disguised
 row can have two modified columns, but at the time of reveal, \sys finds that
 only one column value remains at the modified disguised state that \sys expects.
 The application thus must have updated the other column value since the time of
 the disguise. \sys will only reveal the one column that matches the value \sys
 disguised it to, in order to avoid overwriting application database updates.
 This results in a partial restoration of the disguised row. Developers can
-optionally specify that rows must be completely revealed: if any disguised column
-has been later changed by the application, \sys should not reveal \emph{any} column in
-the row.
+set argument \texttt{allow\_partial\_row\_reveals = false} when invoking
+\texttt{RevealData}, which prevents \sys from revealing some disguised
+columns of a row, but not others. With this flag set to false, if the the application had changed \emph{one} disguised column value
+since the time of disguise,
+then \sys will not reveal \emph{any} disguised column in the
+row .
 %
 
 %
@@ -554,7 +559,7 @@ reveal consistently no matter which user reveals the shared data object first.
 %
 
 
-Figure~\ref{f:shared:data} depicts how \sys executes \sys over shared
+Figure~\ref{f:shared:data} depicts how \sys executes over shared
 data:
 %
 \begin{enumerate}
@@ -638,15 +643,17 @@ As described so far, if Bea wanted to modify a decorrelated ``Star Wars''
 comment, they would have to reveal the comment, edit it using their normal
 credentials, and then re\xx the comment again.
 %
-Applications that use \sys can also let users modify decorrelated records without the
-reveal step.
+Applications that use \sys can also let users modify decorrelated records
+without the reveal step via support from \sys's \texttt{CanSpeakFor} API call.
 %
 To support this, an application accepts reveal credentials along with a
-modification request. \sys uses these credentials to validate that the user
-speaks-for a specific pseudoprincipal by walking the speaks-for chain (cf.\
+modification request, and invokes \texttt{CanSpeakFor} with the credentials.
+\sys uses these credentials to validate that the user speaks-for a specific
+pseudoprincipal by walking the speaks-for chain (cf.\
 Figure~\ref{f:revealpseudo}). This ensures that the user can access a speaks-for
-record linked to the pseudoprincipal. After validating the user's request, \sys updates
-the database with the modification.
+record linked to the pseudoprincipal. After validating the user's request,
+the application can proceed to 
+update the database with the modification.
 %
 %previous diff records to reflect the newly modified state.
 %

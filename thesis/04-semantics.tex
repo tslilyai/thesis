@@ -77,7 +77,7 @@ may want to add disuising and revealing without encryption.
 Removing encryption does not change \sys's disguising and revealing semantics
 described above.
 However, because the application and \sys can still see plaintext disguised
-data, a user must now trust the application to only reveal their data when
+data, a user must now trust the application to reveal their data only when 
 requested. 
 %
 \S\ref{s:noencrypt-api} describes how removing encryption would change \sys's
@@ -200,7 +200,7 @@ and revealing.
     relationships (global across all disguises).\\
 
         \hline
-        \texttt{disguise\_over}& (Optional) A reveal credential provided by an
+        \texttt{disguise\_over}& (Optional) Reveal credentials provided by an
         invoking user (their password, private key, or backup token).
     If \texttt{disguise\_over} is \texttt{Some(cred)}, \texttt{u\_opt} must be
     \texttt{Some(uid)}. \texttt{DisguiseData} will use \texttt{cred} and
@@ -226,7 +226,7 @@ successfully, and \texttt{false} otherwise.
         \hline
              \texttt{u}& the revealing user's unique identifier. \\
         \hline
-        \texttt{spec} & the revealing user's reveal credential (their password, private key, or
+        \texttt{spec} & the revealing user's reveal credentials (their password, private key, or
     backup token)\\
         \hline
         \texttt{did}& the identifier for the disguise to reveal\\
@@ -302,7 +302,7 @@ modifications to log all added references to pseudoprincipals).
         \hline
              \texttt{u}& the user's unique identifier. \\
         \hline
-             \texttt{cred}& the user's reveal credential (their password, private key, or
+             \texttt{cred}& the user's reveal credentials (their password, private key, or
     backup token).\\
         \hline
     \end{longtable}
@@ -345,7 +345,7 @@ reveal time.
 A subset of Edna's API suffices to provide the same semantics for disguises
 without encryption. Users do not need to register with \sys; applications can
 use normal user authentication to authorize revealing; disguising
-already-disguised data no longer requires a user's reveal credential; and
+already-disguised data no longer requires a user's reveal credentials; and
 reveal-time updates can be applied immediately to disguised data instead of
 logged and applied at reveal time.
 
@@ -539,7 +539,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
 
         This again causes the application to instantiate the topic-based
         anonymization disguise specification with tag ``Star Wars''. Bea also
-        provides a reveal credential (\eg their password) so that any of their existing
+        provides reveal credentials (\eg their password) so that any of their existing
         disguised stories can be disguised again. \sys rewrites the
         \texttt{author} foreign key values of ``Star Wars'' stories---again
         including Bea's ``Ewok''' story---to generated pseudoprincipal $P_2$.
@@ -606,7 +606,7 @@ on behalf of Bea (\texttt{u\_opt = Some("Bea")}), \sys disguises only data
 associated via a foreign key to Bea's application principal.
 %
 This means that if a user like Bea wishes to disguise already-decorrelated data
-multiple times, \sys must have the user's reveal credential
+multiple times, \sys must have the user's reveal credentials
 (\texttt{disguise\_over = Some(cred)}). This allows \sys to access Bea's
 correlations to pseudoprincipals in order to disguise their pseudoprincipals'
 data.

@@ -78,7 +78,8 @@ them?
 \end{comment}
 %
 \sys addresses this question by accepting optional reveal credentials as part of
-the \xx operation.
+the \xx operation (the \texttt{u\_opt} argument of \sys's
+\texttt{DisguiseData} API call).
 %
 Reveal credentials let \sys recursively decrypt speaks-for records and
 create a speaks-for chain starting from the disguising user, represented
@@ -93,7 +94,7 @@ the speaks-for chain. A pseudoprincipal's identifier allows \sys to find data
 referencing that pseudoprincipal and apply \xxing transformations on behalf of
 the this pseudoprincipal as well as the user. 
 %
-A pseudoprincipal's private key---its reveal credential---allows \sys to
+A pseudoprincipal's private key---its reveal credentials---allows \sys to
 recursively decrypt its speaks-for records, and disguise any pseudoprincipals of
 this pseudoprincipal created by multiple decorrelations.
 %
