@@ -633,7 +633,6 @@ normal application requests.
 %be rightly leery of \sys.
 %
 
-\todo{font for figures}
 \begin{figure}[t]
     \centering
     \includegraphics[width=\columnwidth]{figs/lobsters_concurrent_results}
@@ -754,7 +753,6 @@ With transactions, the benchmark completes hundreds more disguising and
 revealing transformations within the same time period than when run without
 transactions. This illustrates how \sys's transactions, when touching large
 amounts of data, can block the execution of normal application operations.
-\todo{malte's comment about speed}
 
 %and operations over \xxed data
 %
@@ -780,11 +778,11 @@ revealing take 2.7 and 5.4 seconds under high load.
 %
 \todo{
 This is acceptable under the expectation that users leave and
-return to a service infrequently. 
-Furthermore, users will likely wait for a couple seconds for account
-restoration, and raAccount removal can run in the background, so
-latency has no impact on the disguising user (and a couple seconds falls far
-below the requirement of the GDPR of completing under 30 days).  
+return to a service infrequently.  Furthermore, users may accept waiting a
+couple seconds for account restoration, and account removal can run in the
+background, so latency has no impact on the disguising user (and a couple
+seconds falls far below the requirement of the GDPR of completing under 30
+days).  
 }
 
 \begin{comment}
