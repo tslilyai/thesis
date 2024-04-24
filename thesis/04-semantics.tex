@@ -8,9 +8,9 @@ Developers can think about disguising transformations as removing and rewriting
 data in the application database.
 %
 The database starts at some original application state, and alters application
-data depending on the disguise specification (\S\ref{s:semantics:spec}).  The resulting
-state---the disguised data state---is changed only by another disguise, by
-revealing the applied disguise, or by normal application updates.
+data depending on the disguise specification (\S\ref{s:semantics:spec}).  The
+resulting state---the disguised data state---is changed only by another
+disguise, by revealing the applied disguise, or by normal application updates.
 %
 
 %
@@ -24,11 +24,19 @@ and thus can only further remove aspects of the original data state.
 Disguises may insert pseudoprincipals (anonymous users) into the application
 database if the disguise's specification includes a decorrelation---a rewriting
 of a foreign key to point to an anonymous pseudoprincipal instead of the
-original principal user. Data disguised within the same disguise and from the
-same table may refer to (via a foreign key) the same pseudoprincipal.
+original principal user. 
 %
-No two objects from different database tables refer to the same pseudoprincipal,
-and no two disguises' sets of produced pseudoprincipals overlap.
+Same-table data disguised within the same disguise that originally refers to the
+same user may decorrelate and refer to (via a foreign key) the same
+pseudoprincipal.
+%
+For example, all decorrelated stories from topic ``Star Wars'' written by Bea
+may decorrelate to the same pseudoprincipal (\S\ref{s:semantics:example}).
+%
+However, no two objects referring to different users or from different database
+tables refer to the same pseudoprincipal, and no two disguises' sets of produced
+pseudoprincipals overlap.
+%
 
 %
 \sys applies disguises on behalf of either a single user or all users. However,
@@ -150,12 +158,12 @@ and revealing.
     \end{center}
 
 \subsection{\texttt{DisguiseData}}
-    Removes or rewrites application data according to
+    \texttt{DisguiseData} removes or rewrites application data according to
     the provided disguise specification \texttt{spec}. The original data
     is encrypted and stored within the application database; a user must provide
     credentials to a \texttt{RevealData} call in order to restore the data.
 
-    Returns a unique disguise ID for the applied disguise, which should be
+    \texttt{DisguiseData} returns a unique disguise ID for the applied disguise, which should be
     forwarded to disguised users in case they wish to later reveal the
     disguise.
 
@@ -198,11 +206,11 @@ and revealing.
 
     \subsection{\texttt{RevealData}}
 
-    Restores data disguised by the disguise corresponding to the provided ID to
+    \texttt{RevealData} restores data disguised by the disguise corresponding to the provided ID to
     the database. Revealing the same disguise ID multiple times will do nothing
     after the first reveal. 
 
-    Returns \texttt{true} if \sys reveals all rows disguised by \texttt{did}
+    \texttt{RevealData} returns \texttt{true} if \sys reveals all rows disguised by \texttt{did}
 successfully, and \texttt{false} otherwise.
 
 \begin{center}
@@ -239,8 +247,8 @@ successfully, and \texttt{false} otherwise.
     \includegraphics[width=.7\textwidth]{figs/ppreveal_policies}
     \caption[\texttt{RECORRELATE}, \texttt{REMOVE}, and
     \texttt{RETAIN} policies maintain referential integrity for objects added after disguising that refer to
-    a pseudoprincipal during reveal.]{After Bea decorrelates a post (red) to a pseudoprincipal,
-    AnonFox, Bea or the application may add posts or other objects that
+    a pseudoprincipal during reveal.]{After Bea decorrelates a story (red) to a pseudoprincipal,
+    AnonFox, Bea or the application may add stories or other objects that
     reference AnonFox (yellow). When Bea reveals and recorrelates to AnonFox, developers
     can choose to \texttt{RECORRELATE}, \texttt{REMOVE}, or \texttt{RETAIN} any
     new content referring to AnonFox.}
@@ -262,7 +270,7 @@ reference to point to the original principal (\texttt{RECORRELATE});
 \two{} delete the object (\texttt{REMOVE}); or \three{} continue
 referring to the pseudoprincipal (\texttt{RETAIN}).
 Figure~\ref{f:ppreveal} demonstrates the result of each policy when
-revealing a post added to Bea's pseudoprincipal after a
+revealing a story added to Bea's pseudoprincipal after a
 decorrelation disguise.
 
 This option applies to all rows to reveal; another choice of API
@@ -272,11 +280,14 @@ per-inserted-object ones (where the developer makes application
 modifications to log all added references to pseudoprincipals).
 
 \subsection{\texttt{CanSpeakFor}}
-    Finds all principals in the application identified by user ID that stem from
-    a (potentially recursive) decorrelation of user \texttt{p}, authorizing user \texttt{p}
-    to speak-for any of these principals. 
-
-    Returns a list of all user IDs of principals that \texttt{p} can speak-for.
+    \texttt{CanSpeakFor} lets an application allow a user \texttt{p} to prove to
+    the application that they have the authority to speak-for any principal
+    stemming from a (potentially recursive) decorrelation of \texttt{p}. The
+    application can then use this authorization to, for example, allow the user
+    to edit their pseudoprincipals' data.
+    
+    \texttt{CanSpeakFor} returns a list of all user IDs of principals that
+    \texttt{p} can speak-for.
 
 \begin{center}
     \begin{longtable}{|m{0.18\textwidth}|m{0.75\textwidth}|}
@@ -295,7 +306,7 @@ modifications to log all added references to pseudoprincipals).
 \subsection{\texttt{RecordUpdate}}
 \label{s:semantics:updates}
 
-Enables a developer to perform updates to disguised data prior to revealing it.
+\texttt{RecordUpdate} enables a developer to perform updates to disguised data prior to revealing it.
 %Invoking \texttt{RecordUpdate} timestamps and logs a developer-provided update
 %specification---a data transformation function---to reflect a global update
 %performed on undisguised data. All updates since the time of disguise will be
@@ -305,7 +316,7 @@ disguised data to reveal (\eg the current time or state of undisguised data),
 \sys cannot ensure correctness when applying the update to disguised data at
 reveal time.
 
-Returns \texttt{true} on successful recording in \sys's
+\texttt{RecordUpdate} returns \texttt{true} on successful recording in \sys's
     log, and \texttt{false} on failure.
 
 \begin{center}
@@ -343,7 +354,8 @@ table name, and a SQL \fn{WHERE} predicate.
 
 %
 A disguise is invoked either automatically by the application, or by a specific
-user of the application identified by their user ID (\texttt{u\_opt = Some(uid)}).
+user of the application identified by their user ID (\texttt{u\_opt =
+Some(uid)}).
 % 
 If not invoked by a specific user, the disguise applies to all data matching the
 disguise specification's predicate.
@@ -357,7 +369,7 @@ the application's principals table. For example, a predicate of \texttt{WHERE
 true} to disguise all data of a table will turn into \texttt{WHERE true AND
 (author1 = uid OR author2 = uid)}.
 
-This section next dives into the semantics of each disguise operation type.
+\sys handles each disguise operation type as follows:
 %
 
 \paragraph{\texttt{REMOVE(table, pred)}.}
@@ -378,7 +390,7 @@ application.
 
 %
 \paragraph{\texttt{MODIFY(table, column, modification\_pol, pred)}.}
-A modify operation works at per\-column granularity, and requires developers to
+A modify operation works at per-col\-umn granularity, and requires developers to
 specify a modification policy for each column to modify in addition to the table
 name and predicate.
 %
@@ -448,26 +460,26 @@ the same pseudoprincipals.
     \begin{subfigure}[t]{.47\columnwidth}
     \centering
     \includegraphics[width=.75\textwidth]{figs/composition-hl-inorder}
-  \caption{Bea's reveal of ``Star Wars'' posts keeps ``Ewok'' posts still
+  \caption{Bea's reveal of ``Star Wars'' stories keeps ``Ewok'' stories still
         decorrelated under the ``bears'' disguise. Only after revealing
-        ``bears'' posts does \sys restore ownership back to Bea.}
+        ``bears'' stories does \sys restore ownership back to Bea.}
     \label{f:composition-hl-inorder}
     \end{subfigure}
     \hfill
 \begin{subfigure}[t]{.47\columnwidth}
     \centering
     \includegraphics[width=.75\textwidth]{figs/composition-hl-ooo}
-  \caption{Bea's reveal of ``bears'' posts keeps ``Ewok'' posts still
+  \caption{Bea's reveal of ``bears'' stories keeps ``Ewok'' stories still
     decorrelated under the ``Star Wars'' disguise, which was applied after
-    disguising ``bears''. Only after revealing ``Star Wars'' posts does \sys
+    disguising ``bears''. Only after revealing ``Star Wars'' stories does \sys
     restore ownership back to Bea.}
 \label{f:composition-hl-ooo}
 \end{subfigure}
     \caption[\sys only reveals the original state of data disguised multiple times once
     all disguises appied to the data have been revealed.]{
-        If Bea decorrelates an ``Ewok'' post twice---once via a ``bears''
+        If Bea decorrelates an ``Ewok'' story twice---once via a ``bears''
         disguise, and once via a ``Star Wars'' disguise---\sys only recorrelates
-        the post back to Bea once Bea reveals \emph{both} disguises.}
+        the story back to Bea once Bea reveals \emph{both} disguises.}
 \label{f:composition-hl}
 \end{figure}
 
@@ -480,14 +492,10 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
 \begin{enumerate}[nosep]
     \item[0)] Initially, the application starts out with Bea registered as an
         \sys principal via a call to \texttt{RegisterPrincipal} with Bea's
-        password and keypair. Bea owns one post, with topic ``Ewoks''.
+        password and keypair. Bea owns one story, with topic ``Ewoks''.
 
-    \item[(1)] Bea invokes the application to decorrelate all ``bears'' posts
-        from their account, which causes the application to instantiate the
-        topic-based anonymization disguise specification with tag ``bears''.
-        \sys rewrites the \texttt{author} foreign key values of ``bears''
-        posts---which include Bea's ``Ewok post'''---to refer to generated
-        pseudoprincipal $P_1$.
+    \item[(1)] Bea invokes the application to decorrelate all ``bears'' stories 
+        from their account: 
 
             \vspace{12pt}
             \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
@@ -500,14 +508,15 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
                 )
             \end{lstlisting}
 
-        \item[(2)] Bea invokes the application to decorrelate all ``Star Wars'' posts from
-        their account, which again causes the application to instantiate the topic-based
-        anonymization disguise specification with tag ``Star Wars''. Bea also
-        provides a reveal credential (\eg their password) so that any of their existing
-        disguised posts can be disguised again. \sys rewrites the
-        \texttt{author} foreign key values of ``Star Wars'' posts---again including
-        Bea's ``Ewok post''---to generated
-        pseudoprincipal $P_2$.
+        This causes the application to instantiate the
+        topic-based anonymization disguise specification with tag ``bears''.
+        \sys rewrites the \texttt{author} foreign key values of ``bears''
+         stories---which include Bea's ``Ewok'' story---to refer to generated
+        pseudoprincipal $P_1$.
+
+        \item[(2)] Bea invokes the application to decorrelate all ``Star Wars''
+            stories from
+        their account: 
 
         \vspace{12pt}
         \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
@@ -519,17 +528,15 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
                 disguise_over: Some("bea_password")
             )}
         \end{lstlisting}
-    
-    \item[(3)] Bea reveals one of their disguises; any unrevealed disguises remain applied to the ``Ewoks'' post.
-        %
-    This means the post will remain decorrelated to $P_1$ even if the ``Star Wars''
-    disguise decorrelating to $P_2$ is revealed
-    (Figure~\ref{f:composition-hl-inorder}).
-    %
-    And if only the ``bears'' 'disguise decorrelating to $P_1$ were revealed, but
-    not the ``bears'' disguise, the data would remain decorrelated to $P_2$.
-    (Figure~\ref{f:composition-hl-ooo}).
 
+        This again causes the application to instantiate the topic-based
+        anonymization disguise specification with tag ``Star Wars''. Bea also
+        provides a reveal credential (\eg their password) so that any of their existing
+        disguised stories can be disguised again. \sys rewrites the
+        \texttt{author} foreign key values of ``Star Wars'' stories---again
+        including Bea's ``Ewok''' story---to generated pseudoprincipal $P_2$.
+    
+    \item[(3)] Bea next reveals one of their disguises:
         \vspace{12pt}
         \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
             RevealData(
@@ -542,8 +549,19 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
             )
         \end{lstlisting}
 
-    \item[(4)] Bea reveals the remaining disguise applied to ``Ewok'' posts,
-        restoring ownership of the post back to Bea's account.
+        After reveal, any unrevealed disguises remain applied to the ``Ewoks''
+        story.
+        %
+        This means the story will remain decorrelated to $P_1$ even if the ``Star
+        Wars'' disguise decorrelating to $P_2$ is revealed
+        (Figure~\ref{f:composition-hl-inorder}).
+    %
+        And if only the ``bears'' 'disguise decorrelating to $P_1$ were
+        revealed, but not the ``bears'' disguise, the data would remain
+        decorrelated to $P_2$.  (Figure~\ref{f:composition-hl-ooo}).
+
+    \item[(4)] Finallly Bea reveals the remaining disguise applied to ``Ewok''
+        stories:
 
         \vspace{12pt}
         \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
@@ -556,6 +574,8 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
                 schema: global_schema
             )
         \end{lstlisting}
+        
+        This restores ownership of the story back to Bea's account.
 
 \end{enumerate}
 
