@@ -44,10 +44,11 @@ For instance, decorrelation after decorrelation could occur if a user
 decorrelates some posts, after which an administrator decorrelates \emph{all}
 posts. In this scenario, the administrator's \xxing operation applies to
 pseudoprincipal-owned posts in the same way as it does to unmodified posts. This
-creates pseudoprincipals that can speak-for other pseudoprincipals.  \sys uses
-the pseudoprincipal's registered public key to encrypt pseudoprincipal diff and
-speaks-for records, so \sys does not need to know its link to an original
-principal in order to encrypt and \xx its data.
+creates pseudoprincipals that can speak-for other pseudoprincipals.  This notion
+of chaining together pseudoprincipals creates \sys's \emph{speaks-for chains}.
+\sys uses the pseudoprincipal's registered public key to encrypt pseudoprincipal
+diff and speaks-for records, so \sys does not need to know its link to an
+original principal in order to encrypt and \xx its data.
 %
 
 %
@@ -79,8 +80,8 @@ them?
 \sys addresses this question by accepting optional reveal credentials as part of
 the \xx operation.
 %
-Reveal credentials let \sys recursively decrypt speaks-for records, and
-create a \emph{speaks-for chain} starting from the disguising user, represented
+Reveal credentials let \sys recursively decrypt speaks-for records and
+create a speaks-for chain starting from the disguising user, represented
 by speaks-for relationships between pseudoprincipals. \sys can then disguise all
 data of all pseudoprincipals included in the speaks-for chain.
 %

@@ -441,7 +441,7 @@ the same pseudoprincipals.
 %
 
 \section{Example}
-   
+ \label{s:semantics:example}  
 %
 \begin{figure}
     \centering
@@ -559,15 +559,44 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
 
 \end{enumerate}
 
-\todo{Although this example demonstrates composition of two decorrelation disguises on
-Bea's data (\S\ref{s:semantics:hl:composition}), the same semantics would occur
-had multiple disguises been applied to all users' data, including Bea's data.
-This can happen, for example, if an
-application admin decides to globally anonymize all posts. However, these disguises must still be revealed with one of Bea's
-reveal credentials.}
-
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
+\section{Disguise Composition}
+\label{s:semantics:hl:composition}
+
+As shown in \S\ref{s:semantics:example}'s example, multiple disguises can apply
+to a user's data. The example demonstrates how Bea can disguise their data
+multiple times; however, a user with access to all data (\eg an application
+admin) could also decide to apply multiple global disguises to all user data,
+including Bea's.  In this second case, disguises apply to all data satisfying
+the disguise specification's predicates regardless of which user owns the data,
+and disguise composition is straightforward (updating the already-disguised
+data).
+
+In the first case, however, when the application invokes \texttt{DisguiseData}
+on behalf of Bea (\texttt{u\_opt = Some("Bea")}), \sys disguises only data
+associated via a foreign key to Bea's application principal.
+%
+This means that if a user like Bea wishes to disguise already-decorrelated data
+multiple times, \sys must have the user's reveal credential
+(\texttt{disguise\_over = Some(cred)}). This allows \sys to access Bea's
+correlations to pseudoprincipals in order to disguise their pseudoprincipals'
+data.
+%
+\sys will then treat all of the user's pseudoprincipals' data as if they belong
+to the user themself, and---depending on the disguise specification---will
+remove, modify, or create a new pseudoprincipal owner for these
+pseudoprincipals' data.
+%
+\S\ref{s:composition} fleshes out \sys's design for disguise composition when
+a user has already decorrelated some of their data.
+
+%
+To reveal their data back to its original state, a user must reveal all
+disguises composed atop the data.
+%
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Shared Data}
 Many applications support shared data; in Lobsters, for example, messages
 between users are owned by both users.
@@ -630,25 +659,4 @@ the message to its original state.
 data semantics.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-
-\section{Disguise Composition}
-\label{s:semantics:hl:composition}
-
-Like Bea in the example shown in Figure~\ref{f:composition-hl}, users may
-sometimes wish to further disguise data previously decorrelated from their
-account. In this scenario, \sys requires users to reveal their correlations to
-pseudoprincipals in order to disguise their pseudoprincipals' data.
-%
-If a user wants to further disguise their pseudoprincipals' data, then the user
-can grant \sys permission to reveal links to their pseudoprincipals by providing
-a reveal credential (their password, private key, or backup token). 
-%
-\sys will then treat all of the user's pseudoprincipals' data as if they belong
-to the user themself, and---depending on the disguise specification---will remove,
-modify, or create a new pseudoprincipal owner for these pseudoprincipals' data.
-%
-To reveal their data back to its original state, a user must reveal all
-disguises composed atop the data.
-%
-\S\ref{s:composition} fleshes out \sys's design for disguise composition.
 
