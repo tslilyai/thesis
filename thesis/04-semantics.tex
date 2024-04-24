@@ -74,6 +74,12 @@ not worry about data breaches, care about regulations like the GDPR, or trust
 their application code to not expose disguised data. Instead, these developers
 may want to add disuising and revealing without encryption.
 %
+Removing encryption does not change \sys's disguising and revealing semantics
+described above.
+However, because the application and \sys can still see plaintext disguised
+data, a user must now trust the application to only reveal their data when
+requested. 
+%
 \S\ref{s:noencrypt-api} describes how removing encryption would change \sys's
 API, and \S\ref{s:noencrypt} describes how it would change
 \sys's design.
