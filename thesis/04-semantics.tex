@@ -130,13 +130,13 @@ describes each function and how developers would use them to support disguising
 and revealing.
 
 \subsection{\texttt{RegisterPrincipal}}
-    Registers an application user as a principal whose data can be disguised and
+    \texttt{RegisterPrincipal} registers an application user as a principal whose data can be disguised and
     revealed. Unique users should not be registered multiple times. Once
     registered, data of an undeleted user that exists in the database can always
     be disguised and revealed.  Users deleted by a disguise do not need to
     reregister if revealed.
 
-    Returns a backup token that the application should return to
+    \texttt{RegisterPrincipal} returns a backup token that the application should return to
     the user client as a backup reveal credential.
 
     \begin{center}
@@ -306,7 +306,9 @@ modifications to log all added references to pseudoprincipals).
 \subsection{\texttt{RecordUpdate}}
 \label{s:semantics:updates}
 
-\texttt{RecordUpdate} enables a developer to perform updates to disguised data prior to revealing it.
+\texttt{RecordUpdate} enables a developer to update disguised data prior to
+revealing it in order to reflect global database changes (\eg schema migrations)
+applied since the time of disguise.
 %Invoking \texttt{RecordUpdate} timestamps and logs a developer-provided update
 %specification---a data transformation function---to reflect a global update
 %performed on undisguised data. All updates since the time of disguise will be
