@@ -134,13 +134,15 @@ HotCRP, and Lobsters.
 %, and measure its latency.
 %
 We measure the latency of common operations, \xxing transformations, and
-operations over \xxed data enabled by \sys (\eg account restoration via
+operations over \xxed data enabled by \sys. These operations over disguised data
+include account restoration via
 \texttt{RevealData} and editing
-\xxed data via \texttt{CanSpeakFor}).
+\xxed data via \texttt{CanSpeakFor} (\S\ref{s:semantics:speakfor}).
 %
-The three applications do not create new data that reference pseudoprincipals,
-but to fully capture any overheads we configure \sys to nevertheless run the
-checks for lingering pseudoprincipal references on revealing.
+The three applications do not create new data that reference pseudoprincipals
+(\S\ref{s:semantics:revealdata}), but to fully capture any overheads we
+configure \sys to nevertheless run the checks for lingering pseudoprincipal
+references on revealing.
 %
 
 %

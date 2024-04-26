@@ -179,7 +179,7 @@ and revealing.
         \hline
         \texttt{u\_opt}& (Optional) The disguising user's unique identifier.\\ 
         \hline
-        \texttt{spec}& The disguise specification (\S\ref{s:semantics:spec})
+        \texttt{spec}& A disguise specification (\S\ref{s:semantics:spec})
         provided by the developer .\\
 
         \hline
@@ -200,7 +200,6 @@ and revealing.
     \end{longtable}
     \end{center}
 
-    \todo{discussion why API is this way, forward reference to spec.}
 
 Together, \texttt{u\_opt}, \texttt{spec}, and \texttt{schema} inform \sys how to
 disguise data.  If \texttt{u\_opt} is \texttt{Some(uid)}, then only data to
@@ -242,21 +241,21 @@ tables refer to the same pseudoprincipal, and no two disguises' sets of produced
 pseudoprincipals overlap.
 %
 
-When a prior disguises have applied, users may 
-wish to disguise data that has already been decorrelated 
-(\S\ref{s:semantics:hl:composition}).
-\sys allows this via an optional reveal credential provided in
-\texttt{disguise\_over}. If \texttt{disguise\_over} is \texttt{Some(cred)}, \texttt{u\_opt} must be
+When a prior disguises have applied, users may wish to disguise data that has
+already been decorrelated (\S\ref{s:semantics:hl:composition}).  \sys allows
+this via an optional reveal credential provided in \texttt{disguise\_over}. If
+\texttt{disguise\_over} is \texttt{Some(cred)}, \texttt{u\_opt} must be
 \texttt{Some(uid)}, and \texttt{DisguiseData} will use \texttt{cred} and
 \texttt{uid} to disguise decorrelated data.
 
-    \subsection{\texttt{RevealData}}
+\subsection{\texttt{RevealData}}
+\label{s:semantics:revealdatayy}
 
-    \texttt{RevealData} restores data disguised by the disguise corresponding to the provided ID to
-    the database. Revealing the same disguise ID multiple times will do nothing
-    after the first reveal. 
+\texttt{RevealData} restores data disguised by the disguise corresponding to the provided ID to
+the database. Revealing the same disguise ID multiple times will do nothing
+after the first reveal. 
 
-    \texttt{RevealData} returns \texttt{true} if \sys reveals all rows disguised by \texttt{did}
+\texttt{RevealData} returns \texttt{true} if \sys reveals all rows disguised by \texttt{did}
 successfully, and \texttt{false} otherwise.
 
 \begin{center}
@@ -264,22 +263,20 @@ successfully, and \texttt{false} otherwise.
         \hline
         \textbf{Argument} & \textbf{Description} \\
         \hline
-             \texttt{u}& the revealing user's unique identifier. \\
+             \texttt{u}& The revealing user's unique identifier. \\
         \hline
-        \texttt{spec} & the revealing user's reveal credentials (their password, private key, or
-    backup token)\\
+        \texttt{cred} & The revealing user's reveal credentials (their password, private key, or
+    backup token).\\
         \hline
-        \texttt{did}& the identifier for the disguise to reveal\\
+        \texttt{did}& The identifier for the disguise to reveal.\\
         \hline
         \texttt{pp\_ref\_policy} & A pseudoprincipal reference policy provided
         by the developer (\texttt{RECORRELATE}, \texttt{DELETE},
-    or \texttt{RETAIN}) to ensure that reveals of decorrelations preserve
-        referential integrity (see below). \\
+    or \texttt{RETAIN}).\\
         \hline
-        \texttt{allow\_partial\_} \texttt{row\_reveal}& A developer-provided flag
-        specifying whether a row can be partially restored if some attributes at
-            the time of reveal differ from the attribute values set when
-            disguising the row.\\
+        \texttt{allow\_partial\_} \texttt{row\_reveal}& A developer-provided
+        flag specifying whether \sys can restore only some modified columns of a
+        disguised row.\\
         \hline
         \texttt{schema} & A database schema provided by the developer that specifies
     ownership links from data tables to user tables via foreign key
@@ -303,31 +300,54 @@ successfully, and \texttt{false} otherwise.
 \label{f:ppreveal}
 \end{figure}
 %
+\sys identifies and accesses the disguised data to reveal using the user's
+identifier \texttt{u}, their reveal credentials \texttt{cred}, and the disguise
+identifier \texttt{did}.  The developer again provides a schema with annotated
+foreign key relationships (\texttt{schema}). This allows \sys to perform checks
+for referential integrity prior to reveal (\eg \sys will not restore removed
+data that introduces a dangling reference) and recorrelate data from
+pseudoprincipals to their original principal owner. 
+%
 
-\sys requires the developer to specify a \emph{pseudoprincipal reference
-policy} \texttt{pp\_ref\_policy} because pseudoprincipals may acquire new references
+\sys also requires the developer to specify a \emph{pseudoprincipal reference policy}
+\texttt{pp\_ref\_policy} because pseudoprincipals may acquire new references
 from application objects inserted after the time of disguise---for example, a
 decorrelated comment might have new responses. To ensure that revealing a
 decorrelate operation---which deletes pseudoprincipals---preserves referential
 integrity, developers inform \sys how to, during reveal, handle these objects
-added after disguising that refer pseudoprincipals of the disguise.%
+added after disguising that refer pseudoprincipals of the disguise.
+%
 
-Developers choose between three options for
-pseudoprincipal-referring objects: \one{} change the object's
-reference to point to the original principal (\texttt{RECORRELATE});
-\two{} delete the object (\texttt{DELETE}); or \three{} continue
-referring to the pseudoprincipal (\texttt{RETAIN}).
-Figure~\ref{f:ppreveal} demonstrates the result of each policy when
-revealing a story added to Bea's pseudoprincipal after a
-decorrelation disguise.
+%
+Developers choose between three options for pseudoprincipal-referring objects:
+\one{} change the object's reference to point to the original principal
+(\texttt{RECORRELATE}); \two{} delete the object (\texttt{DELETE}); or \three{}
+continue referring to the pseudoprincipal (\texttt{RETAIN}).
+Figure~\ref{f:ppreveal} demonstrates the result of each policy when revealing a
+story added to Bea's pseudoprincipal after a decorrelation disguise.
+%
+This option applies to all rows to reveal; another choice of API could support a
+menu of options, such as per-table checks and fixes (where the developer
+specifies per-table policies) or per-inserted-object ones (where the developer
+makes application modifications to log all added references to
+pseudoprincipals).
+%
 
-This option applies to all rows to reveal; another choice of API
-could support a menu of options, such as per-table checks and fixes
-(where the developer specifies per-table policies) or
-per-inserted-object ones (where the developer makes application
-modifications to log all added references to pseudoprincipals).
+%
+\sys uses the developer-provided \texttt{allow\_partial\_row\_reveal} flag to
+determine whether \sys can partially reveal a row (\ie restore some modified
+columns even when unable to reveal others). 
+%
+Partial row reveals occur because \sys only reveals a modified column if the
+current column value of the row in the application database matches the value
+generated by the modify operation during the disguise
+(\S\ref{s:semantics:spec}). This stops \sys from overwriting application changes
+to modified columns. 
+%
 
+%
 \subsection{\texttt{CanSpeakFor}}
+\label{s:semantics:speakfor}
     \texttt{CanSpeakFor} lets an application allow a user \texttt{p} to prove to
     the application that they have the authority to speak-for any principal
     stemming from a (potentially recursive) decorrelation of \texttt{p}. The
@@ -342,15 +362,18 @@ modifications to log all added references to pseudoprincipals).
         \hline
         \textbf{Argument} & \textbf{Description} \\
         \hline
-             \texttt{u}& the user's unique identifier. \\
+             \texttt{u}& The user's unique identifier. \\
         \hline
-             \texttt{cred}& the user's reveal credentials (their password, private key, or
+             \texttt{cred}& The user's reveal credentials (their password, private key, or
     backup token).\\
         \hline
     \end{longtable}
     \end{center}
    
-    
+    \sys identifies and accesses all of \texttt{u}'s speaks-for records making
+    up \texttt{u}'s speaks-for chain using the user's identifier \texttt{u} and
+    their reveal credentials \texttt{cred}.
+
 \subsection{\texttt{RecordUpdate}}
 \label{s:semantics:updates}
 
@@ -510,9 +533,10 @@ from overwriting application changes to the column value since the time of
 disguise.
 %
 Some rows may thus end up partially revealed, with only some modified columns
-restored back to the original pre-disguise state.  Developrs can set a (global)
-flag to disable partial row reveals, to prevent revealing of any column values
-in a row with at least one conflicting column value.
+restored back to the original pre-disguise state.  Developers can set the
+\texttt{allow\_partial\_row\_reveal} flag to \texttt{false} when invoking
+\texttt{RevealData} to disable partial row reveals. This will prevent \sys from
+revealing any column values in a row with at least one conflicting column value.
 %
 
 %
@@ -527,7 +551,7 @@ A decorrelate operation only applies to rows with foreign key relationships to
 the principals table (if specified on other foreign keys, the operation will do
 nothing).
 %
-Developers also provide a global principal-generation policy
+Developers also provide a principal-generation policy
 (\texttt{principal\_gen}) to \texttt{DisguiseData} using \sys's value generation
 policies to tell \sys how to generate a pseudoprincipal row.
 %
