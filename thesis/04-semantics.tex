@@ -199,7 +199,7 @@ and revealing.
         \hline
     \end{longtable}
     \end{center}
-
+    \vspace{-24pt}
 
 Together, \texttt{u\_opt}, \texttt{spec}, and \texttt{schema} inform \sys how to
 disguise data.  If \texttt{u\_opt} is \texttt{Some(uid)}, then only data to
@@ -284,7 +284,8 @@ successfully, and \texttt{false} otherwise.
         \hline
     \end{longtable}
     \end{center}
-    \vspace{-12pt}
+    \vspace{-24pt}
+    
     %
 \begin{figure}
     \centering
@@ -299,6 +300,7 @@ successfully, and \texttt{false} otherwise.
     content (\ie the yellow story) referring to AnonFox.}
 \label{f:ppreveal}
 \end{figure}
+
 %
 \sys identifies and accesses the disguised data to reveal using the user's
 identifier \texttt{u}, their reveal credentials \texttt{cred}, and the disguise
@@ -369,6 +371,7 @@ to modified columns.
         \hline
     \end{longtable}
     \end{center}
+    \vspace{-24pt}
    
     \sys identifies and accesses all of \texttt{u}'s speaks-for records making
     up \texttt{u}'s speaks-for chain using the user's identifier \texttt{u} and
@@ -400,6 +403,7 @@ performed in chronological order on disguised data prior to revealing it.
         \hline
     \end{longtable}
     \end{center}
+    \vspace{-24pt}
 
 %
     \sys expects \texttt{update\_spec} to take a user's disguised data rows and
