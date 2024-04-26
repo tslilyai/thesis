@@ -968,24 +968,33 @@ guarantees security equivalent to the security of the user's password.
 
 Should developers want to support disguised data in a weaker threat model that
 does not require encryption (as described in \S\ref{s:semantics:noencrypt}),
-then certain aspects of \sys's design would be unnecessary. This section
+\sys still helps developers address the challenges of maintaining referential
+integrity when a disguise is performed (creating pseudoprincipals as placeholder
+users); composing disguises and reveals in arbitrary orders; disguising shared
+data; and applying global updates to disguised data.
+%
+Furthermore, removal of encryption simplifies several aspects of \sys's design.
+%
+This section
 describes these aspects and potential
 alternative designs for disguised data without encryption. 
 
-\paragraph{Unnecessary Aspects of \sys.}
-If \sys removes encryption of disguised data, \sys would no longer need the
-replay log for reveal-time udpates, since disguised data remains accessible to
-the application and updates can thus apply immediately to disguised data.
-However, developers may still need to write data transformations corresponding
-to these updates in order to update disguised data rows stored in the disguised
-tables.
+\paragraph{Design Simplifications.}
+If \sys removes encryption of disguised data, disguised data remains accessible to
+the application and updates can thus apply immediately to disguised data. \sys
+therefore would not need a replay lot to help developers apply updates to
+disguise data. 
+%
+Developers would still write update specifications corresponding to these
+updates in order to update disguised data rows stored in the disguised tables.
 %
 
 %
 Removal of encryption also eliminates the need for registration with a user
 keypair, user reveal credentials, encryption/decryption on the disguise/reveal
 paths, and encrypted indexes mapping a user to their disguised data. The
-disguise table would hold plaintext disguised data, and \sys would not need the principal table.
+disguise table would hold plaintext disguised data, and \sys would not need the
+principal table.
 %
 
 %
@@ -995,11 +1004,6 @@ already-disguised data. A developer instead can allow a user to specify whether
 they wish to disguise their disguised data again using a boolean.
 %
 
-This simplified design still helps address the challenges of maintaining
-referential integrity when a disguise is performed (creating pseudoprincipals as
-placeholder users); composing disguises and reveals in arbitrary orders;
-disguising shared data; and applying global updates to disguised data (albeit
-during update execution, rather than at reveal time).
 %
 %This API still helps address the challenges of maintaining referential integrity
 %when a disguise is performed (creating pseudoprincipals as placeholder users);
