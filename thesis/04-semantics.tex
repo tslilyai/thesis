@@ -177,43 +177,58 @@ and revealing.
         \hline
         \textbf{Argument} & \textbf{Description} \\
         \hline
-        \texttt{u\_opt}& (Optional) the disguising user's unique identifier. If
-            \texttt{u\_opt} is \texttt{Some(uid)}, then only data to disguise with
-            a foreign key to \texttt{uid} is disguised.\\
-
+        \texttt{u\_opt}& (Optional) The disguising user's unique identifier.\\ 
         \hline
-        \texttt{spec}& the disguise specification provided by the
-            developer that describes how to disguise data by
-    removing, modifying (replacing some or all of its contents with placeholder
-    values), or decorrelating, replacing links to users with links to
-    pseudoprincipals.\\
+        \texttt{spec}& The disguise specification (\S\ref{s:semantics:spec})
+        provided by the developer .\\
 
         \hline
         \texttt{principal\_gen}& A principal generator provided by the developer
-    that describes how to create a pseudoprincipal in the application (global
-            across all disguises).\\
+        that describes how to create a pseudoprincipal in the application
+        (global across all disguises).\\
     %
         \hline
-        \texttt{schema}& A database schema provided by the developer that specifies
-    ownership links from data tables to user tables via foreign key
-    relationships (global across all disguises).\\
+        \texttt{schema}& A database schema provided by the developer that
+        specifies ownership links from data tables to user tables via foreign
+        key relationships (global across all disguises).\\
 
         \hline
         \texttt{disguise\_over}& (Optional) Reveal credentials provided by an
         invoking user (their password, private key, or backup token).
-    If \texttt{disguise\_over} is \texttt{Some(cred)}, \texttt{u\_opt} must be
-    \texttt{Some(uid)}. \texttt{DisguiseData} will use \texttt{cred} and
-    \texttt{uid} to disguise data that has already been disguised
-    (\S\ref{s:semantics:hl:composition}).\\
+\\
         \hline
     \end{longtable}
     \end{center}
 
-    \todo{discusison why API is this way, forward reference to spec.}
+    \todo{discussion why API is this way, forward reference to spec.}
+
+Together, \texttt{u\_opt}, \texttt{spec}, and \texttt{schema} inform \sys how to
+disguise data.  If \texttt{u\_opt} is \texttt{Some(uid)}, then only data to
+disguise with a foreign key to \texttt{uid} is disguised. This allows \sys to
+apply a disguise to data of a specific user. 
+%
+If \texttt{u\_opt} is \texttt{None}, the disguise applies to all users according
+to the specification (\S\ref{s:semantics:spec}).
+%
+The disguise specification \texttt{spec} describes how to disguise data by
+removing, modifying (replacing some or all of its contents with placeholder
+values), or decorrelating, replacing links to users with links to
+pseudoprincipals.
+%
+A schema with annotated foreign key relationships (\texttt{schema}) allows \sys
+to determine which data refers to which user so that \sys can then decorrelate
+user references or filter by \texttt{u\_opt} if necessary. 
+
+%
 \texttt{DisguiseData} may insert pseudoprincipals (anonymous users) into the
-application database if the disguise's specification includes a
-decorrelation---a rewriting of a foreign key to point to an anonymous
-pseudoprincipal instead of the original principal user. 
+application database if the \texttt{spec} includes a decorrelation---a rewriting
+of a foreign key to point to an anonymous pseudoprincipal instead of the
+original principal user.  (\S\ref{s:semantics:spec}).  When this occurs, \sys
+uses \texttt{principal\_gen} to generate anonymous pseudoprincipals. The
+principal generator specifies, for example, to create a principal with a random
+identifier, and email address.
+%
+
 %
 Same-table data disguised within the same disguise that originally refers to the
 same user may decorrelate and refer to (via a foreign key) the same
@@ -226,6 +241,14 @@ However, no two objects referring to different users or from different database
 tables refer to the same pseudoprincipal, and no two disguises' sets of produced
 pseudoprincipals overlap.
 %
+
+When a prior disguises have applied, users may 
+wish to disguise data that has already been decorrelated 
+(\S\ref{s:semantics:hl:composition}).
+\sys allows this via an optional reveal credential provided in
+\texttt{disguise\_over}. If \texttt{disguise\_over} is \texttt{Some(cred)}, \texttt{u\_opt} must be
+\texttt{Some(uid)}, and \texttt{DisguiseData} will use \texttt{cred} and
+\texttt{uid} to disguise decorrelated data.
 
     \subsection{\texttt{RevealData}}
 
