@@ -22,13 +22,12 @@ and thus can only further remove aspects of the original data state.
 %
 
 Disguises may insert pseudoprincipals (anonymous users) into the application
-database if the disguise's specification includes a decorrelation---a rewriting
-of a foreign key to point to an anonymous pseudoprincipal instead of the
+database if the disguise's specification includes a decorrelation, which
+rewrites references to point to an anonymous pseudoprincipal instead of the
 original principal user. 
 %
 Same-table data disguised within the same disguise that originally refers to the
-same user may decorrelate and refer to (via a foreign key) the same
-pseudoprincipal.
+same user may decorrelate and refer to the same pseudoprincipal.
 %
 For example, all decorrelated stories from topic ``Star Wars'' written by Bea
 may decorrelate to the same pseudoprincipal (\S\ref{s:semantics:example}).
@@ -166,7 +165,7 @@ and revealing.
 \subsection{\texttt{DisguiseData}}
     \texttt{DisguiseData} removes or rewrites application data according to
     the provided disguise specification \texttt{spec}. The original data
-    is encrypted and stored within the application database; a user must provide
+    is encrypted and stored by \sys; a user must provide
     credentials to a \texttt{RevealData} call in order to restore the data.
 
     \texttt{DisguiseData} returns a unique disguise ID for the applied disguise, which should be
@@ -210,6 +209,24 @@ and revealing.
     \end{longtable}
     \end{center}
 
+    \todo{discusison why API is this way, forward reference to spec.}
+\texttt{DisguiseData} may insert pseudoprincipals (anonymous users) into the
+application database if the disguise's specification includes a
+decorrelation---a rewriting of a foreign key to point to an anonymous
+pseudoprincipal instead of the original principal user. 
+%
+Same-table data disguised within the same disguise that originally refers to the
+same user may decorrelate and refer to (via a foreign key) the same
+pseudoprincipal.
+%
+For example, all decorrelated stories from topic ``Star Wars'' written by Bea
+may decorrelate to the same pseudoprincipal (\S\ref{s:semantics:example}).
+%
+However, no two objects referring to different users or from different database
+tables refer to the same pseudoprincipal, and no two disguises' sets of produced
+pseudoprincipals overlap.
+%
+
     \subsection{\texttt{RevealData}}
 
     \texttt{RevealData} restores data disguised by the disguise corresponding to the provided ID to
@@ -231,7 +248,8 @@ successfully, and \texttt{false} otherwise.
         \hline
         \texttt{did}& the identifier for the disguise to reveal\\
         \hline
-        \texttt{pp\_ref\_policy} & A pseudoprincipal reference policy provided by the developer (\texttt{RECORRELATE}, \texttt{REMOVE},
+        \texttt{pp\_ref\_policy} & A pseudoprincipal reference policy provided
+        by the developer (\texttt{RECORRELATE}, \texttt{DELETE},
     or \texttt{RETAIN}) to ensure that reveals of decorrelations preserve
         referential integrity (see below). \\
         \hline
@@ -251,13 +269,14 @@ successfully, and \texttt{false} otherwise.
 \begin{figure}
     \centering
     \includegraphics[width=.7\textwidth]{figs/ppreveal_policies}
-    \caption[\texttt{RECORRELATE}, \texttt{REMOVE}, and
-    \texttt{RETAIN} policies maintain referential integrity for objects added after disguising that refer to
-    a pseudoprincipal during reveal.]{After Bea decorrelates a story (red) to a pseudoprincipal,
-    AnonFox, Bea or the application may add stories or other objects that
-    reference AnonFox (yellow). When Bea reveals and recorrelates to AnonFox, developers
-    can choose to \texttt{RECORRELATE}, \texttt{REMOVE}, or \texttt{RETAIN} any
-    new content referring to AnonFox.}
+    \caption[\texttt{RECORRELATE}, \texttt{DELETE}, and
+    \texttt{RETAIN} policies maintain referential integrity for objects added
+    after disguising that refer to a pseudoprincipal during reveal.]{After Bea
+    decorrelates a story (red) to a pseudoprincipal, AnonFox, Bea or the
+    application may add new stories that reference AnonFox (yellow). When Bea
+    reveals and recorrelates to AnonFox, developers can
+    choose to \texttt{RECORRELATE}, \texttt{DELETE}, or \texttt{RETAIN} any new
+    content (\ie the yellow story) referring to AnonFox.}
 \label{f:ppreveal}
 \end{figure}
 %
@@ -434,9 +453,9 @@ A decorrelate operation only applies to rows with foreign key relationships to
 the principals table (if specified on other foreign keys, the operation will do
 nothing).
 %
-Developers also provide a global pseudoprincipal-generation policy (using \sys's
-value generation policies) to tell \sys how to generate per-column placeholder
-values.
+Developers also provide a global principal-generation policy
+(\texttt{principal\_gen}) to \texttt{DisguiseData} using \sys's value generation
+policies to tell \sys how to generate a pseudoprincipal row.
 %
 
 %

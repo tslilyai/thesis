@@ -391,13 +391,12 @@ application is compromised and an attacker dumps the database contents (\eg via
 SQL injection).
 %
 \sys encrypts \xxed data, so its confidentiality stems from ``crypto
-shredding,'' a GDPR-compliant data deletion approach based on the fact that
-ciphertexts are indistinguishable from garbage data if the key material is
-unavailable~\cite{dnefs,townsend:cryptoshredding,aws:cryptoshredding,gtr:cryptoshredding}.\footnote{For
-usability, \sys accepts as credentials either a user's private key, or a user's
-password from which \sys can derive the private key. Crypto shredding assumes
-sufficiently random key material, so \sys here assumes the user's password to be
-as strong as the private key.}
+shredding,'' an approach based on the fact that ciphertexts are
+indistinguishable from garbage data if the key material is
+unavailable~\cite{dnefs,townsend:cryptoshredding,aws:cryptoshredding,gtr:cryptoshredding}.\footnote{Crypto
+shredding assumes sufficiently random key material; for usability, \sys allows 
+users to either provide a private key or their password as credentials, which
+weakens \sys's guarantees.}
 %
 
 % STANDARD CLAIMS ABOUT CRYPTO ASSUMPTIONS
