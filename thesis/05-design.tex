@@ -774,13 +774,13 @@ multiple disguises in any order.
 %
 
 %
-Furthermore, as described in \S\ref{s:overview:updates}, \sys assumes that
+Furthermore, as described in \S\ref{s:semantics:updates}, \sys assumes that
 any nondeterminism or update side effects will maintain application
 correctness.
 %
 One potential extension would be for developers to indicate the data
 dependencies of each update. To handle the unsupported example in
-\S\ref{s:overview:updates}, \sys can use the knowledge that posts depend on
+\S\ref{s:semantics:updates}, \sys can use the knowledge that posts depend on
 votes to restore disguised votes before posts. However, because votes have a
 foreign key to posts, this requires \sys to disable foreign key checks and
 carefully check for dangling votes that violate referential integrity after
