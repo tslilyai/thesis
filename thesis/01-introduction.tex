@@ -97,9 +97,10 @@ solution.
 %
 
 %
-Providing this fine-grained privacy functionality can benefit both the service and the user.
+Providing this fine-grained privacy functionality can benefit both the service
+and the user.
 %
-It helps the service comply with privacy regulations, reduces its liability on
+It helps the service comply with privacy regulations, reduces its liability for
 data breaches, and appeals to privacy-conscious users; meanwhile, the user can
 rest assured that their privacy is protected, but can also get their data back
 and reveal their association with it if they want.
@@ -164,7 +165,7 @@ restoring.
 %
 Second, to manually realize disguised data, developers must reason about
 interactions between multiple data-redacting features and how these features
-would compose.
+compose.
 %
 For example, imagine an application that supports both account deletion and
 anonymizing old data: if a user wants to delete all their posts after they have
@@ -180,7 +181,7 @@ been revealed.
 Third, disguised data should be protected against data breaches, but accessible
 if the user chooses to return. A developer thus cannot keep (plaintext)
 disguised data in the application database; but also cannot entirely delete the
-disguise data (as a user could thus never restore it). The developer also needs
+disguised data (as a user could thus never restore it). The developer also needs
 to provide user-friendly ways for users to prove their ownership of the stored
 data.
 %
@@ -189,17 +190,18 @@ data.
 Fourth, application databases often undergo global updates such as schema
 migrations and data transformations like content reformatting. However, these
 updates would fail to affect any data disguised at the time, because the
-disguised data remains inaccessible to the application and developer.  In order
-to restore disguised data correctly, these updates must be applied to disguise
-data when a user grants permission to access the disguised data in order to
-reveal it.
+disguised data remains inaccessible to the application and developer until
+revealed.  In order to restore disguised data correctly, these updates must be
+applied to disguised data when a user reveals it.
+%when a user grants permission to access the disguised
+%data in order to reveal it.
 %
-For example, a disguised \texttt{posts} row might need to be restored as one 
-\texttt{posts} and one \texttt{postContent} row after a schema migration
-moves post content into a different table from posts. 
+For example, a disguised row in the \texttt{posts} table might need to be
+restored as one \texttt{posts} row and one \texttt{postContent} row after a schema
+migration moves post content into a different table from posts. 
 %
-The developer thus should remember and apply these global updates to disguised
-data in chronological order during reveal.
+The developer would thus need to remember and apply these global updates to disguised
+data in chronological order while revealing it.
 %
 
 
@@ -217,7 +219,7 @@ transformations}, which restore the original data at a user’s request.
 (\eg links to throwaway accounts or old HotCRP reviews) even if the application
 is later compromised (\eg via a SQL injection or a compromised admin's account).
 %
-Only the user can invoke revealing transformations on their disguise data to
+Only the user can invoke revealing transformations on their disguised data to
 authorize the application to restore it.
 %
 
@@ -231,7 +233,7 @@ and \sys takes care of correctly applying, composing, and optionally reverting
 them, while maintaining application functionality and referential integrity.
 %
 
-Our approach for \sys's approach faces three challenges.
+\sys's approach faces three challenges.
 First, \sys needs to present a simple, yet versatile interface for developers to
 specify \xxing transformations.
 %
@@ -317,8 +319,8 @@ part of this, this thesis contributes:
 
 %\subsection{Limitations}
 %
-While disguised data can help developers to add more flexible user data
-controls, the abstraction and its implementation in \sys have some limitations. 
+While disguised data can help developers add more flexible user data
+controls, the abstraction and its implementation in \sys have limitations. 
 %
 First, disguised data is a concept scoped for single applications, and does not
 tackle the problem of data sharing between services.
