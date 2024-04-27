@@ -143,28 +143,28 @@ web applications in part because getting it right is hard for application
 developers. In particular, developers face four main challenges.
 
 %
-First, real applications store their data in databases with complex schemas and have
-complex notions of privacy, data ownership, and data sharing.
+First, real applications store their data in databases with complex schemas and
+support various forms of data privacy, ownership, and sharing.
 %
 Simple solutions that might try to delete all data associated with a user can
-create orphaned data or break referential integrity, which is the invariant that if a
+create orphaned data or break referential integrity (the invariant that if a
 table row references another row via a foreign key, the referenced row must
-exist. 
+exist). 
 %
 In order to resolve these problems, developers must change the application to
 handle these situations and maintain correctness. These solutions also lack
 support for users to return.
 %
-To solve this manually, a developer would have to carefully perform
+Solving this manually requires a developer to carefully perform
 application-specific database changes to remove data, store any data removed to
 be able to later restore it, and correctly revert the database changes on
 restoring.
 %
 
 %
-Second, to manually realized disguised data, developers would also have to
-reason about interactions between multiple data-redacting features, and how
-these features would compose.
+Second, to manually realize disguised data, developers must reason about
+interactions between multiple data-redacting features and how these features
+would compose.
 %
 For example, imagine an application that supports both account deletion and
 anonymizing old data: if a user wants to delete all their posts after they have
@@ -172,14 +172,17 @@ been anonymized, a SQL query must somehow determine which anonymized posts
 belong to the user in order to remove them.
 %
 And if the user later wants to return and restore their posts, the developer
-must account for the applied anonymization and restore the user's posts as
-anonymized.
+must restore the user's posts as anonymized, since the anonymization has not yet
+been revealed.
 %
 
 %
-Third, stored removed data should be protected against data breaches, but 
-accessible if the user chooses to return. The developer also needs to provide
-user-friendly ways for users to prove their ownership of the stored data.
+Third, disguised data should be protected against data breaches, but accessible
+if the user chooses to return. A developer thus cannot keep (plaintext)
+disguised data in the application database; but also cannot entirely delete the
+disguise data (as a user could thus never restore it). The developer also needs
+to provide user-friendly ways for users to prove their ownership of the stored
+data.
 %
 
 %
