@@ -15,10 +15,12 @@ disguise, by revealing the applied disguise, or by normal application updates.
 
 %
 Disguising already-disguised data can only decrease the amount of information
-retained about the original application data state. Removed data cannot be
-disguised again. If the original data has been rewritten by prior disguises,
-future disguises of the disguised state have access only to the disguised state,
-and thus can only further remove aspects of the original data state.
+retained about the original application data state. If prior disguises have
+transformed the original data, then a future disguise has access only to the
+resulting disguised state, and thus can only further remove aspects of the
+original data state.
+%
+Removed data cannot be disguised again. 
 %
 
 Disguises may insert pseudoprincipals (anonymous users) into the application
@@ -69,9 +71,9 @@ chronological order.
 \label{s:semantics:noencrypt}
 
 Developers may find \sys's threat model unnecessarily strong: perhaps they do
-not worry about data breaches, care about regulations like the GDPR, or trust
-their application code to not expose disguised data. Instead, these developers
-may want to add disuising and revealing without encryption.
+not worry about data breaches, are exempt from regulations like the GDPR, or
+trust their application code to not expose disguised data. Instead, these
+developers may want to add disuising and revealing without encryption.
 %
 Removing encryption does not change \sys's disguising and revealing semantics
 described above.
@@ -163,21 +165,24 @@ and revealing.
     \end{center}
 
 \subsection{\texttt{DisguiseData}}
-    \texttt{DisguiseData} removes or rewrites application data according to
-    the provided disguise specification \texttt{spec}. The original data
-    is encrypted and stored by \sys; a user must provide
-    credentials to a \texttt{RevealData} call in order to restore the data.
+    \texttt{DisguiseData} removes or rewrites application data according to the
+    provided disguise specification \texttt{spec}. The original data is
+    encrypted and stored by \sys; a user must provide credentials to a
+    \texttt{RevealData} call in order to restore the data.
 
-    \texttt{DisguiseData} returns a unique disguise ID for the applied disguise, which should be
-    forwarded to disguised users in case they wish to later reveal the
-    disguise.
+    \texttt{DisguiseData} returns a unique disguise ID for the applied disguise,
+    which should be forwarded to disguised users in case they wish to later
+    reveal the disguise.\footnote{For usability, the developer can abstract the
+    disguise ID as, for example, an embedded parameter of a URL that the user
+    can click to reveal their disguise.}
 
     \begin{center}
     \begin{longtable}{|m{0.18\textwidth}|m{0.75\textwidth}|}
         \hline
         \textbf{Argument} & \textbf{Description} \\
         \hline
-        \texttt{u\_opt}& (Optional) The disguising user's unique identifier.\\ 
+        \texttt{u\_opt}& (Optional) The disguising user's unique identifier if
+        the disguise should only apply to that user's data.\\ 
         \hline
         \texttt{spec}& A disguise specification (\S\ref{s:semantics:spec})
         provided by the developer .\\
@@ -194,7 +199,8 @@ and revealing.
 
         \hline
         \texttt{disguise\_over}& (Optional) Reveal credentials provided by an
-        invoking user (their password, private key, or backup token).
+        invoking user (their password, private key, or backup token) if the
+        disguise should apply to that user's already-disguised data.
 \\
         \hline
     \end{longtable}
@@ -243,7 +249,7 @@ pseudoprincipals overlap.
 
 When a prior disguises have applied, users may wish to disguise data that has
 already been decorrelated (\S\ref{s:semantics:hl:composition}).  \sys allows
-this via an optional reveal credential provided in \texttt{disguise\_over}. If
+this via an optional reveal credential (\texttt{disguise\_over}). If
 \texttt{disguise\_over} is \texttt{Some(cred)}, \texttt{u\_opt} must be
 \texttt{Some(uid)}, and \texttt{DisguiseData} will use \texttt{cred} and
 \texttt{uid} to disguise decorrelated data.
@@ -255,7 +261,7 @@ this via an optional reveal credential provided in \texttt{disguise\_over}. If
 the database. Revealing the same disguise ID multiple times will do nothing
 after the first reveal. 
 
-\texttt{RevealData} returns \texttt{true} if \sys reveals all rows disguised by \texttt{did}
+\texttt{RevealData} returns \texttt{true} if \sys reveals all rows disguised by \texttt{d}
 successfully, and \texttt{false} otherwise.
 
 \begin{center}
@@ -268,7 +274,7 @@ successfully, and \texttt{false} otherwise.
         \texttt{cred} & The revealing user's reveal credentials (their password, private key, or
     backup token).\\
         \hline
-        \texttt{did}& The identifier for the disguise to reveal.\\
+        \texttt{d}& The identifier for the disguise to reveal.\\
         \hline
         \texttt{pp\_ref\_policy} & A pseudoprincipal reference policy provided
         by the developer (\texttt{RECORRELATE}, \texttt{DELETE},
@@ -304,7 +310,7 @@ successfully, and \texttt{false} otherwise.
 %
 \sys identifies and accesses the disguised data to reveal using the user's
 identifier \texttt{u}, their reveal credentials \texttt{cred}, and the disguise
-identifier \texttt{did}.  The developer again provides a schema with annotated
+identifier \texttt{d}.  The developer again provides a schema with annotated
 foreign key relationships (\texttt{schema}). This allows \sys to perform checks
 for referential integrity prior to reveal (\eg \sys will not restore removed
 data that introduces a dangling reference) and recorrelate data from
@@ -433,12 +439,13 @@ performed in chronological order on disguised data prior to revealing it.
     without the column as input, and outputs user rows with the column.
 %
 
+\sys supports as update specifications any pure functions without side effects,
+and which execute deterministically in their input (placeholder or disguised
+rows).
 %
-    \sys assumes that any nondeterminism or side effects from performing the
-    update specification will maintain application correctness. Any pure
-    functions deterministic in their input (placeholder or disguised rows) and
-    do not have side effects are thus supported as update specifications.
-%
+For all other update specifications, \sys assumes that any nondeterminism or side effects from performing the
+    update will maintain application correctness.
+    %
 
 %
     To exemplify an unsupported update, take a global update that calculates the
@@ -561,9 +568,9 @@ policies to tell \sys how to generate a pseudoprincipal row.
 %
 
 %
-If the application invokes \texttt{DisguiseData} with \texttt{u\_opt = Some(uid)}, then \sys only decorrelates the specified
-foreign key attributes that refer to \texttt{uid}, and whose
-rows match the predicate. 
+If the application invokes \texttt{DisguiseData} with \texttt{u\_opt =
+Some(uid)}, then \sys only decorrelates the specified foreign key attributes
+that refer to \texttt{uid} (for rows that match the predicate). 
 %
 Otherwise, the disguise applies over all users and \sys decorrelates all
 specified foreign keys for all rows matching the predicate.
@@ -633,8 +640,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
                     spec: topic_anon_spec[Tag="bears"],
                     principal_gen: global_pp_generator,
                     schema: global_schema,
-                    disguise_over: None
-                )
+                    disguise_over: None)
             \end{lstlisting}
 
         This causes the application to instantiate the
@@ -654,8 +660,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
                 spec: topic_anon_spec[Tag="Star Wars"],
                 principal_gen: global_pp_generator,
                 schema: global_schema,
-                disguise_over: Some("bea_password")
-            )}
+                disguise_over: Some("bea_password"))
         \end{lstlisting}
 
         This again causes the application to instantiate the topic-based
@@ -674,8 +679,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
                 did: did_bears,  // or did_star_wars
                 pp_ref_policy: RECORRELATE,
                 allow_partial_row_reveal: true,
-                schema: global_schema
-            )
+                schema: global_schema)
         \end{lstlisting}
 
         After reveal, any unrevealed disguises remain applied to the ``Ewoks''
@@ -700,8 +704,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
                 did: did_star_wars,  // or did_bears
                 pp_ref_policy: RECORRELATE,
                 allow_partial_row_reveal: true,
-                schema: global_schema
-            )
+                schema: global_schema)
         \end{lstlisting}
         
         This restores ownership of the story back to Bea's account.
@@ -771,7 +774,7 @@ the message to its original state.
 
 %
 For each shared data object, each owner has an associated unique
-pseudoprincipal. If ony some owners have disguised the row, the row will refer
+pseudoprincipal. If onlly some owners have disguised the row, the row will refer
 to the disguised owners' unique pseudoprincipals' identifiers instead of the
 owners'.
 %
