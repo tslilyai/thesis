@@ -71,29 +71,6 @@ application database that \xxing introduced.
 \section{Example: Lobsters Topic Anonymization}
 \label{s:design:lobsters}
 
-\begin{figure}[h]
-  \centering
-  \begin{subfigure}[h]{0.5\columnwidth}
-  \includegraphics[width=\columnwidth]{figs/lobsters_catanon}
-  \end{subfigure}
-  \begin{subfigure}[h]{\columnwidth}
-  \begin{lstlisting}[language=Ruby,escapeinside={(*}{*)}]
-  def tag_anon
-    # instantiate the disguise spec with the provided tag to anonymize
-    disg_spec = edna.instantiate_spec("tag_anon.json",params[:tag])
-    # apply the disguising transformation
-    disg_id = edna.apply_disguise(@user.id,params[:passwd],disg_spec)
-    # email the disguise ID to the user to allow revealing
-    SendDisguiseEmail(@user, disg_id)
-  end
-  \end{lstlisting}
-  \end{subfigure}
-  \vspace*{-1em}
-    \caption[Hook to invoke topic-based anonymization.]{The Lobsters developer adds a hook in the UI and code to perform
-      topic-based anonymization.}
-  \label{f:lobsters_hook}
-  \end{figure}
-
 We illustrate how \sys's API and \xx specifications work via a \xxing
 transformation for Lobsters~\cite{lobsters}.  Lobsters is a
 link-sharing and discussion platform with 15.4k
@@ -115,6 +92,29 @@ static analysis, and Star Wars---might want to hide associations with
 Star Wars before sharing their profile with potential employers.
 %
 This is currently not possible in Lobsters.
+
+\begin{figure}[t]
+  \centering
+  \begin{subfigure}[t]{0.5\columnwidth}
+  \includegraphics[width=\columnwidth]{figs/lobsters_catanon}
+  \end{subfigure}
+  \begin{subfigure}[t]{\columnwidth}
+  \begin{lstlisting}[language=Ruby,escapeinside={(*}{*)}]
+  def tag_anon
+    # instantiate the disguise spec with the provided tag to anonymize
+    disg_spec = edna.instantiate_spec("tag_anon.json",params[:tag])
+    # apply the disguising transformation
+    disg_id = edna.apply_disguise(@user.id,params[:passwd],disg_spec)
+    # email the disguise ID to the user to allow revealing
+    SendDisguiseEmail(@user, disg_id)
+  end
+  \end{lstlisting}
+  \end{subfigure}
+  \vspace*{-1em}
+    \caption[Hook to invoke topic-based anonymization.]{The Lobsters developer adds a hook in the UI and code to perform
+      topic-based anonymization.}
+  \label{f:lobsters_hook}
+  \end{figure}
 
 %
 The Lobsters developer can realize topic-based anonymization as a \xxing
@@ -385,5 +385,5 @@ Similarly, leveraging server-side storage to hold \xxed data leaves
 metadata available to attackers, but avoids burdening users with data storage
 management.
 %
-We believe a stronger threat model would require more modification of
-applications.
+We believe a stronger threat model would require greater modification of
+existing applications.
