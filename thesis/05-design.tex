@@ -40,7 +40,7 @@ columns).
 %
 All types of diff records also contain the \xx ID. 
 %
-The original and placeholder rows contained by a diff record varies by disguise
+The original and placeholder rows contained by a diff record vary by disguise
 operation as follows:
 \begin{itemize}[nosep]
     \item Remove diff records contain the removed original row and no
@@ -309,8 +309,8 @@ Prior to revealing the updated data, \sys also performs consistency checks
 to guarantee adherence to internal database invariants, such as uniqueness
 constraints.
 %
-Here, we describe how developers specify reveal-time updates; how \sys applies
-these updates to data to reveal; and \sys's consistency checks.
+Here, we describe how developers specify reveal-time updates, how \sys applies
+these updates to data to reveal, and \sys's consistency checks.
 
 %
 \subsection{Global Data Transformations}
@@ -447,7 +447,7 @@ performing the schema change; \sys records the update specification its replay l
 The update also generates two rows for any placeholder \texttt{users}
 data row in a diff record.
 %
-\item[(4)] \sys then respectively restores and removes the migrated original data and placeholder
+\item[(4)] \sys then restores and removes the migrated original data and placeholder
         data respectively, both of which now consist of one \texttt{users} and
         one \texttt{addrs} row.
 \end{enumerate}
@@ -549,7 +549,7 @@ To support these semantics, \sys creates a \emph{partially-removed} metadata
 table. The table is indexed by a data row's unique identifier columns (\eg a
 primary key id); each index maps to a (plaintext) remove diff record for a
 shared data object. The diff record contains the shared data row, but where the
-row has been fully\-decorrelated: all foreign keys to owners of the object have
+row has been fully\--decorrelated, all foreign keys to owners of the object have
 been rewritten to refer to a pseudoprincipal.
 %
 Entries in the partially-removed table ensure that all owners agree on the
