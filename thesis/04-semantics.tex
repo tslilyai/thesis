@@ -92,7 +92,7 @@ API, and \S\ref{s:noencrypt} describes how it would change
 
 \begin{figure}[t]
 \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
-// Generates keypair for p and returns the user's backup credential
+// Registers u for disguising and returns u's backup credential
 (*\textbf{RegisterPrincipal}*)(
         u: UID, 
         pw: Password,
@@ -100,7 +100,7 @@ API, and \S\ref{s:noencrypt} describes how it would change
         privkey: PrivKey)
     -> RevealCredential;
 
-// disguises principal p according to the spec, 
+// disguises data (optionally of user u) according to the spec, 
 // optionally over already-disguised data ((*\S\ref{s:composition}*))
 (*\textbf{DisguiseData}*)(
         u_opt: Option<UID>, 
@@ -110,7 +110,7 @@ API, and \S\ref{s:noencrypt} describes how it would change
         disguise_over: Option<RevealCredential>) 
     -> disguiseID;
 
-// Reveals data disguised by s for u with u's username password. 
+// Reveals data disguised by d for u with u's username password. 
 (*\textbf{RevealData}*)(
         u: UID, 
         cred: RevealCredential,
@@ -356,14 +356,14 @@ to modified columns.
 %
 \subsection{\texttt{CanSpeakFor}}
 \label{s:semantics:speakfor}
-    \texttt{CanSpeakFor} lets an application allow a user \texttt{p} to prove to
+    \texttt{CanSpeakFor} lets an application allow a user \texttt{u} to prove to
     the application that they have the authority to speak-for any principal
-    stemming from a (potentially recursive) decorrelation of \texttt{p}. The
+    stemming from a (potentially recursive) decorrelation of \texttt{u}. The
     application can then use this authorization to, for example, allow the user
     to edit their pseudoprincipals' data.
     
     \texttt{CanSpeakFor} returns a list of all user IDs of principals that
-    \texttt{p} can speak-for.
+    \texttt{u} can speak-for.
 
 \begin{center}
     \begin{longtable}{|m{0.12\textwidth}|m{0.81\textwidth}|}
