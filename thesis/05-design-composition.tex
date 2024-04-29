@@ -78,13 +78,13 @@ them?
 \end{comment}
 %
 \sys addresses this question by accepting optional reveal credentials as part of
-the \xx operation (the \texttt{u\_opt} argument of \sys's
+the \xx operation (the \texttt{disguise\_over} argument of \sys's
 \texttt{DisguiseData} API call).
 %
-Reveal credentials let \sys recursively decrypt speaks-for records and
-create a speaks-for chain starting from the disguising user, represented
-by speaks-for relationships between pseudoprincipals. \sys can then disguise all
-data of all pseudoprincipals included in the speaks-for chain.
+Reveal credentials let \sys recursively decrypt speaks-for records and create a
+speaks-for chain starting from the disguising user, represented by speaks-for
+relationships between pseudoprincipals. \sys can then disguise all data of all
+pseudoprincipals included in the speaks-for chain.
 %
 
 With reveal credentials, \sys decrypts the user's previous diff and speaks-for

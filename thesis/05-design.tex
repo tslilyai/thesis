@@ -300,9 +300,9 @@ database updates applied since the time of disguise, such as global
 transformations to un\xxed data or schema changes.
 %
 To prevent this, \sys utilizes reveal-time update specifications provided by the
-developer to apply updates to \xxed data prior to revealing it. This ensures
-that revealed data correctly reflects the current state of the database and any
-implicit application-level invariants.
+developer via \texttt{RecordUpdate} to apply updates to \xxed data prior to
+revealing it. This ensures that revealed data correctly reflects the current
+state of the database and any implicit application-level invariants.
 %
 Prior to revealing the updated data, \sys also performs consistency checks
 to guarantee adherence to internal database invariants, such as uniqueness
@@ -359,7 +359,7 @@ disguised data using \sys's \emph{replay log} with \emph{reveal-time
 update specifications}:
 \begin{enumerate}[nosep]
     \item[(1)] \sys disguises some user data.
-    \item[(2)] The developer invokes \sys with a reveal-time
+    \item[(2)] The developer invokes \texttt{RecordUpdate} with a reveal-time
         update specification when 
 performing a global update that must hold over disguised data when it is
         revealed (\eg moderations). \sys records the update specification in its
@@ -434,7 +434,7 @@ from \texttt{users}.
 Figure~\ref{f:update:mod} demonstrates how \sys applies such a schema change 
 to disguised data.  \begin{enumerate}[nosep]
     \item[(1)] \sys disguises some user data.
-    \item[(2)] The developer invokes \sys with a reveal-time update
+    \item[(2)] The developer invokes \texttt{RecordUpdate} with a reveal-time update
         specification when 
 performing the schema change; \sys records the update specification its replay log.
     \item[(3)] When revealing data, \sys applies the schema change update
