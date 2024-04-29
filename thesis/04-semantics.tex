@@ -73,7 +73,7 @@ chronological order.
 Developers may find \sys's threat model unnecessarily strong: perhaps they do
 not worry about data breaches, are exempt from regulations like the GDPR, or
 trust their application code to not expose disguised data. Instead, these
-developers may want to add disuising and revealing without encryption.
+developers may want to add disguising and revealing without encryption.
 %
 Removing encryption does not change \sys's disguising and revealing semantics
 described above.
@@ -114,7 +114,7 @@ API, and \S\ref{s:noencrypt} describes how it would change
 (*\textbf{RevealData}*)(
         u: UID, 
         cred: RevealCredential,
-        did: disguiseID, 
+        d: disguiseID, 
         pp_ref_policy: PseudoprincipalReferencePolicy,
         allow_partial_row_reveal: bool,
         schema: Schema)
@@ -612,7 +612,7 @@ the same pseudoprincipals.
 \label{f:composition-hl-ooo}
 \end{subfigure}
     \caption[\sys only reveals the original state of data disguised multiple times once
-    all disguises appied to the data have been revealed.]{
+    all disguises applied to the data have been revealed.]{
         If Bea decorrelates an ``Ewok'' story twice---once via a ``bears''
         disguise, and once via a ``Star Wars'' disguise---\sys only recorrelates
         the story back to Bea once Bea reveals \emph{both} disguises.}
@@ -676,7 +676,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
             RevealData(
                 u: "Bea", 
                 cred: "bea_password",
-                did: did_bears,  // or did_star_wars
+                d: did_bears,  // or did_star_wars
                 pp_ref_policy: RECORRELATE,
                 allow_partial_row_reveal: true,
                 schema: global_schema)
@@ -693,7 +693,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
         revealed, but not the ``bears'' disguise, the data would remain
         decorrelated to $P_2$.  (Figure~\ref{f:composition-hl-ooo}).
 
-    \item[(4)] Finallly Bea reveals the remaining disguise applied to ``Ewok''
+    \item[(4)] Finally Bea reveals the remaining disguise applied to ``Ewok''
         stories:
 
         \vspace{12pt}
@@ -701,7 +701,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
             RevealData(
                 u: "Bea", 
                 cred: "bea_password",
-                did: did_star_wars,  // or did_bears
+                d: did_star_wars,  // or did_bears
                 pp_ref_policy: RECORRELATE,
                 allow_partial_row_reveal: true,
                 schema: global_schema)
@@ -736,7 +736,7 @@ correlations to pseudoprincipals in order to disguise their pseudoprincipals'
 data.
 %
 \sys will then treat all of the user's pseudoprincipals' data as if they belong
-to the user themself, and---depending on the disguise specification---will
+to the user themselves, and---depending on the disguise specification---will
 remove, modify, or create a new pseudoprincipal owner for these
 pseudoprincipals' data.
 %
@@ -774,7 +774,7 @@ the message to its original state.
 
 %
 For each shared data object, each owner has an associated unique
-pseudoprincipal. If onlly some owners have disguised the row, the row will refer
+pseudoprincipal. If only some owners have disguised the row, the row will refer
 to the disguised owners' unique pseudoprincipals' identifiers instead of the
 owners'.
 %
