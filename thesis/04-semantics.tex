@@ -100,8 +100,8 @@ API, and \S\ref{s:noencrypt} describes how it would change
         privkey: PrivKey)
     -> RevealCredential;
 
-// disguises data (optionally of user u) according to the spec, 
-// optionally over already-disguised data ((*\S\ref{s:composition}*))
+// disguises data according to the spec, optionally only for user u, 
+// and optionally over already-disguised data ((*\S\ref{s:composition}*))
 (*\textbf{DisguiseData}*)(
         u_opt: Option<UID>, 
         spec: DisguiseSpec,
@@ -137,14 +137,14 @@ describes each function and how developers would use them to support disguising
 and revealing.
 
 \subsection{\texttt{RegisterPrincipal}}
-    \texttt{RegisterPrincipal} registers an application user as a principal whose data can be disguised and
-    revealed. Unique users should not be registered multiple times. Once
-    registered, data of an undeleted user that exists in the database can always
-    be disguised and revealed.  Users deleted by a disguise do not need to
-    reregister if revealed.
+    \texttt{RegisterPrincipal} registers an application user as a principal
+    whose data can be disguised and revealed. Unique users should not be
+    registered multiple times. Once registered, data of an undeleted user that
+    exists in the database can always be disguised and revealed.  Users deleted
+    by a disguise do not need to reregister if revealed.
 
-    \texttt{RegisterPrincipal} returns a backup token that the application should return to
-    the user client as a backup reveal credential.
+    \texttt{RegisterPrincipal} returns a backup token that the application
+    should return to the user client as a backup reveal credential.
 
     \begin{center}
     \begin{longtable}{|m{0.13\textwidth}|m{0.8\textwidth}|}
@@ -163,6 +163,17 @@ and revealing.
         \hline
     \end{longtable}
     \end{center}
+    \vspace{-24pt}
+
+    \texttt{RegisterPrincipal} takes the user's private key and password to
+    create a password-protected private key and derive a backup reveal
+    credential (\S\ref{s:impl:cred}).  This allows the user to provide any of
+    their private key, their password, or their backup credential to unlock and
+    reveal their disguised data. 
+%
+    \sys saves the provided public key in order to disguise and encrypt a user's
+    data, either for when the user invokes a disguise, or when a privileged user
+    like an admin applies a global disguise to all users' data.
 
 \subsection{\texttt{DisguiseData}}
     \texttt{DisguiseData} removes or rewrites application data according to the
