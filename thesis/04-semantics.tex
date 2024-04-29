@@ -656,7 +656,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
 
             \vspace{12pt}
             \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
-                let did_bears = DisguiseData(
+                let d_bears = DisguiseData(
                     u_opt: Some("Bea"), 
                     spec: topic_anon_spec[Tag="bears"],
                     principal_gen: global_pp_generator,
@@ -676,7 +676,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
 
         \vspace{12pt}
         \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
-            let did_star_wars = DisguiseData(
+            let d_star_wars = DisguiseData(
                 u_opt: Some("Bea"), 
                 spec: topic_anon_spec[Tag="Star Wars"],
                 principal_gen: global_pp_generator,
@@ -697,7 +697,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
             RevealData(
                 u: "Bea", 
                 cred: "bea_password",
-                d: did_bears,  // or did_star_wars
+                d: d_bears,  // or d_star_wars
                 pp_ref_policy: RECORRELATE,
                 allow_partial_row_reveal: true,
                 schema: global_schema)
@@ -722,7 +722,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
             RevealData(
                 u: "Bea", 
                 cred: "bea_password",
-                d: did_star_wars,  // or did_bears
+                d: d_star_wars,  // or d_bears
                 pp_ref_policy: RECORRELATE,
                 allow_partial_row_reveal: true,
                 schema: global_schema)
