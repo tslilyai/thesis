@@ -476,13 +476,12 @@ only one column value remains at the modified disguised state that \sys expects.
 The application thus must have updated the other column value since the time of
 the disguise. \sys will only reveal the one column that matches the value \sys
 disguised it to, in order to avoid overwriting application database updates.
-This results in a partial restoration of the disguised row. Developers can
-set argument \texttt{allow\_partial\_row\_reveals = false} when invoking
-\texttt{RevealData}, which prevents \sys from revealing some disguised
-columns of a row, but not others. With this flag set to false, if the the application had changed \emph{one} disguised column value
-since the time of disguise,
-then \sys will not reveal \emph{any} disguised column in the
-row .
+This results in a partial restoration of the disguised row. Developers can set
+argument \texttt{allow\_partial\_row\_reveals = false} when invoking
+\texttt{RevealData}, which prevents \sys from revealing some disguised columns
+of a row, but not others. With this flag set to false, if the application had
+changed \emph{one} disguised column value since the time of disguise, then \sys
+will not reveal \emph{any} disguised column in the row.
 %
 
 %
