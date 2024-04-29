@@ -78,7 +78,7 @@ of the users who can access the object.
 After a user logs in, the application gives the proxy their private key, thus
 allowing decryption of their accessible objects.
 %
-Logging out deletes the user's private key from the proxy and reencrypts their
+Logging out deletes the user's private key from the proxy and re-encrypts their
 object keys, thus preventing the proxy from accessing those objects.
 %
 Prior to applying transformations to a user's data, \syscrypt performs a login to
@@ -224,7 +224,7 @@ support joins, a limitation shared with multi-principal CryptDB.
 \begin{figure}[t]
   \centering
       \includegraphics[width=\columnwidth]{figs/websubmit_cryptdb_op_stats}
-    \caption[Latencies of Websubmit operations when implemented with
+    \caption[Latencies of WebSubmit operations when implemented with
     \syscrypt.]{Latencies of WebSubmit (2k users, 80 answers/user) operations when
     implemented with \syscrypt (adding encrypted database support).
     Bars show median latency; error bars are
