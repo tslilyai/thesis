@@ -2,7 +2,7 @@ This chapter describes the design of \sys and the techniques \sys uses to
 support disguising and revealing. We first look at how \sys performs disguising
 transformations, and then dive into the details of how \sys reveals disguised
 data.
-We then describe the more complicated scenarios possible with \sys, namely
+We then describe more complicated scenarios possible with \sys, namely
 disguise composition, shared data, and action as pseudoprincipals.  This chapter
 concludes with an analysis of the security of \sys's design with respect to the
 threat model described in \S\ref{s:threat}.
@@ -209,10 +209,18 @@ reveals the disguise.
 \label{s:reveal}
 
 %
-To apply a reveal transformation, \sys first locates and decrypts the
-corresponding diff and speaks-for records using a \xx ID and the user’s reveal
-credentials.
+When the application invokes \texttt{RevealData}, \sys first locates and
+decrypts the corresponding diff and speaks-for records using the \xx ID and the
+user’s reveal credentials provided as arguments.
 %
+To do so, \sys derives the user's private key from their provided reveal
+credentials, and invokes \sys's reveal procedure (Figure~\ref{f:revealpseudo})
+with this key. The procedure looks up all \xx records related to the provided
+reveal credentials via \sys's principal and \xx tables.
+%
+\sys then applies diff records created for the \verb+disgID+ \xx transformation
+to the database, thus restoring the relevant application objects to their
+pre-\xxed state.
 
 \begin{figure}[t]
   \small
@@ -241,15 +249,6 @@ Reveal(disgID, uid, privkey):
   \label{f:revealpseudo}
 \end{figure}
 
-\texttt{RevealData} first derives the user's private key from their provided
-reveal credentials, and invokes \sys's reveal procedure
-(Figure~\ref{f:revealpseudo}) with this key. The procedure first looks up all
-\xx records related to the provided reveal credentials via \sys's principal and
-\xx tables.
-%
-\sys then applies diff records created for the \verb+disgID+ \xx transformation
-to the database, thus restoring the relevant application objects to their
-pre-\xxed state.
 % Additionally, \sys recursively applies the procedure for
 % pseudoprincipals that the current user speaks-for; this supports the
 % composition of \xxing transformations, such as a Lobsters user who removes
@@ -274,9 +273,9 @@ Finally, \sys de-registers any pseudoprincipal who no longer has any associated
 disguised data, removing them from the principal table and the application's
 users table.
 %
-Developers can configure \sys to also check for references to pseudoprincipals
-prior to removing them, and depending on the application's needs, configure \sys
-to delete, rewrite, or leave the references in place.
+Developers invoke \texttt{RevealData} with a pseudoprincipal reference policy to
+inform \sys how to handle new pseudoprincipal references prior to removing the
+pseudoprincipals (\S\ref{s:semantics:revealdata}).
 %
 After revealing, the \xxed data is no longer needed, so \sys clears the
 corresponding diff and speaks-for records.
