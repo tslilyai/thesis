@@ -167,9 +167,12 @@ and revealing.
 
     \texttt{RegisterPrincipal} takes the user's private key and password to
     create a password-protected private key and derive a backup reveal
-    credential (\S\ref{s:impl:cred}).  This allows the user to provide any of
-    their private key, their password, or their backup credential to unlock and
-    reveal their disguised data. 
+    credential (\S\ref{s:impl:cred}).\footnote{An alternative API could take
+    only a user's password, and \sys
+    would generate a fresh keypair for the user. In this case, \sys would return both the backup
+    credential and the private key as possible reveal credentials.}  This allows the user to later provide any
+    of their private key, their password, or their backup credential to unlock
+    and reveal their disguised data. 
 %
     \sys saves the provided public key in order to disguise and encrypt a user's
     data, either for when the user invokes a disguise, or when a privileged user
