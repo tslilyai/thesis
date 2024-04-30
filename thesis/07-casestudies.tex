@@ -1,15 +1,16 @@
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 This section evaluates \sys's ability to add new disguising features to
-several applications; \S\ref{ch:eval} evaluates the effort needed to do so and the
-resulting performance.
-%
-
+several applications. 
 %
 We add \xxing and revealing transformations based on
 the motivating examples in \S\ref{ch:introduction}
 to three applications---Lobsters~\cite{lobsters},
 WebSubmit~\cite{websubmit-rs},
 and HotCRP~\cite{hotcrp}.
+%
+\S\ref{ch:eval} evaluates the effort needed to do so and the
+resulting performance.
+%
 %using \sys's API and \sys's default semantics.
 %and fully integrated \sys with Lobsters and WebSubmit.
 %
@@ -32,7 +33,7 @@ and HotCRP~\cite{hotcrp}.
 %
 Lobsters is a Ruby-on-Rails application backed by a MySQL database.
 %
-Beyond the stories, tags, etc. mentioned in \S\ref{s:design:lobsters}, Lobsters also contains
+Beyond the stories, comments, and tags mentioned in \S\ref{s:design:lobsters}, Lobsters also contains
 moderations that mark inappropriate content as removed.
 %a link-sharing and discussion platform with 14.5k users~\cite{lobsters},
 %
@@ -43,7 +44,7 @@ throwaway accounts.
 
 %%%%%%%%%%%%%%%%%%%%
 %
-\textbf{GDPR-compliant account deletion}
+\textbf{Account deletion with return}
 \one{} removes the user account;
 \two{} removes information that's only relevant to the individual user, such as
 their saved stories;
@@ -156,16 +157,16 @@ rows from \texttt{stories}; and removes the \texttt{story\_cache} column from
 %
 We integrated \sys as a Rust library with WebSubmit~\cite{websubmit-rs}.
 %
-WebSubmit is a homework submission application used at Brown University, and
-its schema consists of tables for lectures, questions, answers, and user accounts.
+WebSubmit is a homework submission application used at Brown University. 
+Its schema consists of tables for lectures, questions, answers, and user accounts.
 %
 Clients create an account, submit homework answers, and view their submissions;
-course staff can also view submissions, and add/edit questions and lectures.
+course staff can also view submissions, and add or edit questions and lectures.
 %
-The original WebSubmit retains all user data forever.
+The original WebSubmit retains user data indefinitely.
 %
 We added support for two \xxing
-transformations: {GDPR-compliant user account removal} with return, and
+transformations: {user account removal} with return, and
 {instructor-initiated answer anonymization}, which protects data of prior years'
 students by decorrelating student answers for a given course.
 %(associating one pseudoprincipal with a student's set of lecture answers).
@@ -173,10 +174,9 @@ students by decorrelating student answers for a given course.
 These transformations allow instructors to retain FERPA-compliant~\cite{ferpa}
 answers after the class has finished. %\hmng{each or both together?}
 %
-With \sys, students can delete their
-accounts or access and view their answers even after class anonymization,
-and can always restore their deleted accounts, including restoring them to
-anonymized state.
+With \sys, students can delete their accounts or access and view their answers
+even after class anonymization, and can always restore their deleted accounts,
+including restoring them back to an anonymized state.
 %
 %Our modified WebSubmit sends users emails with links to restore their account
 %or edit their \xxed data.
@@ -194,18 +194,18 @@ authors.
 HotCRP's schema contains papers, reviews, comments, tags,
 and per-user data such as watched papers and review ratings~\cite{hotcrp}.
 %
-HotCRP currently retains past conference data forever and requires manual
+HotCRP currently retains past conference data indefinitely and requires manual
 requests for account removal~\cite{hotcrp:privacy}.
 %
 We wrote two \xx specifications for HotCRP: conference anonymization to
-protect old conference reviews, and GDPR account removal with
+protect old conference reviews, and account removal with
 return.
 %
 
 %
-\textbf{Conference anonymization} is invoked by PC chairs after the conference
-and decorrelates users from their submissions, reviews, comments, and
-per-user data such as watched papers.
+\textbf{Conference anonymization} is invoked by Program Committee (PC) chairs
+after the conference concludes, and decorrelates users from their submissions,
+reviews, comments, and per-user data such as watched papers.
 %
 User accounts remain in the database with no associated data.
 %
@@ -213,13 +213,13 @@ Conference anonymization protects users' data after the conference; with \sys,
 users can come back to view or edit their anonymized reviews and comments.
 %
 
-\textbf{Account removal} \one{} removes the user's account; \two{} removes
+\textbf{Account removal with return} \one{} removes the user's account; \two{} removes
 information only relevant to the user, such as their review preferences;
 \three{} removes their author relationships to papers; and \four{} decorrelates
 the remainder of their data, such as reviews. %, to individual pseudoprincipals.
 %
 Decorrelating a review removes its association with the reviewing user, but
-importantly keeps the review itself around to preserve utility for others (\eg
+importantly retains the review itself to preserve utility for others (\eg
 the PC and the authors of the reviewed paper).
 %makes them difficult to reassociate with one another or with the natural
 %principal.
