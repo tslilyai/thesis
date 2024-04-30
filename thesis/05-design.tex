@@ -708,8 +708,8 @@ However, this method requires more invasive changes to application data.
 %
 
 \paragraph{Shared Data.}
-\sys's approach for shared data faces two main limitations. First, the
-application cannot use foreign keys to the users table as unique identifiers for
+\sys's approach for shared data has two main limitations. First, the
+application cannot use foreign keys to its users table as unique identifiers for
 a table's rows. \sys uses unique identifiers to determine which objects to
 update upon a reveal, and also modifies foreign keys to the users table when
 decorrelating and recorrelating users from a shared data object. Thus, if
@@ -720,14 +720,15 @@ Note that this would not be an issue for a single-owner removal, since the
 object is removed and not dissociated from the owner.
 %
 If foreign keys to users table act as unique identifiers, one potential solution
-might introduce a layer of indirection by adding a new unique identifier (\eg an
-autoincrementing primary key), at the cost of potential performance impacts.
+might introduce a layer of indirection via a new unique identifier (\eg an
+autoincrementing primary key). This would, however, potentially add performance
+overheads.
 
-Second, owners of shared data who remove and reveal the data multiple times 
-decorrelate to the same pseudoprincipal each time. This may allow for more opportunity
-for observers of the application to determine which pseudoprincipal corresponds
-to which user (although this falls outside of \sys's threat model).
-To see why \sys requires this limitation, imagine the following counterexample:
+Second, owners of shared data who remove and reveal multiple times decorrelate
+to the same pseudoprincipal each time. This may allow observers of the
+application to determine which pseudoprincipal corresponds to which user
+(although this falls outside of \sys's threat model).  To see why \sys requires
+this limitation, imagine the following counterexample:
 \begin{enumerate}
     \item[1)] Bea and Chris both remove a shared message, so no data is left in
         the database. Both Bea and Chris store a diff record of the message mapping Bea to $P_1$,
@@ -744,10 +745,10 @@ To see why \sys requires this limitation, imagine the following counterexample:
         database, and thus fails to recorrelate with the message. 
 \end{enumerate}
 %
-The failure of Chris' reveal arises because Chris and Bea disagree upon what
-data---in particular, which pseudoprincipal references---to insert into the
-database, should the shared data object no longer exist. Chris believes it to be
-$P_3$, whereas Bea will restore to $P_2$ for Chris. 
+The failure of Chris' reveal arises because Chris and Bea disagree on what
+data---which pseudoprincipal references---to insert into the
+database, should the shared data object no longer exist. Chris expects it to be
+$P_3$, but Bea will restore to $P_2$ for Chris. 
 %Chris and Bea must agree,
 %because \emph{any} owner can perform the final removal of the data from the
 %database, and \emph{any} owner can perform the first reveal that restores data
@@ -771,12 +772,12 @@ agree on the intermediate states of partially removed data.
 %
 
 %
-Reveal-time updates in replay logs only apply to diff records, which contain the actual
-data changes, and not speaks-for records; \sys assumes that the identifiers for
-principals in speaks-for records that encode the speaks-for chain remain
-consistent as the database changes, allowing \sys to use its composition
-techniques with speaks-for chains (\S\ref{s:design:oooreveals}) to reveal
-multiple disguises in any order.
+Reveal-time updates in replay logs only apply to diff records, which contain the
+actual data changes, and not to speaks-for records. \sys assumes that the
+identifiers for principals in speaks-for records that encode the speaks-for
+chain remain consistent as the database changes, allowing \sys to use its
+composition techniques with speaks-for chains (\S\ref{s:design:oooreveals}) to
+reveal multiple disguises in any order.
 %
 
 %
@@ -794,10 +795,10 @@ restoring posts.
 %, since restoring votes first can now inadvertently leave
 %dangling pointers. 
 %
-A perhaps more realistic but more limited solution might require developers to
-schedule periodic updates to ``fix up'' any rows that
-have been revealed since the update. However, this only works for an idempotent
-update, as it should not incorrectly update already-updated rows again.  
+A perhaps more realistic but limited solution might require developers to
+schedule periodic updates to fix any rows that have been revealed since the
+update. However, this only works for an idempotent update, as it should not
+incorrectly update already-updated rows again.  
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -809,12 +810,12 @@ update, as it should not incorrectly update already-updated rows again.
 %
 %We now analyze what security \sys's design provides.
 %
-\sys's design achieves confidentiality of disguised data between the time of
-disguising and revealing, its key goal.
+\sys's design achieves its key goal of keeping disguised data confidential
+between the time of disguising and revealing.
 %
-By contrast, some aspects of \sys's design help make \sys practical and
-deployable without major application modifications, but give up stronger
-security in exchange for usability.
+Some aspects of \sys's design help make \sys practical and deployable without
+major application modifications. In exchange for greater usability, however,
+\sys gives up stronger security.
 %
 
 %Because \sys encrypts \xxed data, \sys achieves:
@@ -842,7 +843,7 @@ However, this necessarily leaves information in the database: an attacker with
 database access could see all application database content and code, and \sys's
 \xx, principal, and deleted principal tables.
 %
-Thus, what the attacker learns includes:
+Thus, an attacker who compromises the database could learn:
 \begin{enumerate}[nosep]
   \item any un\xxed data in the application database;
   \item the active principals that have \xxed data, via \sys's principal
@@ -863,10 +864,11 @@ with managing their disguised data.  However, this leaves potentially
 exploitable metadata available to attackers.
 %
 An attacker could leverage pseudoprincipal groupings (\eg a pseudoprincipal
-owning posts in both ``CMU 2018'' and ``BayArea'' topics), un\xxed data
-(\eg comments signed with the user's name), and \sys metadata (\eg that some
-anonymous user has more \xxed data than another, as \sys stores \xxed data without
-padding for efficiency) to infer the identity of the original owning principal.
+owning posts in both ``MIT'18'' and ``BayArea'' topics), un\xxed data (\eg
+comments signed with the user's name), and \sys metadata (\eg that some
+anonymous user has more \xxed data than another) to infer the identity of the
+original owning principal.\footnote{For efficiency, \sys
+stores \xxed data without breaking it into chunks or adding padding.}
 
 Finally, \sys makes no guarantees for users who actively use \xxed data after
 compromise (\eg by revealing or editing decorrelated data): after an attacker
@@ -932,7 +934,7 @@ The attacker also cannot access the private key of any pseudoprincipal because
 % By induction, the attacker cannot access any private keys.
 %
 If an application uses password-based reveal credentials, \sys
-guarantees security equivalent to the security of the user's password.
+guarantees security equivalent to that of the user's password.
 
 \section{\sys without Encryption}
 \label{s:noencrypt}
@@ -973,11 +975,11 @@ guarantees security equivalent to the security of the user's password.
 %
 
 Should developers want to support disguised data in a weaker threat model that
-does not require encryption (as described in \S\ref{s:semantics:noencrypt}),
-\sys still helps developers address the challenges of maintaining referential
-integrity when a disguise is performed (creating pseudoprincipals as placeholder
-users); composing disguises and reveals in arbitrary orders; disguising shared
-data; and applying global updates to disguised data.
+does not require encryption (S\ref{s:semantics:noencrypt}),
+\sys still helps developers maintain referential integrity when disguising
+(creating pseudoprincipals as placeholder users), compose disguises and reveals
+in arbitrary orders, disguise shared data, and apply global updates to disguised
+data.
 %
 Furthermore, removal of encryption simplifies several aspects of \sys's design.
 %
@@ -986,7 +988,7 @@ describes these aspects and potential
 alternative designs for disguised data without encryption. 
 
 \paragraph{Design Simplifications.}
-If \sys removes encryption of disguised data, disguised data remains accessible to
+If \sys does not encrypt disguised data, it remains accessible to
 the application and updates can thus apply immediately to disguised data. \sys
 therefore would not need a replay log to help developers apply updates to
 disguised data. 
@@ -997,7 +999,7 @@ updates in order to update disguised data rows stored in the disguised tables.
 
 %
 Removal of encryption also eliminates the need for registration with a user
-keypair, user reveal credentials, encryption/decryption on the disguise/reveal
+keypair, user reveal credentials, encryption and decryption on the disguise and reveal
 paths, and encrypted indexes mapping a user to their disguised data. The
 disguise table would hold plaintext disguised data, and \sys would not need the
 principal table.
@@ -1007,7 +1009,8 @@ principal table.
 Furthermore, \sys can always disguise already-disguised data, since a user does
 not need to provide a reveal credential in order to unlock their
 already-disguised data. A developer instead can allow a user to specify whether
-they wish to disguise their disguised data again using a boolean.
+they wish to disguise their disguised data again (\eg to remove their
+already-anonymized posts) using a boolean.
 %
 
 %
@@ -1024,7 +1027,7 @@ Instead of moving disguised data into a new database table for disguised data as
 removing it using database flags and predicates (\eg \texttt{is\_deleted})
 because disguised data need not be encrypted.
 %
-In this case, the developer must ensure that all queries for the data predicate
-on the tag so the application does not return disguised data. Systems like
+In this case, the developer must ensure that all queries for the data include a predicate
+on the tag, so that application does not return disguised data. Systems like
 Qapla~\cite{qapla}---which this thesis compares to \sys in
 \S\ref{s:eval-qapla}--- can help enforce these flag-based policies.
