@@ -4,7 +4,7 @@ Figure~\ref{f:loc}).
 %(1.6k LoC specifically added for \syscrypt).
 %
 \sys supports MySQL, and provides an API server that exposes a JSON-HTTP API that applications
-can use to invoke \sys, if they do not link directly with \sys's Rust library.
+can use, if they do not link directly with \sys's Rust library.
 %
 \sys's API (Figure~\ref{f:api-high}) supports principal registration, data disguising and revealing,
 partial revealing of speaks-for relationships, and recording global database
@@ -27,8 +27,8 @@ updates as reveal-time update specifications.
 
 \end{tabular}
     \caption[\sys's code components and LoC.]{Code components of \sys and their respective sizes. Much
-    of the logic for reveal is embedded in the record implementation (\eg a
-    diff record struct implements \texttt{reveal}); the revealer handles the
+    of the logic for revealing is embedded in the record implementation (\eg a
+    diff record struct implements \texttt{reveal}). The revealer handles the
     reveal order of diff records and modifications of the speaks-for
     chain.} 
     \label{f:loc}
@@ -51,12 +51,12 @@ Using the newly created private key and the principal's public key, \sys
 performs the x25519 elliptic curve Diffie-Hellman ephemeral key exchange to
 generate a shared secret.
 %
-\sys encrypts the record data with the shared secret, and saves the
-ciphertext along with the freshly generated public key (required to decrypt
-the data given the principal's private key).
+\sys encrypts the record data with the shared secret, and saves the ciphertext
+along with the freshly generated public key, which is required to decrypt the
+data given the principal's private key.
 %
 This public key algorithm lacks key anonymity, so an attacker can determine
-which records belong to the same principal, but this is not
+which records belong to the same principal, but this limitation is not
 fundamental~\cite{anonymous-keys}.
 
 %Locators group together related diff and speaks-for records by principal and
@@ -69,16 +69,15 @@ fundamental~\cite{anonymous-keys}.
 \section{Reveal Credentials}
 \label{s:impl:cred}
 %
-\sys supports two forms of reveal credentials: private keys; or
-principals' passwords (plus recovery
-tokens in case they forget their passwords).
+\sys supports two forms of reveal credentials: private keys and users' passwords
+(plus recovery tokens in case users forget their passwords).
 %
-If an application chooses to use the latter, it provides the principal's password
-to \sys upon user registration.
+If an application chooses to use user's passwords, it provides the password to
+\sys upon user registration with \texttt{RegisterPrincipal}.
 %
-\sys uses a variant of Shamir's Secret Sharing~\cite{secretsharing}
-to generate three shares from the private key, any two of which can reconstruct the
-private key.
+\sys uses a variant of Shamir's Secret Sharing~\cite{secretsharing} to generate
+three shares from the private key, any two of which can reconstruct the private
+key.
 %
 Shares are $(x, f(x) \bmod p)$ tuples, where $f(x) = \fn{privkey} + \fn{rand} \cdot
 x$ and $p > \fn{privkey}$ is a known prime.
@@ -143,7 +142,7 @@ the recovery token.
 
 %
 Password-based secret-sharing is only one possible implementation for backup
-secrets; \sys could also support password-based backup secrets by, for example, storing a
+secrets. \sys could also support password-based backup secrets by, for example, storing a
 version of the private key encrypted with the user's password.
 %
 
@@ -152,7 +151,7 @@ version of the private key encrypted with the user's password.
 
 \sys's prototype accepts reveal-time update specifications as Rust functions
 from database objects ($<$table, row$>$ pairs) to a new set of database objects.
-\sys stores the replay log as a vector of updates function pointers with
+\sys stores the replay log as a vector of update specification function pointers with
 timestamps, and persists the pointers to disk. This approach requires
 recompiling \sys to add new update functions; an alternative approach could put
 the functions into separate executables (and \sys would store executable names
@@ -177,11 +176,11 @@ updated, or removed from the database in a single query.
 %
 Batching utilizes MySQL's \texttt{INSERT... ON DUPLICATE KEY UPDATE}, which
 allows batch updating different items to different row values. However, this
-also introduces potential errors if an item needs to update its primary key as
-well (\eg the disguise specification instructs \sys to disguise the user ID with
-a pseudoprincipal ID, but the user ID column also acts as a primary key). If
-\sys detects a change to a primary key, \sys individually updates rows'
-primary keys prior to the batch update, ensuring that rows sent in the
+also introduces potential errors if an item needs to update its primary key (\eg
+the disguise specification instructs \sys to disguise the user ID with a
+pseudoprincipal ID, but the user ID column also acts as a primary key). If \sys
+detects a change to a primary key, \sys individually updates rows' primary keys
+prior to the batch update, ensuring that rows sent in the
 \texttt{INSERT...UPDATE} query match those in the database.
 %\sys performs decorrelation and modification operations individually for each
 %row during disguise, as different rows are updated to different values.
