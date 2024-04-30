@@ -492,11 +492,11 @@ the data to reveal (\eg a post referenced by a to-be-revealed comment).
 
 \sys is conservative and will never reveal rows for which checks fail; the
 affected data remains \xxed.  For example, if a developer chooses not to
-register conflicting global database updates, \sys's checks may
-fail, preventing disguised data from being revealed.
+register conflicting global database updates, \sys's checks may fail, preventing
+disguised data from being revealed.
 %
-\sys could log encountered conflicts, giving the application a chance to fix
-them so a later reveal can pass the checks.
+An extension to \sys could log encountered conflicts, giving the application a
+chance to fix them so a later reveal can pass the checks.
 
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -527,11 +527,11 @@ them so a later reveal can pass the checks.
 \label{f:shared:data}
 \end{figure}
 
-\sys supports joint ownership semantics for shared data by modifying its design for
-removal when encountering a shared object.
+\sys supports joint ownership semantics for shared data with a modified removal
+design.
 %
 The first time any owner removes the data, \sys would normally remove the data
-object. However, since the other owners have not since removed the data, \sys
+object. However, since the other owners have not yet removed the data, \sys
 must keep the data object around, but dissociated from the removing owner.
 %
 
@@ -545,18 +545,26 @@ restored to the database with only revealed users recorrelated.
 %
 To support these semantics, \sys creates a \emph{partially-removed} metadata
 table. The table is indexed by a data row's unique identifier columns (\eg a
-primary key id); each index maps to a (plaintext) remove diff record for a
+primary key id). Each index maps to a (plaintext) remove diff record for a
 shared data object. The diff record contains the shared data row, but where the
 row has been fully\--decorrelated, all foreign keys to owners of the object have
 been rewritten to refer to a pseudoprincipal.
 %
-Entries in the partially-removed table ensure that all owners agree on the
-partially-removed state of shared data (\eg when some users are gone but others
-remain, so pseudoprincipals replace the removed users). This allows users to
-reveal consistently no matter which user reveals the shared data object first. 
+Entries in the partially-removed table ensure that all owners agree on which
+pseudoprincipals will own the shared data as various owners remove it.
+%
+%(\eg when some users are gone but others
+%remain, so pseudoprincipals replace the removed users). 
+%
+This allows owners to reveal in any order, because the revealed data always
+contains the same pseudoprincipals for still-disguised owners, no matter who
+reveals the data first.
+%
+Later reveals by other owners can thus find their expected pseudoprincipal and
+recorrelate with the shared data.
 %
 
-
+%
 Figure~\ref{f:shared:data} depicts how \sys executes over shared
 data:
 %
@@ -566,7 +574,7 @@ data:
         
         If \sys does \emph{not} find a matching entry, as in
         Figure~\ref{f:shared:data}, then \sys creates a fully-decorrelated
-        version of the data row (with all foreign keys to owner replaced with
+        version of the data row (with all foreign keys to owners replaced with
         random pseudoprincipal identifiers). \sys then inserts this into the
         partially-removed table.
 
@@ -582,7 +590,7 @@ data:
         decorrelated foreign key to the owner, and stores diff records recording
         the pseudoprincipal row and foreign key rewrite for the owner. Finally,
         \sys stores a speaks-for record recording which pseudoprincipal the
-        owner can speak-for. These records allow the owner to recorrelate back
+        owner can speak-for. These records allow the owner to recorrelate 
         with the shared data after the data is restored to the database in a
         decorrelated state (steps 3 and 4).
 

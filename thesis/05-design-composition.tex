@@ -28,7 +28,7 @@
 transformation applies to data that \sys has previously \xxed in
 some other way.
 %
-Reasoning about composition of transformations can be broken down to reasoning
+Reasoning about composition of transformations can be broken into reasoning
 about the composition of primitive operation pairs, \eg remove after
 modify, or remove after decorrelation.
 %
@@ -42,7 +42,7 @@ However, operations after decorrelation result in more complex composition scena
 %
 For instance, decorrelation after decorrelation could occur if a user
 decorrelates some posts, after which an administrator decorrelates \emph{all}
-posts. In this scenario, the administrator's \xxing operation applies to
+posts (\eg to anonymize all inactive users). In this scenario, the administrator's \xxing operation applies to
 pseudoprincipal-owned posts in the same way as it does to unmodified posts. This
 creates pseudoprincipals that can speak-for other pseudoprincipals.  This notion
 of chaining together pseudoprincipals creates \sys's \emph{speaks-for chains}.
@@ -237,7 +237,7 @@ speaks-for records for $P_2$ (which no longer has any associated disguised
 data), and the speaks-for records for $P_1$ (which also has no associated
 disguised data after $P_2$ is removed).
 %
-This implicitly truncates the speaks-for chain to simply be Bea.
+This implicitly truncates the speaks-for chain to just Bea.
 \end{enumerate}
 %
 %This design works even in the presence of multiple recursive decorrelations and
