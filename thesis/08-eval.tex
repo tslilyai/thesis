@@ -5,7 +5,7 @@ This chapter seeks to answer six questions:
  \item How much developer effort and application modification does \sys require? (\S\ref{s:eval-effort})
 %
 \item How expensive are common application operations, as well as
-  \xxing, revealing, and operations over \xxed data with \sys? (\S\ref{s:eval-ops})
+  \xxing and revealing operations over \xxed data with \sys? (\S\ref{s:eval-ops})
  %
 
 \item What overheads does \sys impose, and where do they come from?
@@ -14,7 +14,7 @@ This chapter seeks to answer six questions:
 \item 
     How does the effort required to implement \sys's
     functionality in a related system (Qapla~\cite{qapla}),
-    and its performance, compare with using \sys?
+    and its performance, compare to using \sys?
     (\S\ref{s:eval-qapla})
 
 \item 
@@ -29,9 +29,9 @@ This chapter seeks to answer six questions:
 \end{enumerate}
 
 %We compare Edna to three alternative settings:
-To measure \sys's expenses (\S\ref{s:eval-ops}), we compare \sys to a manual version of each
-\xxing transformation that directly modifies the database (\eg via SQL queries
-that remove data), which lacks support for revealing and does not support
+To evaluate \sys's performance (\S\ref{s:eval-ops}), we compare \sys to a manual
+version of each \xxing transformation that directly modifies the database (\eg
+via SQL queries that remove data). This approach lacks support for revealing and
 composition of multiple transformations. 
 %\two{} an implementation of disguising and revealing in
 %Qapla~\cite{qapla} using
@@ -83,7 +83,7 @@ The benchmarks use MariaDB 10.5 with the InnoDB storage engine atop a local SSD.
 %
 We evaluate the developer effort required to use \sys by measuring the
 difficulty of implementing the \xxing and revealing transformations in our three
-case studies.  This took one person-day per case study for a developer
+case studies.  Each case study required one person-day of work for a developer
 familiar with \sys but unfamiliar with the applications.
 
 A developer supporting these transformations must first add application
@@ -98,8 +98,8 @@ manually without \sys.
 %without \sys---necessarily require changes to application code. These changes
 %add HTTP endpoints to invoke \xxing and revealing, and modifications to perform
 %authorization checks for anonymous users and send emails to users with \xx IDs.
-These changes add 179 LoC of Ruby to Lobsters (160k LoC), and 312 LoC of Rust
-to the original WebSubmit (908 LoC). They implement HTTP endpoints,
+These changes add 179 LoC of Ruby to Lobsters (out of 160k LoC total), and 312 LoC of Rust
+to the original WebSubmit (908 LoC). This code implement HTTP endpoints,
 authorization of anonymous users, and email notifications.
 %
 
@@ -110,10 +110,9 @@ HotCRP's in 357 LoC (all in JSON).  The specification size is proportional to
 the lines required to specify the database schema in SQL, as well as what data
 each application \xxs.
 %
-Writing the corresponding updates for the three Lobsters global database
-updates 
-requires 81 LoC; this adds to the 89 LoC that the developer already
-writes to implement the global database updates themselves.
+Update specifications for the three Lobsters global database updates take 81
+LoC. The global database updates themselves require 89 LoC, which a developer
+must write even without \sys.
 %
 
 Thus, the developer effort required to use \sys---writing \sys specifications,
@@ -126,7 +125,7 @@ applications were not written with \sys in mind.
 \label{s:eval-ops}
 
 %
-We next evaluate \sys's performance using WebSubmit,
+Next, we evaluate \sys's performance using WebSubmit,
 HotCRP, and Lobsters.
 %
 %To measure the extra cost that \sys's cryptographic operations add,
@@ -139,9 +138,9 @@ include account restoration via
 \texttt{RevealData} and editing
 \xxed data via \texttt{CanSpeakFor} (\S\ref{s:semantics:speakfor}).
 %
-The three applications do not create new data that reference pseudoprincipals
-(\S\ref{s:semantics:revealdata}), but to fully capture any overheads we
-configure \sys to nevertheless run the checks for lingering pseudoprincipal
+These three applications do not create new data that reference pseudoprincipals
+(\S\ref{s:semantics:revealdata}). Nevertheless, to fully capture any overheads we
+configure \sys to run the checks for lingering pseudoprincipal
 references on revealing.
 %
 
@@ -149,7 +148,7 @@ references on revealing.
 A good result for \sys would show no overhead on common operations, since \sys
 should not be invoked on normal application execution paths.
 %
-\sys should be competitive with manual \xxing, with the caveat that \sys needs
+\sys's performance should be competitive with manual \xxing, with the caveat that \sys needs
 to also encrypt and store disguised data.
 %
 Finally, \sys should have reasonable latencies for revealing operations
