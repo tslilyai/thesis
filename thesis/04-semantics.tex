@@ -1,4 +1,4 @@
-This chapter describes \sys's high-level semantics that a developer can use to
+This chapter describes \todo{informal} high-level semantics that a developer can use to
 reason about the resulting state of data after a disguise and reveal, and 
 includes an overview of \sys's API.
 
@@ -7,9 +7,9 @@ includes an overview of \sys's API.
 Developers can think about disguising transformations as removing and rewriting
 data in the application database.
 %
-The database starts at some original application state, and alters application
-data depending on the disguise specification (\S\ref{s:semantics:spec}).  The
-resulting state---the disguised data state---is changed only by another
+The database starts at some original application state, and \sys alters
+application data depending on the disguise specification
+(\S\ref{s:semantics:spec}).  The resulting state is changed only by another
 disguise, by revealing the applied disguise, or by normal application updates.
 %
 
@@ -17,8 +17,8 @@ disguise, by revealing the applied disguise, or by normal application updates.
 Disguising already-disguised data can only decrease the amount of information
 retained about the original application data state. If prior disguises have
 transformed the original data, then a future disguise has access only to the
-resulting disguised state, and thus can only further remove aspects of the
-original data state.
+resulting application database state, and thus can only further remove aspects
+of the original data state.
 %
 Removed data cannot be disguised again. 
 %
@@ -167,14 +167,14 @@ and revealing.
 
     \texttt{RegisterPrincipal} enables a user to disguise and later reveal their
     data. \sys offers various options: users can use their password
-    to reveal data, provide their own public/private keypair, or ask \sys to
+    to reveal data, provide their own public--private keypair, or ask \sys to
     generate a fresh keypair to disguise and reveal their data.
     %
 
     %
     A user can choose whether they want to use their password as a reveal
     credential by providing their password to \sys. If the user does not also
-    provide a public/private keypair, \sys generates a fresh public/private
+    provide a public--private keypair, \sys generates a fresh public--private
     keypair for the user. \sys saves the (generated or provided) public key
     with the user's identifier \texttt{u}, which \sys uses to later encrypt the
     user's disguise data when the user invokes a disguise, or when a privileged

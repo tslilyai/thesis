@@ -21,10 +21,10 @@ via \emph{\xxing transformations} and \emph{revealing transformations}.
 %
 A developer integrates an application with \sys by writing \xx specifications
 and adding hooks to \xx or reveal data using \sys's API
-(Figure~\ref{f:edna-overview}). This proceeds as follows:
+(Figure~\ref{f:edna-overview}). To use \sys, an application does the following:
 
 %
-(1) An application registers users with a public--private keypair
+(1) The application registers users with a public--private keypair
 that either the application or the user's client generates. \sys stores the
 public key in its database, while the user retains the private key for use in
 future reveal operations.
@@ -52,7 +52,7 @@ private key.
 %
 
 %
-(4) When a user wishes to reveal their \xxed data, they pass credentials
+(3) When a user wishes to reveal their \xxed data, they pass credentials
 to the application, which calls into \sys to reveal the data.
 %
 Credentials are application-specific: users may either provide their private
@@ -122,7 +122,7 @@ transformation.
 %
 First, the developer writes a \xx specification that instructs \sys to
 decorrelate comments and remove votes on ``Star Wars'' stories
-(Figure~\ref{f:spec}), and provides it to \sys.
+(Figure~\ref{f:spec}).
 %
 They also add frontend code and UI elements that allow authenticated users to
 trigger the \xxing transformation (Figure~\ref{f:lobsters_hook}).
@@ -131,7 +131,7 @@ When Bea wants to anonymize their contributions on content tagged ``Star Wars,''
 Lobsters invokes \sys with the provided specification.
 
 %
-When Bea wants to deanonymize their ``Star Wars'' contributions, Lobsters
+Later, if Bea asks Lobsters to deanonymize their ``Star Wars'' contributions, Lobsters
 invokes \sys with Bea's reveal credentials and the disguise ID, and \sys reveals
 Bea's associations with ``Star Wars'' posts.
 %
@@ -153,7 +153,7 @@ Bea's associations with ``Star Wars'' posts.
            JOIN taggings ON stories.id = taggings.story_id
            JOIN tags ON...",
   // decorrelate-specific fields 
-  "group_by": "stories.id",
+  "group_by": "comments.story_id",
   "principal_fk": "comments.user_id" } ],
 // Remove votes on stories w/tag {{TAG}}
 "votes": [{
@@ -169,11 +169,10 @@ Bea's associations with ``Star Wars'' posts.
 \end{figure}
 
 
-\sys's developer interface ensures that developers need to reason only
-about the high-level semantics of disguising expressed in the disguise
-specification. \sys takes care of applying disguise transformations, composing
-them with other disguising and revealing transformations, and creating and storing
-disguised data.
+\sys's goal is for developers to reason only about the high-level semantics of
+disguising expressed in the disguise specification. \sys takes care of applying
+disguise transformations, composing them with other disguising and revealing
+transformations, and creating and storing disguised data.
 
 
 \Xx specifications tell \sys what application data objects to \xx and how to \xx
@@ -186,7 +185,7 @@ database table name and predicate, where a predicate is a SQL \fn{WHERE} clause.
 principal refers to an application object representing a user (\eg a row in a
 \texttt{users} table). This thesis uses principal to mean either an 
 application object representing a real application client user, or a
-pseudoprincipal (a fake application user).} to disguise, as
+pseudoprincipal (a fake application user).}, as
 defined by a foreign-key relationship to the principals table, but predicates
 can narrow the transformation's scope (\eg to stories with specific tags).
 %
@@ -202,15 +201,17 @@ For each selected group of objects, developers choose to \emph{remove},
 The example specification in Figure~\ref{f:spec} decorrelates all comments and
 removes all votes on stories with a particular tag, specified by the
 \texttt{TAG} parameter provided at invocation time.  The specified foreign key
-\texttt{principal\_fk}) for decorrelation of comments tells the decorrelate
-operation which foreign key to the principals table to rewrite. 
+(\texttt{''principal\_fk''}) for decorrelation of comments tells \sys which
+foreign key to the principals table to rewrite. 
 %
 Decorrelation can use pseudoprincipals at different granularities.  In the
 extreme, the \xx specification may tell \sys to create a unique pseudoprincipal
 for each decorrelated application object.  In our example, however, all comments
-by the same user on the same story decorrelate to the same pseudoprincipal
-(\verb+"group_by": "stories.id"+), thus keeping same-story comment threads
-intact.
+by the same user on the same story decorrelate to the same pseudoprincipal by
+setting \verb+"group_by": "comments.story_id"+: for all comments with the same
+\texttt{"stories\_id"} value, \sys will rewrite \texttt{"pseudoprincipal\_fk"}
+to the same pseudoprincipal identifier.  This allows the application to keep
+same-story comment threads intact.
 %
 \S\ref{s:semantics:spec} describes the semantics of disguise specifications in more
 detail.
@@ -235,7 +236,7 @@ itself; or \two{} the user's application password or a recovery token (in case
 they forget their password), either of which \sys can use to rederive the
 private key.
 %
-Developers can use either or both of these credentials depending on application needs.
+Developers can use either of these credentials depending on application needs.
 %
 In the Lobsters example, \sys rederives the user's private key using their password.
 %
@@ -279,8 +280,8 @@ initiated by an admin or developer, like schema changes or global content
 changes (\eg normalizing URLs of all stories). 
 %
 However, developer updates to the database will fail to apply to any disguised
-data at the time. \sys may thus incorrectly reveal data that do not
-reflect the updates. 
+data at the time. A naive reveal algorithm might incorrectly overwrite these
+updates.
 %
 To ensure updates are applied to revealed data, the developer must inform \sys
 about the update so \sys can apply the update to the disguised data when
@@ -331,8 +332,8 @@ disguises their data and the time when they reveal it.
 %
 %(where \xxed data is defined by the trusted developer-provided disguise specification).
 %
-During this period, \sys ensures that the application cannot learn the contents of
-disguised data, nor learn what \xxed data corresponds to which user, even if the
+During this period, \sys ensures that the application can neither learn the contents of
+disguised data, nor what \xxed data corresponds to which user, even if the
 application is compromised and an attacker dumps the database contents (\eg via
 SQL injection).
 %
