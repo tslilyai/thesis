@@ -28,11 +28,11 @@ database if the disguise's specification includes a decorrelation, which
 rewrites references to point to an anonymous pseudoprincipal instead of the
 original principal user. 
 %
-Same-table data disguised within the same disguise that originally refers to the
-same user may decorrelate and refer to the same pseudoprincipal.
+Only data decorrelated from the same user, by the same disguise, and from the
+same table may refer to the same pseudoprincipal.
 %
-For example, all decorrelated stories from topic ``Star Wars'' written by Bea
-may decorrelate to the same pseudoprincipal (\S\ref{s:semantics:example}).
+For example, a disguise can decorrelate all stories from topic ``Star Wars''
+written by Bea to the same pseudoprincipal (\S\ref{s:semantics:example}).
 %
 However, no two objects referring to different users or from different database
 tables refer to the same pseudoprincipal, and no two disguises' sets of produced
@@ -46,10 +46,10 @@ credential to do so.
 %
 
 %
-Revealing a disguise $D$ on some data disguised by $D$ reverts the changes to
-the data applied by $D$ back to the pre-disguised state, except in two cases.
-First, if a normal application update has since changed the disguised data, then
-the data remains in its updated state and cannot be revealed.
+Revealing a disguise $D$ reverts the data affected by $D$ back to the
+pre-disguised state, except in two cases.  First, if a normal application update
+has since changed the disguised data, then the data remains in its updated state
+and cannot be revealed.
 %
 Second, if another disguise has since applied changes to the data $D$ disguised,
 and that disguise has not yet been revealed, then the data remains in its
@@ -60,6 +60,7 @@ state prior to $D$.
 %
 Thus, when multiple disguises apply to the same data, the application data state
 reflects the effects of all yet-unrevealed disguises.
+\todo{x}
 %
 
 Revealed data will also reflect all global database updates (such as schema
@@ -263,7 +264,7 @@ user references or filter by \texttt{u\_opt} if necessary.
 \texttt{DisguiseData} may insert pseudoprincipals (anonymous users) into the
 application database if the \texttt{spec} includes a decorrelation---a rewriting
 of a foreign key to point to an anonymous pseudoprincipal instead of the
-original principal user.  (\S\ref{s:semantics:spec}).  When this occurs, \sys
+original principal user (\S\ref{s:semantics:spec}).  When this occurs, \sys
 uses \texttt{principal\_gen} to generate anonymous pseudoprincipals. The
 principal generator specifies, for example, to create a principal with a random
 identifier, and email address.
@@ -282,7 +283,7 @@ tables refer to the same pseudoprincipal, and no two disguises' sets of produced
 pseudoprincipals overlap.
 %
 
-When a prior disguises have applied, users may wish to disguise data that has
+When prior disguises have applied, users may wish to disguise data that has
 already been decorrelated (\S\ref{s:semantics:hl:composition}).  \sys allows
 this via an optional reveal credential (\texttt{disguise\_over}). If
 \texttt{disguise\_over} is \texttt{Some(cred)}, \texttt{u\_opt} must be
@@ -483,7 +484,7 @@ For all other update specifications, \sys assumes that any nondeterminism or sid
     %
 
 %
-    To exemplify an unsupported update, take a global update that calculates the
+    To exemplify an unsupported update, consider a global update that calculates the
     current vote count of a story to store as a story's \texttt{vote\_count}
     attribute. 
 %
@@ -524,7 +525,7 @@ table name, and a SQL \fn{WHERE} predicate.
 
 %
 A disguise is invoked either automatically by the application, or by a specific
-user of the application identified by their user ID (\texttt{u\_opt =
+user identified by their user ID (\texttt{u\_opt =
 Some(uid)}).
 % 
 If not invoked by a specific user, the disguise applies to all data matching the
@@ -661,7 +662,7 @@ Figure~\ref{f:composition-hl} illustrates the various steps a user Bea would
 take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
 
 \begin{enumerate}[nosep]
-    \item[0)] Initially, the application starts out with Bea registered as an
+    \item[(0)] Initially, the application starts out with Bea registered as an
         \sys principal via a call to \texttt{RegisterPrincipal} with Bea's
         password and keypair. Bea owns one story, with topic ``Ewoks''.
 
@@ -724,7 +725,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
         Wars'' disguise decorrelating to $P_2$ is revealed
         (Figure~\ref{f:composition-hl-inorder}).
     %
-        And if only the ``bears'' 'disguise decorrelating to $P_1$ were
+        And if only the ``bears'' disguise decorrelating to $P_1$ were
         revealed, but not the ``bears'' disguise, the data would remain
         decorrelated to $P_2$.  (Figure~\ref{f:composition-hl-ooo}).
 
