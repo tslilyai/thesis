@@ -95,7 +95,7 @@ API, and \S\ref{s:noencrypt} describes how it would change
 // Registers u for disguising and returns u's reveal credentials 
 (*\textbf{RegisterPrincipal}*)(
         u: UID, 
-        pw: Password,
+        pw: Option<Password>,
         pubkey: Option<PublicKey>, 
         privkey: Option<PrivKey>)
     -> RevealCredential;
@@ -153,7 +153,7 @@ and revealing.
         \hline
         \texttt{u} & the user's unique identifier.\\
         \hline
-        \texttt{pw} & the user's password (later usable as a reveal credential).\\
+        \texttt{pw} & (Optional) the user's password (later usable as a reveal credential).\\
         \hline
         \texttt{pubkey} & (Optional) the user's unique public key (used to encrypt the
         user's disguised data).\\
@@ -165,26 +165,40 @@ and revealing.
     \end{center}
     \vspace{-24pt}
 
-    \texttt{RegisterPrincipal} takes the user's private key and password to
-    create a password-protected private key and derive a backup reveal
-    credential (\S\ref{s:impl:cred}).  This allows the user to later provide any
-    of their private key, their password, or their backup credential to unlock
-    and reveal their disguised data. 
+    \texttt{RegisterPrincipal} enables a user to disguise and later reveal their
+    data. \sys offers various options: users can use their password
+    to reveal data, provide their own public/private keypair, or ask \sys to
+    generate a fresh keypair to disguise and reveal their data.
     %
-    If users do not wish to reuse an existing keypair, then
-    \texttt{RegisterPrincipal} takes only a user's password, and \sys will
-    generate a fresh keypair for the user. In this case, \sys would return both
-    the backup credential and the private key as possible reveal
-    credentials.\footnote{If a user does not care for password-based or backup
-    credentials, they can omit the private key and their password from the call
-    to \texttt{RegisterPrincipal}, and only give \sys their public key. This
-    means that only their corresponding private key can be used to reveal their
-    disguised data.}
-%
-    \sys saves the public key in order to disguise and encrypt a user's
-    data, either for when the user invokes a disguise, or when a privileged user
-    like an admin applies a global disguise to all users' data.
-    
+
+    %
+    A user can choose whether they want to use their password as a reveal
+    credential by providing their password to \sys. If the user does not also
+    provide a public/private keypair, \sys generates a fresh public/private
+    keypair for the user. \sys saves the (generated or provided) public key
+    with the user's identifier \texttt{u}, which \sys uses to later encrypt the
+    user's disguise data when the user invokes a disguise, or when a privileged
+    user like an admin applies a global disguise to all users' data.
+
+    \sys uses the password and (generated or provided) private key to store a
+    password-protected private key and derive a backup reveal credential
+    (\S\ref{s:impl:cred}). \sys returns the private key and backup reveal
+    credential to the user. This registration allows the user to later provide
+    any of their private key, their password, or their backup credential to
+    unlock and reveal their disguised data.
+    %
+
+    %
+    If a user does not care for password-based or backup credentials, they can
+    omit their password from the call to \texttt{RegisterPrincipal} (as \sys
+    uses the password to derive a password-protected private key).  If they give
+    \sys their public key, then \sys simply stores the public key to later
+    encrypt their disguised data. Otherwise, if \texttt{pubkey = None}, then
+    \sys generates a new keypair for the user, saves the public key, and returns
+    the private key as reveal credentials to the user.  In this situation, a
+    user can reveal their disguised data only with their private key.
+    %
+        
 \subsection{\texttt{DisguiseData}}
     \texttt{DisguiseData} removes or rewrites application data according to the
     provided disguise specification \texttt{spec}. The original data is
