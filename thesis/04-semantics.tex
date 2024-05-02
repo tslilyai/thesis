@@ -47,20 +47,24 @@ credential to do so.
 
 %
 Revealing a disguise $D$ reverts the data affected by $D$ back to the
-pre-disguised state, except in two cases.  First, if a normal application update
-has since changed the disguised data, then the data remains in its updated state
-and cannot be revealed.
+pre-disguised state, except in two cases.  
 %
-Second, if another disguise has since applied changes to the data $D$ disguised,
-and that disguise has not yet been revealed, then the data remains in its
-current state.
+\todo{First, if disguises after $D$ had decorrelated the same data as $D$, then
+the data will refer to the last-unrevealed pseudoprincipal created by any
+disguise.
 %
-Only when all subsequent disguises are revealed does the data revert to the
-state prior to $D$.
+Only when the user reveals all subsequent disguises does the data refer to its
+original owner prior to $D$.
+%
+Second, if a normal application update or a subsequent disguise has since
+changed the disguised data (aside from decorrelations), then the data remains in
+its updated state and cannot be revealed.}
+%
 %
 Thus, when multiple disguises apply to the same data, the application data state
-reflects the effects of all yet-unrevealed disguises.
-\todo{x}
+reflects the effects of all unrevealed disguises (as well as any disguises
+that \sys failed
+to reveal).
 %
 
 Revealed data will also reflect all global database updates (such as schema
@@ -90,6 +94,9 @@ API, and \S\ref{s:noencrypt} describes how it would change
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{API}
 \label{s:api}
+
+\todo{Call to list all disguises (id + desc) applied to user's data? doesn't
+exist today but could add it}
 
 \begin{figure}[t]
 \begin{lstlisting}[style=rust,escapeinside={(*}{*)}]
@@ -182,7 +189,7 @@ and revealing.
     user like an admin applies a global disguise to all users' data.
 
     \sys uses the password and (generated or provided) private key to store a
-    password-protected private key and derive a backup reveal credential
+    password-pro\-tected private key and derive a backup reveal credential
     (\S\ref{s:impl:cred}). \sys returns the private key and backup reveal
     credential to the user. This registration allows the user to later provide
     any of their private key, their password, or their backup credential to
@@ -282,6 +289,12 @@ However, no two objects referring to different users or from different database
 tables refer to the same pseudoprincipal, and no two disguises' sets of produced
 pseudoprincipals overlap.
 %
+\todo{This may be too restrictive for some applications' purposes: for example, an
+application may wish to decorrelate a story and comments on the story made by
+the author to the same pseudoprincipal.
+%
+Multi-table pseudoprincipals could be supported in a future \sys prototype with
+an extended API that can express groupings of objects from different tables.}
 
 When prior disguises have applied, users may wish to disguise data that has
 already been decorrelated (\S\ref{s:semantics:hl:composition}).  \sys allows
