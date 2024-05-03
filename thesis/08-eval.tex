@@ -84,13 +84,12 @@ The benchmarks use MariaDB 10.5 with the InnoDB storage engine atop a local SSD.
 %
 We evaluate the developer effort required to use \sys by measuring the
 difficulty of implementing the \xxing and revealing transformations in our three
-case studies.  Each case study required one person-day of work for a developer
+case studies.  Each case study required one person-day to implement for a developer
 familiar with \sys but unfamiliar with the applications.
 
 A developer supporting these transformations must first add application
 infrastructure to allow users to invoke them and notify users when they happen.
-This is required even if the developer were to implement transformations
-manually without \sys.
+Developers must add these even if they implement transformations without \sys.
 %Any support for these transformations---even if implemented manually without
 %\sys---requires application changes to allow users to invoke them, and notify
 %users when they happen.
@@ -99,9 +98,9 @@ manually without \sys.
 %without \sys---necessarily require changes to application code. These changes
 %add HTTP endpoints to invoke \xxing and revealing, and modifications to perform
 %authorization checks for anonymous users and send emails to users with \xx IDs.
-These changes add 179 LoC of Ruby to Lobsters (out of 160k LoC total), and 312 LoC of Rust
-to the original WebSubmit (908 LoC). This code implements HTTP endpoints,
-authorization of anonymous users, and email notifications.
+These changes add 179 LoC of Ruby to Lobsters (out of 160k LoC total), and 312
+LoC of Rust to the original WebSubmit (908 LoC). This code implements HTTP
+endpoints, authorization of anonymous users, and email notifications.
 %
 
 %
@@ -135,13 +134,12 @@ HotCRP, and Lobsters.
 %
 We measure the latency of common operations, \xxing transformations, and
 operations over \xxed data enabled by \sys. These operations over disguised data
-include account restoration via
-\texttt{RevealData} and editing
-\xxed data via \texttt{CanSpeakFor} (\S\ref{s:semantics:speakfor}).
+include account restoration via \texttt{RevealData} and editing \xxed data via
+\texttt{CanSpeakFor} (\S\ref{s:semantics:speakfor}).
 %
 These three applications do not create new data that reference pseudoprincipals
 (\S\ref{s:semantics:revealdata}). Despite this, to fully capture any overheads, we
-configure \sys to run the checks for lingering pseudoprincipal
+configure \sys to check for lingering pseudoprincipal
 references on revealing.
 %
 
@@ -460,8 +458,9 @@ Restoring the removed, anonymized account must then individually decrypt
 pseudoprincipal records and restore them.
 % to both restore and then clear them.
 %
-Hence, \xxing and revealing in the third setup should take time proportional to
-the number of pseudoprincipals created by anonymization.
+Hence, \xxing and revealing in the third setup---after a prior
+anonymization---should take time proportional to the number of pseudoprincipals
+created by anonymization.
 %
 
 %
@@ -807,15 +806,16 @@ exp txn restore 98 232 366
 %
 Adding support for global database updates to disguised data during reveal may both
 increase developer effort and affect \sys's performance.
-This section answers the following two questions:
+This section answers the following:
 \begin{enumerate}[nosep]
     \item What categories of global database updates can \sys support, and with how
-        much extra developer effort? 
+        much extra developer effort? (\S\ref{s:eval-updates:support})
     \item What are the performance impacts of invoking \sys's API to record an
-        update, and to apply updates during reveal?
+        update, and to apply updates during reveal? (\S\ref{s:eval:updates})
 \end{enumerate}
 
 \subsection{Supporting Updates}
+\label{s:eval-updates:support}
 \begin{figure}
     \centering
     \begin{tabular}{m{0.2\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}|m{0.2\columnwidth}}

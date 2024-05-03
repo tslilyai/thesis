@@ -82,8 +82,8 @@ Logging out deletes the user's private key from the proxy and re-encrypts their
 object keys, thus preventing the proxy from accessing those objects.
 %
 Prior to applying transformations to a user's data, \syscrypt performs a login to
-ensure that \syscrypt has legitimate access to their data (\eg the user, an admin, or
-someone sharing the data is logged in).
+ensure that \syscrypt has legitimate access to their data. \syscrypt can access
+a user's data if the user, an admin, or someone sharing the data with the user is logged in.
 %to the proxy, and can access only those
 %objects encrypted with their public keys.
 %\syscrypt handles keys in the same way as CryptDB, \ie encrypting objects with
@@ -245,11 +245,11 @@ absolute latencies.
 %
 Figure~\ref{f:cryptdb_ws_opstats} shows the results.
 %
-Normal application operations are 2--3$\times$ slower with \syscrypt than in
-\sys, with the largest overheads on operations that access many rows, such as
+Normal application operations are 2--3$\times$ slower with \syscrypt than with 
+\sys. The largest overheads occur with operations that access many rows, such as 
 the admin viewing all answers.
 %
-\Xxing and revealing operations are also 2--6$\times$ slower than \sys.
+\Xxing and revealing operations are also 2--6$\times$ slower than with \sys.
 %
 
 %

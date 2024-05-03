@@ -179,8 +179,8 @@ private key, and to do so securely: the principal table adds a layer of
 indirection from user ID to encrypted records, so an attacker cannot link
 principals to their records.
 %
-At reveal time, \sys can efficiently find \xxed data for a given user
-by decrypting and using \xx table indexes in the principal table.
+At reveal time, \sys can efficiently find a given user's \xxed data 
+by using decrypted \xx table indexes in the principal table.
 %
 %This also hides from an attacker which \xxed data belongs to a given principal
 %because entries in the principal table cannot be interpreted without
@@ -199,9 +199,9 @@ This removes the user ID from the database while allowing future reveal
 operations by the principal to find their \xx table indexes.
 %
 \sys also stores a special type of remove diff record that contains the
-principal's ID and the principal's public key when a disguise removes a principal.  This
-allows \sys to restore the principal to \sys's principal table if a user later
-reveals the disguise.
+principal's ID and the principal's public key when a disguise removes a
+principal.  This lets \sys to restore the principal to \sys's principal table if
+a user later reveals the disguise.
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -278,7 +278,7 @@ inform \sys how to handle new pseudoprincipal references prior to removing the
 pseudoprincipals (\S\ref{s:semantics:revealdata}).
 %
 After revealing, the \xxed data is no longer needed, so \sys clears the
-corresponding diff and speaks-for records.
+corresponding disguise records.
 %
 
 %
@@ -286,8 +286,8 @@ In the example, if Bea wants to reveal their ``Star Wars'' contributions,
 Lobsters invokes \sys with the \xx ID and Bea's password as reveal credentials.
 %to reveal their Star Wars \xxing transformation.
 %
-\sys uses the password to reconstruct Bea's private key, retrieve and decrypt
-Bea's records, and filter those records for those with the \xx ID.
+\sys uses the password to reconstruct Bea's private key and retrieve and decrypt
+Bea's records. \sys filters those records to find those with the requested \xx ID.
 %
 \sys then restores deleted votes and Bea's ownership of
 decorrelated comments.
@@ -295,6 +295,20 @@ decorrelated comments.
 
 \section{Global Database Updates}
 \label{s:design:updates}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=.8\textwidth]{figs/update-moderation}
+    \caption[During reveal, \sys applies reveal-time update specifications for
+    global moderation updates.]{When the application applies updates like moderations of explicit
+    words, it invokes \sys to log the corresponding reveal-time update specification. \sys then applies the
+    update to disguised data in diff records prior to revealing them. Yellow 
+    highlights changes to the application data or \sys's data.}
+\label{f:update:mod}
+\end{figure}
+
+
+
 \sys's revealing as described thus far may reveal data that ignores
 database updates applied since the time of disguise, such as global
 transformations to un\xxed data or schema changes.
@@ -314,17 +328,6 @@ these updates to data to reveal, and \sys's consistency checks.
 %
 \subsection{Global Data Transformations}
 \label{s:design:dataupdates}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=.8\textwidth]{figs/update-moderation}
-    \caption[During reveal, \sys applies reveal-time update specifications for
-    global moderation updates.]{When the application applies updates like moderations of explicit
-    words, it invokes \sys to log the corresponding reveal-time update specification. \sys then applies the
-    update to disguised data in diff records prior to revealing them. Yellow 
-    highlights changes to the application data or \sys's data.}
-\label{f:update:mod}
-\end{figure}
     
 In order for revealing to preserve application correctness, \sys must obey 
 global database updates that transform application data.
@@ -695,9 +698,9 @@ this limitation, imagine the following counterexample:
         the database. Both Bea and Chris store a diff record of the message mapping Bea to $P_1$,
         and Chris to $P_2$. 
        
-    \item[2)] Chris first reveals and then removes the message again, so no data
-        is left in the database. Chris now stores a diff record of the message
-        with Chris mapped some \emph{new} pseudoprincipal $P_3$.
+    \item[2)] Chris reveals and then removes the message again, 
+        leaving no data in the database. Chris now has a diff record of the
+        message with Chris mapped to a \emph{new} pseudoprincipal $P_3$.
         
     \item[3)] Now Bea reveals, restoring the message with $P_1$ and $P_2$ to
         the database. 
@@ -810,7 +813,7 @@ Thus, an attacker who compromises the database could learn:
   \item the active principals that have \xxed data, via \sys's principal
       table;
   \item the pseudoprincipals currently registered, from \sys's
-    principal table and the application DB;
+    principal table and the application database;
   \item the number of deleted principals, via the size of the deleted
     principal table;
   \item the amount of \xxed data in \sys; and

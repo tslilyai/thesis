@@ -179,13 +179,17 @@ comments on ``bears'' and ``Star Wars'' posts respectively
 
 %
 \begin{enumerate}
-    \item[(1)] First, the ``bears''
-decorrelation rewrites Ewok posts to pseudoprincipal $P_1$.
+    \item[(1)] First, the ``bears'' decorrelation rewrites Ewok posts to
+        pseudoprincipal $P_1$. Bea's disguised data includes a speaks-for record
+        from Bea to $P_1$ and a diff record recording the database changes.
 %
-\item[(2)] Next, the ``Star
-Wars'' decorrelation composed on top decorrelates Ewok posts from $P_1$ to
-pseudoprincipal $P_2$.  At this point, \sys has speaks-for records for Bea that
-encode a speaks-for chain from Bea $\to P_1 \to P_2$.
+\item[(2)] Next, a ``Star Wars'' decorrelation composes on top of the ``bears''
+    decorrelation to rewrite Ewok posts from $P_1$ to pseudoprincipal $P_2$.
+        This creates disguised data for $P_1$, including a speaks-for record
+        from $P_1$ to $P_2$ and a diff record recording the database changes.
+%
+        At this point, \sys has speaks-for records originating from Bea that encode
+        a speaks-for chain from Bea $\to P_1 \to P_2$.
 %
 \item[(3)] If Bea first reveals the ``bears'' anonymization---the first applied
 disguise---on their data, \sys finds all accessible speaks-for records given
@@ -193,25 +197,26 @@ Bea's reveal credentials (cf.\ Figure~\ref{f:revealpseudo}), and constructs Bea'
 speaks-for chain as a graph of principal-to-principal edges (namely Bea$\to
 P_1\to P_2$).
 %
-\sys finds that $P_1$'s ``Ewok'' posts no longer exist in the database (they belong to
-$P_2$ due to the composed ``Star Wars'' disguise), and thus does not restore 
-``Ewok'' posts to Bea. \sys does still remove pseudoprincipal $P_1$ in the process
-of restoring ``bear'' diff records, and once done, clears all ``bear'' 'diff
-records from its encrypted disguise table. 
+\sys finds that $P_1$'s ``Ewok'' posts no longer exist in the database (they
+        belong to $P_2$ due to the composed ``Star Wars'' disguise), and thus
+        does not restore ``Ewok'' posts to Bea. \sys does still remove
+        pseudoprincipal $P_1$ in the process of restoring ``bear'' diff records,
+        and once done, clears all ``bear'' diff records from its encrypted
+        disguise table. 
 %
-Importantly, however, \sys still retains the speaks-for record for Bea$\to P_1$,
-since $P_1$ still has associated disguised data (namely a speaks-for record to $P_2$)!
+        Importantly, however, \sys still retains the speaks-for record for
+        Bea$\to P_1$, since $P_1$ still has associated disguised data (namely a
+        speaks-for record to $P_2$ and a diff record).
 %
-\item[(4)] Now, if Bea reveals the second applied disguise---``Star Wars''---\sys finds
-diff records for decorrelated ``Ewok'' posts whose original rows have $P_1$ as
-owner. 
+\item[(4)] Now, if Bea reveals the second applied disguise---``Star
+    Wars''---\sys sees that $P_1$'s diff record has an original row with $P_1$ as
+        owner. 
 %
-However, \sys cannot reveal the diff record directly and restore the
+        However, \sys cannot reveal the diff record directly and restore the
         decorrelated posts to $P_1$, as this will fail referential integrity
         consistency checks. Furthermore, the reveal of ``Star Wars'' reveals the
         last disguise applying to Bea's posts, so \sys should restore posts to
         their original, undisguised state (instead of decorrelated to $P_1$).
-
 
         Instead of immediately revealing the diff record, \sys walks the
         speaks-for chain (Bea$\to P_1 \to P_2$) backwards from $P_2$ to
@@ -228,22 +233,22 @@ However, \sys cannot reveal the diff record directly and restore the
         %
 
 %
-After determining that Bea is the next valid user in the speaks-for chain to $P_2$,
-\sys rewrites the removed ``Ewok'' row in the diff record so that it references Bea instead of $P_1$,
-and then restores the rewritten row to the database.
+        After determining that Bea is the next valid user in the speaks-for chain to
+        $P_2$, \sys rewrites the removed ``Ewok'' row in the diff record so that
+        it references Bea instead of $P_1$, and then restores the rewritten row
+        to the database. \sys also removes pseudoprincipal $P_2$.
 %
-Finally, \sys deletes the diff records for the ``Star Wars'' disguise, the
-speaks-for records for $P_2$ (which no longer has any associated disguised
-data), and the speaks-for records for $P_1$ (which also has no associated
-disguised data after $P_2$ is removed).
-%
-This implicitly truncates the speaks-for chain to just Bea.
+        Finally, \sys deletes the diff record for the ``Star Wars'' disguise, as
+        well as
+        $P_2$ and $P_1$'s speaks-for records (since both pseudoprincipals 
+        have no associated disguised data).
+        This implicitly truncates the speaks-for chain to just Bea.
+        %
 \end{enumerate}
 %
 %This design works even in the presence of multiple recursive decorrelations and
 %many-link speaks-for chains. 
-\sys enforces the invariant that the chain only truncates at link
-$L$ once all pseudoprincipals recursively generated in the chain beyond $L$ have
+\sys enforces the invariant that the chain stops at some principal $P$ only once all pseudoprincipals recursively generated in the chain beyond $P$ have
 been recorrelated.
 %
 
