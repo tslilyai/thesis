@@ -99,7 +99,7 @@ manually without \sys.
 %add HTTP endpoints to invoke \xxing and revealing, and modifications to perform
 %authorization checks for anonymous users and send emails to users with \xx IDs.
 These changes add 179 LoC of Ruby to Lobsters (out of 160k LoC total), and 312 LoC of Rust
-to the original WebSubmit (908 LoC). This code implement HTTP endpoints,
+to the original WebSubmit (908 LoC). This code implements HTTP endpoints,
 authorization of anonymous users, and email notifications.
 %
 
@@ -107,7 +107,7 @@ authorization of anonymous users, and email notifications.
 A developer using \sys also writes \xx specifications and invokes \sys.
 Lobsters' \xx specifications are written in 518 LoC, WebSubmit's in 75 LoC, and
 HotCRP's in 357 LoC (all in JSON).  The specification size is proportional to
-the lines required to specify the database schema in SQL, as well as what data
+the lines required to specify the database schema in SQL, as well as how much data
 each application \xxs.
 %
 Update specifications for the three Lobsters global database updates take 81
@@ -139,7 +139,7 @@ include account restoration via
 \xxed data via \texttt{CanSpeakFor} (\S\ref{s:semantics:speakfor}).
 %
 These three applications do not create new data that reference pseudoprincipals
-(\S\ref{s:semantics:revealdata}). Nevertheless, to fully capture any overheads we
+(\S\ref{s:semantics:revealdata}). Despite this, to fully capture any overheads, we
 configure \sys to run the checks for lingering pseudoprincipal
 references on revealing.
 %
@@ -152,8 +152,9 @@ should not be invoked on normal application execution paths.
 to also encrypt and store disguised data.
 %
 Finally, \sys should have reasonable latencies for revealing operations
-supported only by \sys (\eg a few seconds for account restoration), which
-require both database queries and cryptographic operations. 
+supported only by \sys, which require both database queries and cryptographic
+operations. For example, \sys should take only a few seconds for account
+restoration.
 %impossible in the manual baseline
 %
 
@@ -218,7 +219,7 @@ longer in \sys (13.2--40.0ms), but allow users to reveal their data.
 
 \textbf{HotCRP.}
 %
-We measure server-side HotCRP operation latencies for PC members on a database seeded with 3,080
+We measure server-side HotCRP operation latencies for Program Committee (PC) members on a database seeded with 3,080
 total users (80 PC members)
 %and per-user data such as paper watches;
 and 550 papers with eight reviews, three comments, and four conflicts each
@@ -234,7 +235,7 @@ Figure~\ref{f:ops-hotcrp} shows higher latencies than in WebSubmit in general, e
 baseline, which reflects the more complex \xxing transformations.
 %
 \sys takes 64.4--79.5ms to \xx and reveal a PC member's data, again owing to the
-cryptographic operations necessary.
+cryptographic operations involved.
 %
 HotCRP's account anonymization is admin-applied and runs for all PC members, so
 its total latency is proportional to the PC size.
@@ -357,7 +358,7 @@ $0.2$--$0.3$ms but vary depending on the amount of data touched.
 %
 PBKDF2 hashing for private key management incurs a 8ms cost and affects account
 registration and operations on \xxed data that reconstruct a user's private key;
-this accounts for up to 79\% of these operations' cost when the operation issues
+this accounts for up to 79\% of the cost of these operations when they issue
 only a few database queries.
 %
 %This appears during registration (generating password-based credentials from the
@@ -475,7 +476,7 @@ HotCRP removal latencies also increase by $\approx$1ms per pseudoprincipal
 (205.6ms) and restoration latencies increase by $\approx$2ms per pseudoprincipal
 (392.0ms). Again, cryptographic operations add $\approx$0.5ms per
 pseudoprincipal, and the remaining cost increase comes from
-per\-pseudoprincipal
+per-pseudo\-principal
 database queries and updates. Restoration requires additional per-pseudoprincipal
 queries to \eg perform consistency checks, resulting in a greater latency
 increase than in removal. 
@@ -530,13 +531,13 @@ data (to one pseudoprincipal per record), as done by HotCRP anonymization.
 \section{\sys Overheads}
 \label{s:eval-overheads}
 
-\sys adds both space and compute overheads to the application: \sys stores
-disguised data and metadata, adding tables to the application DB; and \sys may
-run disguising and revealing transformations simultaneously with normal
-application operations, increasing the load on the system and affecting normal
+\sys adds both space and compute overheads to the application. \sys stores
+disguised data and metadata by adding tables to the application DB. Furthermore,
+\sys may run disguising and revealing transformations simultaneously with normal
+application operations, thus increasing the load on the system and affecting normal
 application operation throughput.
 %
-This section measures both these overheads.
+This section measures both of these overheads.
 
 \subsection{Space Used By \sys}
 
@@ -568,7 +569,7 @@ remove their accounts.
 %
 %
 Cryptographic material adds overhead and each generated pseudoprincipal adds an
-additional user to the application database; \sys also stores data for each
+additional user to the application database. \sys also stores data for each
 registered principal (a public key and a list of opaque indexes) as well as
 encrypted records.
 %
@@ -585,7 +586,7 @@ user shares table from the registration of all 16k users.
 \sys's storage space grows to 58.5 MB after the users remove their accounts, and
 the application database size increases from 261 MB to 290 MB (+11\%).
 %
-(\sys also caches this data using 44MB in memory.)
+\sys also caches this data using 44MB in memory.
 %
 The space used is primarily proportional to the number of pseudoprincipals
 produced: each pseudoprincipal requires storing an application database record,
@@ -745,7 +746,7 @@ This scenario disguises and reveals a user owning 1\% of all the data
 in a database of 16k users, and demonstrates the upper bound on Edna’s
 performance impacts when Edna runs large disguising and revealing transactions
 continuously.  Because the queries within disguise and reveal transactions touch
-16 tables, all which are commonly read by normal application operations, this
+16 tables, all of which are commonly read by normal application operations, this
 impact is expected: transactions in MariaDB's InnoDB storage engine lock any
 written tables, preventing application operations from reading them until the
 transaction has completed.
@@ -807,7 +808,7 @@ Adding support for global database updates to disguised data during reveal may b
 increase developer effort and affect \sys's performance.
 This section answers the following two questions:
 \begin{enumerate}[nosep]
-    \item What categories of global database update can \sys support, with how
+    \item What categories of global database updates can \sys support, and with how
         much extra developer effort? 
     \item What are the performance impacts of invoking \sys's API to record an
         update, and to apply updates during reveal?
@@ -832,18 +833,19 @@ This section answers the following two questions:
     \label{tab:updates}
 \end{figure}
 
-Developers must already write their global updates today (\eg Lobsters
-implements these updates as Ruby Active Record Migrations~\cite{ruby_arm}). 
+Developers today already write global updates (\eg Lobsters implements global
+updates as Ruby Active Record Migrations~\cite{ruby_arm}). If this code
+transforms row data (\eg modifies a column value), a developer can reuse it as
+an update specification to \sys. In this case, the developer need not write any
+additional code to add update support to disguised data with \sys.
 %
-However, depending on the type of update, developers may need to additionally
-write a reveal-time update specification for \sys to capture that operation.
+However, in other instances, developers must write an additional
+reveal-time update specification for \sys to apply.
 %
-Schema changes (\eg an \texttt{ALTER TABLE} command) require writing separate
-update specifications for \sys, which take as input a set of rows instead of the table.
+For example, schema changes (\eg an \texttt{ALTER TABLE} command) require
+writing separate update specifications for \sys, which take as input a set of
+rows instead of the table.
 %
-However, global updates may already operate on row data, and thus
-can be reused as an update specification to \sys.
-
 
 %
 The Lobsters case study implements the selected three global updates
@@ -1007,7 +1009,7 @@ This section looks at how global updates affect application performance, and how
 logging reveal-time update specs affects \sys's reveal performance.
 Table~\ref{tab:updates-perf} shows the results.
 %
-Overall, the effects of performing updates increases with the amount of
+Overall, the overheads from reveal-time updates increases with the amount of
 disguised data a user wants to reveal.
 %
 Users with little data (\eg fewer than 5 stories) experience no visible increase
@@ -1064,8 +1066,8 @@ in-memory update replay log.
 \paragraph{Reveal with Updates.}
 %
 Next, we evaluate the latency of reveal operations in Lobsters when updates
-corresponding to the implemented three global updates are applied after
-reveal. \sys applies update specifications to data to reveal in batch, but the cost of
+corresponding to the implemented three global updates are applied after reveal.
+\sys applies update specifications to batches of data to reveal, but the cost of
 applying updates to revealed data should still be proportional to the amount of
 data to reveal.
 
@@ -1116,7 +1118,7 @@ because the update is not batched over all table rows).}
 The cost to restore rows for all tables other than \texttt{stories} remains the
 same with or without updates, since the queries to restore the rows are the
 same.  However, restoring a story now requires additional queries to perform
-consistency checks for and insert \texttt{story\_texts} table rows, which add 
+consistency checks and insert \texttt{story\_texts} table rows, which add 
 $\approx$0.6ms per story.
 %
 
