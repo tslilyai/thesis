@@ -1,4 +1,4 @@
-This chapter describes \todo{informal} high-level semantics that a developer can use to
+This chapter describes informal high-level semantics that a developer can use to
 reason about the resulting state of data after a disguise and reveal, and 
 includes an overview of \sys's API.
 
@@ -49,7 +49,7 @@ credential to do so.
 Revealing a disguise $D$ reverts the data affected by $D$ back to the
 pre-disguised state, except in two cases.  
 %
-\todo{First, if disguises after $D$ had decorrelated the same data as $D$, then
+First, if disguises after $D$ had decorrelated the same data as $D$, then
 the data will refer to the last-unrevealed pseudoprincipal created by any
 disguise.
 %
@@ -58,7 +58,7 @@ original owner prior to $D$.
 %
 Second, if a normal application update or a subsequent disguise has since
 changed the disguised data (aside from decorrelations), then the data remains in
-its updated state and cannot be revealed.}
+its updated state and cannot be revealed.
 %
 %
 Thus, when multiple disguises apply to the same data, the application data state
@@ -289,12 +289,12 @@ However, no two objects referring to different users or from different database
 tables refer to the same pseudoprincipal, and no two disguises' sets of produced
 pseudoprincipals overlap.
 %
-\todo{This may be too restrictive for some applications' purposes: for example, an
+This may be too restrictive for some applications' purposes: for example, an
 application may wish to decorrelate a story and comments on the story made by
 the author to the same pseudoprincipal.
 %
 Multi-table pseudoprincipals could be supported in a future \sys prototype with
-an extended API that can express groupings of objects from different tables.}
+an extended API that can express groupings of objects from different tables.
 
 When prior disguises have applied, users may wish to disguise data that has
 already been decorrelated (\S\ref{s:semantics:hl:composition}).  \sys allows
@@ -524,6 +524,7 @@ use normal user authentication to authorize revealing; disguising
 already-disguised data no longer requires a user's reveal credentials; and
 reveal-time updates can be applied immediately to disguised data instead of
 logged and applied at reveal time.
+
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Disguise Specifications}
@@ -860,4 +861,45 @@ the message to its original state.
 data semantics.
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\subsection{Limitations}
+
+\paragraph{Disguises.}
+\sys assumes that all desired disguises are captured with the three primitive
+operations (remove, modify, and decorrelate).
+%
+Furthermore, disguising transformations may affect data processing of
+application data (\eg aggregates over the number of users), or application side
+effects dependent on application data (\eg sending notifications).  \sys
+currently expects the developer to correctly handle these scenarios, and to ensure
+that any modified aggregations or placeholder data do not violate application
+correctness.
+%
+
+\paragraph{API.} \sys's API assumes that:
+\begin{enumerate}[nosep]
+    \item the application uses a relational database;
+    \item rows to \xx have direct foreign key relationships to a users table,
+    where each user corresponds to a row of that table;
+\item all rows to \xx are owned by (have a foreign-key relationship) to one or more principals; and
+    \item all rows can be uniquely identified (\eg via primary key).
+\end{enumerate}
+%
+Applications that fail to satisfy these assumptions---\eg because they have
+complex ownership chains or use a NoSQL database---could be supported with
+extensions to \sys's design. \sys could use techniques from DELF~\cite{delf} to
+support multiple data models; 
+%by requiring
+%developers to provide \one{} a model of data as objects with dependency edges to other objects,
+%and \two{} instantiations for update/delete/insert operations on these objects.
+%
+and K9DB's data ownership graph~\cite{k9db} to handle indirect data ownership.
+If no user owns a data item, \sys could refuse to disguise it and flag the
+developer to review the disguise specification.  
+%
+Finally, to address the unique identification requirement, \sys could add unique
+IDs for every data object, so \sys can refind the object when revealing.
+However, this method requires more invasive changes to application data. 
+%
+
 

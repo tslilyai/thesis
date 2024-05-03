@@ -668,45 +668,6 @@ update the database with the modification.
 \section{Design Limitations}
 \label{s:design:limits}
 
-\paragraph{Disguises.}
-\sys assumes that all desired disguises are captured with the three primitive
-operations (remove, modify, and decorrelate).
-%
-Furthermore, disguising transformations may affect data processing of
-application data (\eg aggregates over the number of users), or application side
-effects dependent on application data (\eg sending notifications).  \sys
-currently expects the developer to correctly handle these scenarios, and to ensure
-that any modified aggregations or placeholder data do not violate application
-correctness.
-%
-
-\paragraph{API.}
-\sys's API assumes that:
-\begin{enumerate}[nosep]
-    \item the application uses a relational database;
-    \item rows to \xx have direct foreign key relationships to a users table,
-    where each user corresponds to a row of that table;
-\item all rows to \xx are owned by (have a foreign-key relationship) to one or more principals; and
-    \item all rows can be uniquely identified (\eg via primary key).
-\end{enumerate}
-%
-Applications that fail to satisfy these assumptions---\eg because they have
-complex ownership chains or use a NoSQL database---could be supported with
-extensions to \sys's design. \sys could use techniques from DELF~\cite{delf} to
-support multiple data models; 
-%by requiring
-%developers to provide \one{} a model of data as objects with dependency edges to other objects,
-%and \two{} instantiations for update/delete/insert operations on these objects.
-%
-and K9DB's data ownership graph~\cite{k9db} to handle indirect data ownership.
-If no user owns a data item, \sys could refuse to disguise it and flag the
-developer to review the disguise specification.  
-%
-Finally, to address the unique identification requirement, \sys could add unique
-IDs for every data object, so \sys can refind the object when revealing.
-However, this method requires more invasive changes to application data. 
-%
-
 \paragraph{Shared Data.}
 \sys's approach for shared data has two main limitations. First, the
 application cannot use foreign keys to its users table as unique identifiers for
