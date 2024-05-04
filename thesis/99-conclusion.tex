@@ -4,70 +4,75 @@ protect, store, and reveal \xxed user data with user permission.
 To move towards this goal, this thesis presents \sys, a system that gives users 
 flexible privacy control over their data via data disguising.
 %
-With \sys, developers can provide data \xxing and revealing transformations.
+With \sys, developers can provide data \xxing and revealing transformations that
+help users protect inactive accounts, selectively dissociate personal data from
+public profiles, and remove a web service's access to their data without
+permanently losing their accounts.
 %
-This thesis illustrates how these transformations help users protect
-inactive accounts, selectively dissociate personal data from public profiles,
-and remove a web service's access to their data without permanently losing their
-accounts;
-%
-and demonstrates that \sys can support disguised data in real-world applications with
-reasonable performance.
+This thesis demonstrates that \sys can support disguised data in real-world
+applications with reasonable performance.
 %
 
 %
 However, \sys is just the beginning. To truly achieve a world in which web
-applications meet the desired flexible privacy standards, several
-challenges remain unsolved, which we describe here as future
-opportunities for research.
+applications meet flexible privacy demands, several challenges remain unsolved,
+which we describe here as future opportunities for research.
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Deploying Disguised Data}
 \label{s:deploying}
 
-Supporting disguised data in web applications that have millions or more users,
+Supporting disguised data in web applications that have millions of users,
 operate with low cost margins, and/or distribute their compute and storage
 across multiple regions requires addressing several issues.
 
 %
-\paragraph{Disguised Data Storage.} If millions of users or more disguise
-their data over time, disguised data may become too much for applications to
-store.
+\paragraph{Disguised Data Storage.} 
+With millions of users disguising their data, storage may become costly for
+applications.
 %
 Even though storage is historically cheap, and applications today willingly
-store and retain user data nearly indefinitely, eventually disguised data
-(particularly since it cannot be sold or processed) may burden the application.
+store and retain user data nearly indefinitely, disguised data may eventually
+burden the application (particularly since it cannot be sold or processed).
 %
-\sys currently retains disguised data in its disguised table until a user
-reveals their disguised data, which could be forever if users choose to never
-reveal data.
+\sys currently retains disguised data until a user
+chooses to reveal it, which could be never.
 %
-Instead, \sys could allow applications to put reasonable, coarse-grained time
-limits (\eg 10 years) on disguised data to eventually clean it up, without
-leaking fine-grained information about which data was disguised at the same
-time.
+To address storage concerns, \sys could allow applications to set reasonable,
+coarse-grained time limits (\eg 10 years) on disguised data, after which \sys
+will delete it.
+%without
+%leaking fine-grained information about which data was disguised at the same
+%time.
 %
 
 %
 \paragraph{Deriving Value from Disguised Data.} 
-\sys enables an application to keep as much data as possible if users wish to
-protect their privacy via disguising, and to allow users to return to the application.
-For many applications, this provides a better solution than handling user data
-deletion requests via permanent user deletion, or decentralized approaches that
-move all user data out of the application.
-
-However, with \sys, applications store disguised data, but cannot derive value
-from the now-confidential data.
 %
-Cryptographic approaches such as additive homomorphic secret sharing
-as done in Zeph~\cite{zeph}, may potentially allow \sys to support limited computation such
-as aggregations over disguised data from which an application can derive value.
+Support for disguised data enables users to protect their privacy and return to
+the application if they wish---a potentially better solution than permanent user
+deletion or decentralized approaches that move all user data out of the
+application. However, with \sys, applications now store disguised data, but
+cannot derive value from it, as it remains encrypted and confidential.
+
+%While \sys enables an application to keep as much data as possible if users
+%wish to
+%protect their privacy via disguising and to return to the application,
+%For many applications, this provides a better solution than handling user data
+%deletion requests via permanent user deletion, or decentralized approaches that
+%move all user data out of the application.
+
+%
+Cryptographic techniques such as additive homomorphic secret sharing as done in
+Zeph~\cite{zeph}, may enable \sys to support limited computation over disguised
+data (\eg aggregations) and allow applications to derive value from the
+encrypted data.
 %
 However, such cryptographic approaches require some initial setup to determine
 whose data can be aggregated with whose (in order to split the secrets
 appropriately) and who should be able to reveal the result. Furthermore, defining
-groups of users whose data can be combined requires more thought into what these
+groups of users whose data can be combined raises concerns about what these
 groups may reveal about their constituents.
 %
 
@@ -86,32 +91,35 @@ datacenters.
 %
 
 %
-Today, many applications will already break down large transactions into smaller
+Today, many applications already break down large transactions into smaller
 pieces (at the cost of transactional consistency) or run large transactions in
 batches overnight to reduce their impact on database performance.
 %
 Similarly, we can imagine \sys breaking down large disguise and reveal transactions
-into multiple, per-table transactions, so as to not lock all tables at once; or
+into multiple, per-table transactions, in order to not lock all tables at once; or
 delaying their execution until night and notifying the user once their
 disguise or reveal has completed. 
 %
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Disguising Beyond \sys: Flexible Access Control}
-Disguising and revealing in \sys protects disguised data from any external party
-other than the user themselves. However, disguising and revealing can also apply
-in more nuanced settings, such as disguising data in different ways to 
-protect from different parties. 
+Disguising and revealing in \sys protects disguised data from parties external
+to the owning user. However, disguising and revealing can also be useful in more
+nuanced settings, where data is protected from different parties with different
+disguises.
+%a user may want different disguises to protect their data from different
+%parties.  in more nuanced settings, such as disguising data in different ways
+%to protect from different parties. 
 %
-In these settings, disguising and revealing can offer potential opportunities for
-more flexible access control to control user data exposure to web application
-insiders.
+In these settings, disguising and revealing may offer more flexible access
+control to regulate exposure of user data to web application insiders.
+%
 
 %
-As part of a collaboration with Hannah Gross~\cite{funhouse}, we investigated
-using disguising abstractions to allow the application to control user data
-exposure to insiders. Such an approach could help organizations whose employees
-need to query data, but may not need to see all of it.
+In collaboration with Hannah Gross~\cite{funhouse}, we investigated using
+disguising abstractions to allow applications to control exposure of user data
+to insiders. Such an approach could help organizations whose employees
+need to query some data, but may not need to see all of it.
 %
 Our work draws on the key observation that company employees do not
 \emph{always} need all of the user information that they can access.
@@ -122,21 +130,21 @@ data to employees when they actually need and use it.
 %
 
 %
-To achieve this goal, we envision a world where every employee operates atop a
-personalized disguised database that contains the minimum amount of data they
-need continuously. For example, a hotel customer service representative might
-only need to be able to look at room occupancy and see free rooms when not
-actively helping a customer.
+We envision a world where every employee uses a personalized disguised database
+that contains the minimum amount of data they require to normally work. For
+example, a hotel customer service representative might only need to be able to
+look at room occupancy and find free rooms when not actively helping a customer.
 %
 %Similarly, a business intelligence analyst might need to be able to compute
 %aggregates and statistics using coarse-grained data like area codes, but not
 %need to see unique user identifiers like usernames or precise phone numbers.
 %%
 %
-However, disguised databases would present only the minimal amount of data the
-employee needs; if, for example, a particular customer needs assistance, the
-employee currently helping the customer should be able to temporarily reveal
-parts of their disguised database to dynamically expose that user's data.
+When an employee temporarily needs more data, their disguised database would
+reveal only the minimum amount of data the employee needs. For example, if a
+particular customer needs assistance, the employee currently helping the
+customer should be able to temporarily reveal parts of their disguised database
+to dynamically expose that user's data.
 %
 Different employees simultaneously helping different customers can reveal
 different disguises to get a partially disguised view of the database
@@ -181,12 +189,12 @@ new challenges.
 %
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Final Thoughts}
-User data increasingly lands in the hands of web services, which reduce
-or remove users' ability to control the privacy of their data as they wish.
+User data increasingly lands in the hands of web services, eroding users'
+ability to control the privacy of their data as they wish.
 %
-While \sys represents just one step forward in improving user data privacy on
+While \sys represents just one step towards improved user data privacy on
 the web, this thesis demonstrates that with disguised data,
-applications can support flexible privacy features beyond what they offer users
+applications can support flexible privacy features beyond those offered to users
 today.
 %
 \sys provides evidence to both web services and regulators that flexible privacy
