@@ -892,15 +892,18 @@ Only another reveal by the user of another disguise could decrypt the log, and
 \sys would check whether it should also apply any reveal updates in the user's 
 log.
 %
-For example, consider a disguise $D_0$ of user $u$ that modifies data, and a
-subsequent disguise $D_1$ that removes it. If $u$ first reveals $D_0$, \sys
-cannot reveal the data because $D_1$ removed it. \sys would thus do nothing but
-encrypt and store an update specification representing the reveal of $D_0$ in
-$u$'s log.
-%
-When $u$ later reveals $D_1$, \sys decrypts $u$'s log, finds the
-``reveal-$D_0$'' update, and applies the update to reveal $D_0$'s modification
-of the data prior to restoring it.
+For example, consider two disguises $D_0$ and $D_1$ applied to user data as
+follows:
+\begin{enumerate}[nosep]
+    \item Disguise $D_0$ of user $u$ modifies some data row.
+\item A subsequent disguise $D_1$ removes the same data row. 
+\item If $u$ first reveals $D_0$, \sys cannot reveal the data because
+        $D_1$ removed it. \sys would thus do nothing but encrypt and store an
+        update specification representing the reveal of $D_0$ in $u$'s log.
+    \item When $u$ later reveals $D_1$, \sys decrypts $u$'s log, finds the
+        ``reveal-$D_0$'' update, and applies the update to reveal $D_0$'s
+        modification of the data prior to restoring it.
+\end{enumerate}
 
 \paragraph{API.} \sys's API assumes that:
 \begin{enumerate}[nosep]
