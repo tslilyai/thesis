@@ -187,7 +187,7 @@ and revealing.
     \sys uses the password and (generated or provided) private key to store a
     password-pro\-tected private key and derive a backup reveal credential
     (\S\ref{s:impl:cred}). \sys returns the private key and backup reveal
-    credential to the user. This registration allows the user to later provide
+    credential to the user. Registration allows the user to provide
     any of their private key, their password, or their backup credential to
     unlock and reveal their disguised data.
     %
@@ -306,8 +306,7 @@ this via an optional reveal credential (\texttt{disguise\_over}). If
 the database. Revealing the same disguise ID multiple times will do nothing
 after the first reveal. 
 
-\texttt{RevealData} returns \texttt{true} if \sys reveals all rows disguised by \texttt{d}
-successfully, and \texttt{false} otherwise.
+\texttt{RevealData} returns \texttt{true} if \sys successfully reveals all rows disguised by \texttt{d}, and \texttt{false} otherwise.
 
 \begin{center}
     \begin{longtable}{|m{0.18\textwidth}|m{0.75\textwidth}|}
