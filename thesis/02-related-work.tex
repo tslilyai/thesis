@@ -58,7 +58,7 @@ Policy-enforcing systems do not help users anonymize data or maintain
 application integrity constraints, which is the explicit goal with disguised
 data.
 %
-By contrast, data disguising systems modify the database contents of sensitive
+Data disguising systems modify the database contents of sensitive
 data---the data under disguise---so the data is no longer available in the
 database, and thus unavailable even to the service itself. This is unlike policy
 enforcement systems, which can deny access to sensitive data, but still
@@ -92,9 +92,9 @@ and the application without permission from the data's owner.
 
 \section{Other Related Work} 
 Other work has also focused on protecting user data and giving users more
-control over their data's exposure. However, these systems differ from \sys in
+control over their data's exposure. These systems differ from \sys in
 the specific problem they aim to solve, the threat model against which they
-protect, and how they can be deployed with today's applications.
+protect, and how they can be deployed with applications today.
 
 Some platforms focus on enforcing user-defined policies, instead of the
 developer-defined policies that \sys supports. They prove that server-side
@@ -184,7 +184,7 @@ as key-value pairs instead of objects of other data structures).
 %
 Sypse~\cite{sypse} pseudonymizes user data and partitions personally identifying
 information (PII) from other data. Instead of partitioning data, \sys modifies
-the database and stores \xxed data encryptedly.
+the database and stores encrypted \xxed data.
 %
 
 %
