@@ -180,12 +180,15 @@ them.
 A \xx specification (Figure~\ref{f:spec}) identifies objects to disguise by
 database table name and predicate, where a predicate is a SQL \fn{WHERE} clause.
 %
-\sys by default \xxs all objects related to the given principal\footnote{A
+By default, \sys \xxs all objects with a foreign-key relationship to 
+the principal being disguised\footnote{A
 principal refers to an application object representing a user (\eg a row in a
 \texttt{users} table). This thesis uses principal to mean either an 
 application object representing a real application client user, or a
-pseudoprincipal (a fake application user).}, as
-defined by a foreign-key relationship to the principals table, but predicates
+pseudoprincipal (a fake application user).},
+%, as
+%defined by a foreign-key relationship to the principals table, 
+but predicates
 can narrow the transformation's scope (\eg to stories with specific tags).
 %
 For each selected group of objects, developers choose to \emph{remove},
