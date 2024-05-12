@@ -2,15 +2,14 @@ Users have tens to hundreds of accounts with web services that store
 sensitive data, from social media to tax preparation and e-commerce
 sites.
 %
-While users have the right to delete their data (via \eg the
-GDPR or CCPA), more nuanced
-data controls often don't exist.
+While users have the right to delete their data (via \eg the GDPR or CCPA), more
+nuanced data controls often don't exist.
 %
 For example, a user might wish to hide and protect their profiles on an
 e-commerce or dating app when inactive, and to recover their accounts should
-they return to use the application. 
+they return to the application. 
 %
-However, services often provide only coarse-grained, blunt tools that
+However, services often provide only coarse-grained tools that
 result in all-or-nothing exposure of users’ private data.
 %
 
@@ -43,7 +42,7 @@ throughput.
 %
 In the Lobsters social media application---a 160k LoC web application with >16k
 users---adding \sys and its features takes <1k LoC, and decreases throughput
-1--7\% in the common case and up to 28\% when a heavy user
+1--7\% in the common case. \sys decreases throughput up to 28\% when a heavy user
 who owns 1\% of all application data continuously disguises and reveals their
 account.
 %
