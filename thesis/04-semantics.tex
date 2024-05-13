@@ -34,9 +34,10 @@ same table may refer to the same pseudoprincipal.
 For example, a disguise can decorrelate all stories from topic ``Star Wars''
 written by Bea to the same pseudoprincipal (\S\ref{s:semantics:example}).
 %
-However, no two objects referring to different users or from different database
-tables refer to the same pseudoprincipal, and no two disguises' sets of produced
-pseudoprincipals overlap.
+Two different disguises always produce disjoint sets of pseudoprincipals.
+%However, no two objects referring to different users or from different database
+%tables refer to the same pseudoprincipal, and no two disguises' sets of produced
+%pseudoprincipals overlap.
 %
 
 %
@@ -62,8 +63,8 @@ its updated state and cannot be revealed.
 %
 %
 Thus, when multiple disguises apply to the same data, the application data state
-reflects the effects of all unrevealed disguises (as well as any disguises that
-\sys failed to reveal).
+reflects the effects of all unrevealed disguises, as well as any disguises that
+\sys failed to reveal.
 %
 
 Revealed data will also reflect all global database updates (such as schema
@@ -74,7 +75,7 @@ chronological order.
 \paragraph{\sys without encryption.}
 \label{s:semantics:noencrypt}
 
-Developers may find \sys's threat model unnecessarily strong: perhaps they do
+Some developers may find \sys's threat model unnecessarily strong: perhaps they do
 not worry about data breaches, are exempt from regulations like the GDPR, or
 trust their application code to not expose disguised data. Instead, these
 developers may want to add disguising and revealing without encryption.
@@ -142,8 +143,8 @@ and revealing.
 
 \subsection{\texttt{RegisterPrincipal}}
     \texttt{RegisterPrincipal} registers an application user as a principal
-    whose data can be disguised and revealed. Unique users should not be
-    registered multiple times. Once registered, data of an undeleted user that
+    whose data can be disguised and revealed. Unique users should be
+    registered only once. Once registered, data of an undeleted user that
     exists in the database can always be disguised and revealed.  Users deleted
     by a disguise do not need to reregister if revealed.
 

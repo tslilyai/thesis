@@ -188,20 +188,19 @@ data.
 
 %
 Fourth, application databases often undergo global updates such as schema
-migrations and data transformations like content reformatting. However, these
-updates would fail to affect any data disguised at the time, because the
-disguised data remains inaccessible to the application and developer until
-revealed.  In order to restore disguised data correctly, these updates must be
-applied to disguised data when a user reveals it.
+migrations and data transformations like content reformatting. These updates
+must also affect any data disguised at the time, but the developer cannot
+apply them immediately to the disguised data: disguised data remains
+inaccessible to the application and developer until revealed. In order to
+restore disguised data correctly, the developer must apply updates to disguised
+data in chronological order when a user reveals it.
 %when a user grants permission to access the disguised
 %data in order to reveal it.
 %
-For example, a disguised row in the \texttt{posts} table might need to be
-restored as one \texttt{posts} row and one \texttt{postContent} row after a schema
-migration moves post content into a different table from posts. 
-%
-The developer would thus need to remember and apply these global updates to disguised
-data in chronological order while revealing it.
+For example, a schema migration could transform one row representing a post into
+two rows in two tables. If a user requests to reveal a post disguised prior
+to the migration, the developer must remember and apply the schema migration
+update to the post before restoring it.
 %
 
 
@@ -252,7 +251,7 @@ Second, to work with existing applications in practice, \sys's \xxing
 transformations should require minimal application modifications.
 %
 To achieve this, \sys introduces \emph{pseudoprincipals}, anonymous placeholder
-users that are inserted into the database on \xxing and exist solely to own data
+users that \sys inserts into the database on \xxing and exist solely to own data
 decorrelated from real users and maintain referential integrity.
 %
 Pseudoprincipals can also act as built-in ``throwaway accounts,'' as they let
