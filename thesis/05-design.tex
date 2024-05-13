@@ -91,29 +91,31 @@ which allows Bea to hide their association with a particular category of
 content,
 %
 \sys thus:
+\begin{enumerate}
 %
-\one{} queries the database to fetch comments and votes by Bea
+    \item queries the database to fetch comments and votes by Bea
 affiliated with ``Star Wars'';
 %
-\two{} creates a pseudoprincipal (\eg
+\item creates a pseudoprincipal (\eg
 ``AnonFox'') for every ``Star Wars''-tagged story that Bea commented
 on, and inserts it as a new user;
 % into the database;
 %
-\three{} modifies the database by rewriting comment
+\item modifies the database by rewriting comment
 foreign keys to point to the created pseudoprincipals, and
 removing Bea's votes on those stories;
 %
-\four{} creates new speaks-for records that map Bea to the created
+\item creates new speaks-for records that map Bea to the created
 pseudoprincipals and add links to Bea's speaks-for chain; diff records
 containing Bea's votes on ``Star Wars'' stories; and diff records that document
 Bea's original ownership of ``Star Wars''-tagged comments and the placeholder
 pseudoprincipal data;
 %
-\five{} encrypts the speaks-for and diff records with Bea's public key and stores
+\item encrypts the speaks-for and diff records with Bea's public key and stores
 them; and
 %
-\six{} returns a unique \xx ID to the application.
+\item returns a unique \xx ID to the application.
+\end{enumerate}
 
 %
 % \sys's security properties require that \xx records be untraceable: even a
@@ -256,8 +258,8 @@ Reveal(disgID, uid, privkey):
 
 %
 To preserve referential integrity, \sys restores
-\xxed data that was removed from tables in topologically-sorted order (constructing the dependency graph as in \S\ref{s:applying})
-%
+\xxed data that was removed from tables in topologically-sorted order
+(constructing the dependency graph as in \S\ref{s:applying}).
 \sys then reveals any modifications, and finally performs recorrelations. 
 %
 In general, to reveal a diff record, \sys removes the placeholder row
@@ -363,16 +365,15 @@ update specifications}:
 \begin{enumerate}[nosep]
     \item[(1)] \sys disguises some user data.
     \item[(2)] The developer invokes \texttt{RecordUpdate} with a reveal-time
-        update specification when 
-performing a global update that must hold over disguised data when it is
-        revealed (\eg moderations). \sys records the update specification in its
-        replay log. Update specifications map the original data and the
-        placeholder data in diff records to corresponding updated-original and
-        updated-placeholder data. 
-    \item[(3)] When revealing data, \sys applies, in order, every specified
-        update in the
-        replay log added since the time of disguise to the disguise's diff
-        records. In this case, \sys moderates explicit story text.
+        update specification when performing a global update that must hold over
+        disguised data when it is revealed (\eg moderations). \sys records the
+        update specification in its replay log. 
+    \item[(3)] When revealing data, \sys applies, in order, every update
+        specification in the replay log added since the time of disguise to the
+        disguise's diff records. Update specifications map the original data and
+        the placeholder data in diff records to corresponding updated-original
+        and updated-placeholder data. In this case, the update specification
+        moderates explicit story text.
 \item[(4)] After applying all updates to placeholder data, \sys reveals the
     updated rows in the diff record like normal.
 \end{enumerate}
@@ -420,22 +421,22 @@ At first glance, schema changes might seem like a different class of
 database update than global data transformations like content moderation, and
 thus require a different approach.
 %
-However, the technique described in \S\ref{s:design:dataupdates} for global 
-changes allows \sys to handle schema changes as well. 
+However, the technique for global 
+changes (\S\ref{s:design:dataupdates}) allows \sys to handle schema changes as well. 
 %
 
 %
 Take, for example, a developer of an application with a \texttt{users} table
 that contains rows with \texttt{username}s, \texttt{addr}s, and \texttt{email}s.
-The developer may choose to allow users multiple addresses via a schema
-change. To do so, they would create a new \texttt{addrs} table, with a
+The developer then chooses to allow users multiple addresses via a schema
+change. To do so, they create a new \texttt{addrs} table, with a
 foreign key to the users table, and populate \texttt{addrs} using the address
-data in \texttt{users}.  Finally, they would remove the \texttt{addr} column
+data in \texttt{users}.  Finally, they remove the \texttt{addr} column
 from \texttt{users}.
 %
-
 Figure~\ref{f:update:mod} demonstrates how \sys applies such a schema change 
-to disguised data.  \begin{enumerate}[nosep]
+to disguised data.  
+\begin{enumerate}[nosep]
     \item[(1)] \sys disguises some user data.
     \item[(2)] The developer invokes \texttt{RecordUpdate} with a reveal-time update
         specification when 
@@ -680,12 +681,14 @@ decorrelating and recorrelating users from a shared data object. Thus, if
 foreign keys to the users table are modified, the unique identifier would change
 as well, and \sys would incorrectly reveal shared data.
 %
-Note that this would not be an issue for a single-owner removal, since the
-object is removed and not dissociated from the owner.
+%This issue is specific to removal of shared data.
+%
+%Note that this would not be an issue for a single-owner removal, since the
+%object is removed and not dissociated from the owner.
 %
 If foreign keys to users table act as unique identifiers, one potential solution
 might introduce a layer of indirection via a new unique identifier (\eg an
-autoincrementing primary key). This would, however, potentially add performance
+autoincrementing primary key). This could potentially add performance
 overheads.
 
 Second, owners of shared data who remove and reveal multiple times decorrelate
@@ -939,7 +942,7 @@ guarantees security equivalent to that of the user's password.
 %
 
 Should developers want to support disguised data in a weaker threat model that
-does not require encryption (S\ref{s:semantics:noencrypt}),
+does not require encryption (\S\ref{s:semantics:noencrypt}),
 \sys still helps developers maintain referential integrity when disguising
 (creating pseudoprincipals as placeholder users), compose disguises and reveals
 in arbitrary orders, disguise shared data, and apply global updates to disguised
@@ -994,4 +997,4 @@ because disguised data need not be encrypted.
 In this case, the developer must ensure that all queries for the data include a predicate
 on the tag, so that application does not return disguised data. Systems like
 Qapla~\cite{qapla}---which this thesis compares to \sys in
-\S\ref{s:eval-qapla}--- can help enforce these flag-based policies.
+\S\ref{s:eval-qapla}---can help enforce these flag-based policies.
