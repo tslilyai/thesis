@@ -203,15 +203,19 @@ and revealing.
     the private key as reveal credentials to the user.  In this situation, a
     user can reveal their disguised data only with their private key.
     %
+
+    After registration, \sys saves only the user's public key, and forgets the
+    user's private key and password (if provided).
         
 \subsection{\texttt{DisguiseData}}
+\label{s:semantics:dd}
     \texttt{DisguiseData} removes or rewrites application data according to the
     provided disguise specification \texttt{spec}. The original data is
     encrypted and stored by \sys; a user must provide credentials to a
     \texttt{RevealData} call in order to restore the data.
 
     \texttt{DisguiseData} returns a unique disguise ID for the applied disguise,
-    which should be forwarded to disguised users in case they wish to later
+    which the application should forward to disguised users in case they wish to later
     reveal the disguise.\footnote{For usability, the developer can abstract the
     disguise ID as, for example, an embedded parameter of a URL that the user
     can click to reveal their disguise.}
@@ -225,17 +229,16 @@ and revealing.
         the disguise should only apply to that user's data.\\ 
         \hline
         \texttt{spec}& A disguise specification (\S\ref{s:semantics:spec})
-        provided by the developer .\\
+        provided by the developer.\\
 
         \hline
         \texttt{principal\_gen}& A principal generator provided by the developer
-        that describes how to create a pseudoprincipal in the application
-        (global across all disguises).\\
+        that describes how to create a pseudoprincipal in the application.\\
     %
         \hline
-        \texttt{schema}& A database schema provided by the developer that
+        \texttt{schema}& A current database schema provided by the developer that
         specifies ownership links from data tables to user tables via foreign
-        key relationships (global across all disguises).\\
+        key relationships.\\
 
         \hline
         \texttt{disguise\_over}& (Optional) Reveal credentials provided by an
@@ -282,9 +285,14 @@ pseudoprincipal.
 For example, all decorrelated stories from topic ``Star Wars'' written by Bea
 may decorrelate to the same pseudoprincipal (\S\ref{s:semantics:example}).
 %
-However, no two objects referring to different users or from different database
-tables refer to the same pseudoprincipal, and no two disguises' sets of produced
-pseudoprincipals overlap.
+%%%%% LYT TODO
+However, \sys decorrelates any two rows from two different tables to 
+two different pseudoprincipals, as well as any two rows referring to different
+users. Two different disguises always produce disjoint sets of pseudoprincipals.
+%no two objects referring to different users or from different
+%database
+%tables refer to the same pseudoprincipal, and no two disguises' sets of produced
+%pseudoprincipals overlap.
 %
 This may be too restrictive for some applications' purposes: for example, an
 application may wish to decorrelate a story and comments on the story made by
@@ -329,9 +337,9 @@ after the first reveal.
         flag specifying whether \sys can restore only some modified columns of a
         disguised row.\\
         \hline
-        \texttt{schema} & A database schema provided by the developer that specifies
+        \texttt{schema} & A current database schema provided by the developer that specifies
     ownership links from data tables to user tables via foreign key
-    relationships (global across all disguises).  \\
+    relationships.  \\
         \hline
     \end{longtable}
     \end{center}
@@ -488,24 +496,21 @@ performed in chronological order on disguised data prior to revealing it.
 and which execute deterministically in their input (placeholder or disguised
 rows).
 %
-For all other update specifications, \sys assumes that any nondeterminism or side effects from performing the
-    update will maintain application correctness.
+For all other update specifications, \sys assumes that any nondeterminism or
+side effects from performing the update will maintain application correctness.
     %
-
+As a result, \sys's API cannot support some types of updates. For example,
+consider a global update that calculates the current vote count of a story 
+and adds this value as a column attribute to the story row.
 %
-    To exemplify an unsupported update, consider a global update that calculates the
-    current vote count of a story to store as a story's \texttt{vote\_count}
-    attribute. 
+    This update depends on vote rows present in the database.
 %
-    This update thus depends on other disguised rows, namely \texttt{vote} rows.
+    If a disguise has removed both a user's story and its votes, then upon
+    reveal, \sys will maintain referential integrity by revealing disguised
+    stories before disguised votes.
 %
-    If a disguise has removed both a user's story and its votes, then when \sys
-    reveals the disguise, \sys will first reveal disguised stories before
-    revealing disguised votes in order to maintain referential integrity. 
-%
-    But when applying a \texttt{vote\_count} update specification to stories,
-    \sys will find 0 votes for all of them, because their votes have not yet
-    been restored.
+    But when applying the vote count update during reveal of the story, \sys
+    will find 0 votes because the votes have not yet been restored.
 %
     \sys supports this update only if this 0-vote state counts as correct
     application behavior.
@@ -657,11 +662,15 @@ the same pseudoprincipals.
     restore ownership back to Bea.}
 \label{f:composition-hl-ooo}
 \end{subfigure}
-    \caption[\sys only reveals the original state of data disguised multiple times once
-    all disguises applied to the data have been revealed.]{
+    \caption[\sys only reveals the original state of data disguised multiple
+    times once all disguises applied to the data have been revealed.]{
         If Bea decorrelates an ``Ewok'' story twice---once via a ``bears''
         disguise, and once via a ``Star Wars'' disguise---\sys only recorrelates
-        the story back to Bea once Bea reveals \emph{both} disguises.}
+        the story back to Bea once Bea reveals \emph{both} disguises,
+        regardless of the reveal order. (a) 
+        illustrates an in-order reveal, where Bea reveals the most
+        recent disguise first. (b) illustrates an out-of-order reveal, where
+        the oldest disguise is revealed first.}
 \label{f:composition-hl}
 \end{figure}
 
@@ -728,8 +737,8 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
                 schema: global_schema)
         \end{lstlisting}
 
-        After reveal, any unrevealed disguises remain applied to the ``Ewoks''
-        story.
+        After reveal of the ``bears'' disguise, any unrevealed disguises remain
+        applied to the ``Ewoks'' story.
         %
         This means the story will remain decorrelated to $P_1$ even if the ``Star
         Wars'' disguise decorrelating to $P_2$ is revealed
@@ -763,31 +772,38 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
 \label{s:semantics:hl:composition}
 
 As shown in \S\ref{s:semantics:example}'s example, multiple disguises can apply
-to a user's data. The example demonstrates how Bea can disguise their data
-multiple times; however, a user with access to all data (\eg an application
-admin) could also decide to apply multiple global disguises to all user data,
-including Bea's.  In this second case, disguises apply to all data satisfying
-the disguise specification's predicates regardless of which user owns the data,
-and disguise composition is straightforward (updating the already-disguised
-data).
-
-In the first case, however, when the application invokes \texttt{DisguiseData}
-on behalf of Bea (\texttt{u\_opt = Some("Bea")}), \sys disguises only data
-associated via a foreign key to Bea's application principal.
+to a user's data. If Bea disguises their data multiple times, then the
+application repeatedly invokes \texttt{DisguiseData} on behalf of Bea
+(\texttt{u\_opt = Some("Bea")}).  This causes \sys to disguise only data
+associated via a foreign key to Bea's application principal
+(\S\ref{s:semantics:dd}).
 %
-This means that if a user like Bea wishes to disguise already-decorrelated data
-multiple times, \sys must have the user's reveal credentials
-(\texttt{disguise\_over = Some(cred)}). This allows \sys to access Bea's
-correlations to pseudoprincipals in order to disguise their pseudoprincipals'
-data.
-%
-\sys will then treat all of the user's pseudoprincipals' data as if they belong
-to the user themselves, and---depending on the disguise specification---will
-remove, modify, or create a new pseudoprincipal owner for these
+However, this means that \sys will not disguise Bea's data that has already been
+decorrelated to a pseudoprincipal by a prior disguise.
+If Bea wants to disguise already-decorrelated data, \sys must have Bea's reveal credentials (\texttt{disguise\_over = Some(cred)}). This allows
+\sys to access Bea's correlations to pseudoprincipals in order to disguise their
 pseudoprincipals' data.
+%
+\sys will then treat all of Bea's pseudoprincipals' data as if it belongs
+to Bea, and---depending on the disguise specification---will remove, modify, or
+create a new pseudoprincipal owner for these pseudoprincipals' data.
 %
 \S\ref{s:composition} fleshes out \sys's design for disguise composition when
 a user has already decorrelated some of their data.
+%
+
+%
+Disguise composition may also occur if, for example, an admin globally disguises
+all users' data (\texttt{u\_opt = None}). In this case, \sys disguises all data satisfying the
+disguise specification's predicates, regardless of which user owns the data, 
+and thus does not need reveal credentials to
+discover which pseudoprincipal users to disguise.
+%however, a user with access to all data (\eg an application
+%admin) could also decide to apply multiple global disguises to all user data,
+%including Bea's.  In this second case, disguises apply to all data satisfying
+%the disguise specification's predicates regardless of which user owns the data,
+%and disguise composition is straightforward (updating the already-disguised
+%data).
 
 %
 To reveal their data back to its original state, a user must reveal all
@@ -809,7 +825,7 @@ When a user's disguise removes shared data, \sys decorrelates the data from the
 \sys removes the data once all users have \xxed it and all ownership links are
 to pseudoprincipals.
 %
-Any owner can reveal the message, which restores the message to the database if
+For example, any owner can reveal the message, which restores the message to the database if
 it does not exist, and recorrelates only the revealing user; all disguised
 owners remain decorrelated as pseudoprincipals until they also choose to reveal
 the message.
