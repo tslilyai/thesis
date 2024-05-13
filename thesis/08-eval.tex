@@ -907,15 +907,16 @@ global database updates in
 Lobsters from the past three years, and classified them as:
 \begin{enumerate}[nosep]
 %
-    \item a data transformation (which can be reused as an update specification to \sys), such as URL
-normalization; 
+    \item a data transformation such as URL
+normalization, which can be reused as an update spec to \sys; 
 %
-\item a schema change (which requires writing a new update specification for \sys), such as
+\item a schema change such as
 generating tables from other tables (\eg \texttt{story\_texts} from
-\texttt{stories}) or altering columns; or
+\texttt{stories}) or altering columns, which requires writing a new update
+        spec for \sys; or
 %
 \item an unsupported operation, such as updating the \texttt{vote\_count} of
-        comments based on the number of votes), which relies on data external to
+        comments based on the number of votes, which relies on data external to
         the data disguised.
 \end{enumerate}
 Figure~\ref{tab:categories} shows the distribution of 20 global updates among these
@@ -1014,7 +1015,7 @@ Table~\ref{tab:updates-perf} shows the results.
 Overall, the overheads from reveal-time updates increases with the amount of
 disguised data a user wants to reveal.
 %
-Users with little data (\eg fewer than 5 stories) experience no visible increase
+Users with little data (\eg fewer than five stories) experience no visible increase
 in reveal latency with updates, but users with lots of data can experience a
 noticeable effect (\eg revealing a user with 673 stories, 1971 comments, and 2000
 messages takes on average 4.67s instead of 4.50s, an increase of 3.8\%).
@@ -1036,7 +1037,7 @@ This matches the optimized global update execution time of 6s in the deployed
 Lobsters application, which normalizes the URLs of all stories in one
 batch.\footnote{The Lobsters developers first implemented an unoptimized version
 of URL normalization that normalizes stories one-by-one---this implementation
-took 1789s.}
+took 1789s~\cite{lobsters:migration}.}
 %
 URL normalization modifies all 120k stories.
 %
