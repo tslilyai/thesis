@@ -204,8 +204,8 @@ and revealing.
     user can reveal their disguised data only with their private key.
     %
 
-    After registration, \sys saves only the user's public key, and forgets the
-    user's private key and password (if provided).
+    After registration, \sys forgets the user's private key and password, if
+    provided.
         
 \subsection{\texttt{DisguiseData}}
 \label{s:semantics:dd}
@@ -564,7 +564,7 @@ predicate.
 %
 Developers should take care to handle referential integrity to removed rows, as
 \sys will not cascade-delete referencing rows or introduce placeholders.
-(Developers should instead use decorrelate operations to remove principal rows
+(Developers should instead use decorrelation to remove principal rows
 and replace them with pseudoprincipals).
 %
 
@@ -680,7 +680,7 @@ specification for Lobsters topic-based anonymization (Figure~\ref{f:spec}).
 Figure~\ref{f:composition-hl} illustrates the various steps a user Bea would
 take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
 
-\begin{enumerate}[nosep]
+\begin{enumerate}
     \item[(0)] Initially, the application starts out with Bea registered as an
         \sys principal via a call to \texttt{RegisterPrincipal} with Bea's
         password and keypair. Bea owns one story, with topic ``Ewoks''.
@@ -697,6 +697,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
                     schema: global_schema,
                     disguise_over: None)
             \end{lstlisting}
+            \vspace{-6pt}
 
         This causes the application to instantiate the
         topic-based anonymization disguise specification with tag ``bears''.
@@ -717,6 +718,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
                 schema: global_schema,
                 disguise_over: Some("bea_password"))
         \end{lstlisting}
+            \vspace{-6pt}
 
         This again causes the application to instantiate the topic-based
         anonymization disguise specification with tag ``Star Wars''. Bea also
@@ -736,6 +738,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
                 allow_partial_row_reveal: true,
                 schema: global_schema)
         \end{lstlisting}
+            \vspace{-6pt}
 
         After reveal of the ``bears'' disguise, any unrevealed disguises remain
         applied to the ``Ewoks'' story.
@@ -761,6 +764,7 @@ take to apply the disguise for two topics, ``bears'' and ``Star Wars''.
                 allow_partial_row_reveal: true,
                 schema: global_schema)
         \end{lstlisting}
+            \vspace{-6pt}
         
         This restores ownership of the story back to Bea's account.
 
@@ -784,9 +788,9 @@ If Bea wants to disguise already-decorrelated data, \sys must have Bea's reveal 
 \sys to access Bea's correlations to pseudoprincipals in order to disguise their
 pseudoprincipals' data.
 %
-\sys will then treat all of Bea's pseudoprincipals' data as if it belongs
-to Bea, and---depending on the disguise specification---will remove, modify, or
-create a new pseudoprincipal owner for these pseudoprincipals' data.
+\sys will then treat all of Bea's pseudoprincipals' data as Bea's, and
+remove, modify, or create a new pseudoprincipal owner for this data depending on
+the disguise specification.
 %
 \S\ref{s:composition} fleshes out \sys's design for disguise composition when
 a user has already decorrelated some of their data.
@@ -825,10 +829,10 @@ When a user's disguise removes shared data, \sys decorrelates the data from the
 \sys removes the data once all users have \xxed it and all ownership links are
 to pseudoprincipals.
 %
-For example, any owner can reveal the message, which restores the message to the database if
-it does not exist, and recorrelates only the revealing user; all disguised
-owners remain decorrelated as pseudoprincipals until they also choose to reveal
-the message.
+For example, any owner can reveal a shared message, which restores the message
+to the database if it does not exist, and recorrelates only the revealing user;
+all disguised owners remain decorrelated as pseudoprincipals until they also
+choose to reveal the message.
 %
 Regardless of the reveal order, if all owners reveal the message, \sys returns
 the message to its original state.
@@ -911,23 +915,23 @@ log.
 For example, consider two disguises $D_0$ and $D_1$ applied to user data as
 follows:
 \begin{enumerate}[nosep]
-    \item Disguise $D_0$ of user $u$ modifies some data row.
-\item A subsequent disguise $D_1$ removes the same data row. 
-\item If $u$ first reveals $D_0$, \sys cannot reveal the data because
+    \item[(1)] Disguise $D_0$ of user $u$ modifies some data row.
+    \item[(2)] A subsequent disguise $D_1$ removes the same data row. 
+\item[(3)] If $u$ first reveals $D_0$, \sys cannot reveal the data because
         $D_1$ removed it. \sys would thus do nothing but encrypt and store an
         update specification representing the reveal of $D_0$ in $u$'s log.
-    \item When $u$ later reveals $D_1$, \sys decrypts $u$'s log, finds the
+    \item[(4)] When $u$ later reveals $D_1$, \sys decrypts $u$'s log, finds the
         ``reveal-$D_0$'' update, and applies the update to reveal $D_0$'s
         modification of the data prior to restoring it.
 \end{enumerate}
 
 \paragraph{API.} \sys's API assumes that:
 \begin{enumerate}[nosep]
-    \item the application uses a relational database;
-    \item rows to \xx have direct foreign key relationships to a users table,
+    \item[(1)] the application uses a relational database;
+    \item[(2)] rows to \xx have direct foreign key relationships to a users table,
     where each user corresponds to a row of that table;
-\item all rows to \xx are owned by (have a foreign-key relationship) to one or more principals; and
-    \item all rows can be uniquely identified (\eg via primary key).
+\item[(3)] all rows to \xx are owned by (have a foreign-key relationship) to one or more principals; and
+\item[(4)] all rows can be uniquely identified (\eg via primary key).
 \end{enumerate}
 %
 Applications that fail to satisfy these assumptions---\eg because they have
