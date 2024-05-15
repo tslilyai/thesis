@@ -189,10 +189,10 @@ data.
 %
 Fourth, application databases often undergo global updates such as schema
 migrations and data transformations like content reformatting. These updates
-must also affect any data disguised at the time, but the developer cannot
-apply them immediately to the disguised data: disguised data remains
-inaccessible to the application and developer until revealed. In order to
-restore disguised data correctly, the developer must apply updates to disguised
+must also affect any data disguised at the time, but the developer cannot apply
+them immediately to the disguised data because it remains inaccessible to the
+application and developer until revealed. In order to restore disguised data
+correctly, the developer must apply updates to disguised
 data in chronological order when a user reveals it.
 %when a user grants permission to access the disguised
 %data in order to reveal it.
@@ -285,7 +285,7 @@ The main contribution of this thesis is the identification and exploration of
 \emph{disguised data} for flexible user data privacy in web applications. As
 part of this, this thesis contributes:
 
-\begin{enumerate}[nosep]
+\begin{enumerate}
     \item The abstraction of \emph{data disguising via \xxing and revealing
         transformations}, including 
         %abstractions for developers and users of web applications, 

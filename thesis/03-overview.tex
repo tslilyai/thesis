@@ -22,15 +22,16 @@ via \emph{\xxing transformations} and \emph{revealing transformations}.
 As Figure~\ref{f:edna-overview} shows, a developer integrates an application with \sys by writing \xx specifications
 and adding hooks to \xx or reveal data using \sys's API (\S\ref{s:api}). To use \sys, an application does the following:
 
+\begin{enumerate}[nosep]
 %
-(1) The application registers users with a public--private keypair
+    \item[(1)] The application registers users with a public--private keypair
 that either the application or the user's client generates. \sys stores the
 public key in its database, while the user retains the private key for use in
 future reveal operations.
 %
 
 %
-(2) When the application wants to \xx some data, it invokes \sys with the
+\item[(2)] When the application wants to \xx some data, it invokes \sys with the
 corresponding developer-provided \xx specification and any necessary
 parameters (such as a user ID).
 %
@@ -51,7 +52,7 @@ private key.
 %
 
 %
-(3) When a user wishes to reveal their \xxed data, they pass credentials
+\item[(3)] When a user wishes to reveal their \xxed data, they pass credentials
 to the application, which calls into \sys to reveal the data.
 %
 Credentials are application-specific: users may either provide their private
@@ -59,6 +60,7 @@ key or other credentials sufficient for \sys to re-derive the private key.
 %
 \sys reads the \xxed data and decrypts it, undoing the changes to the
 application database that \xxing introduced.
+\end{enumerate}
 %
 
 %
