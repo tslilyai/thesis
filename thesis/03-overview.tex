@@ -235,12 +235,12 @@ authentication workflows when users want to reveal their disguised data.
 %
 
 %
-\sys supports two forms of reveal credentials: \one{} the user's private key
+\sys supports two forms of reveal credentials that developers can choose
+from, depending on application needs: \one{} the user's private key
 itself; or \two{} the user's application password or a recovery token (in case
 they forget their password), either of which \sys can use to rederive the
 private key.
 %
-Developers can use either of these credentials depending on application needs.
 %
 In the Lobsters example, \sys rederives the user's private key using their password.
 %
@@ -383,8 +383,7 @@ and metadata to infer which principal originally owned which objects.
 \sys's goal of practicality and usability by existing applications.
 %
 For example, decorrelation with pseudoprincipals removes explicit user-content
-links, but leaves placeholder information in the database to avoid application
-code having to handle dangling references.
+links, but leaves placeholder information in the database to avoid dangling references.
 %
 Similarly, leveraging server-side storage to hold \xxed data leaves
 metadata available to attackers, but avoids burdening users with data storage

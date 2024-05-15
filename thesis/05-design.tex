@@ -44,9 +44,9 @@ The original and placeholder rows contained by a diff record vary by disguise
 operation as follows:
 \begin{itemize}[nosep]
     \item Remove diff records contain the removed original row and no
-        placeholder rows;
+        placeholder rows.
     \item Modify diff records contain the unmodified row and the
-        row with the modified value; and
+        row with the modified value.
     \item Decorrelate diff records contain the referencing row with the original
         foreign key value and---as placeholder data---the referencing row with the placeholder
         foreign key value pointing to a pseudoprincipal and the pseudoprincipal's row.
@@ -364,16 +364,19 @@ disguised data using \sys's \emph{replay log} with \emph{reveal-time
 update specifications}:
 \begin{enumerate}
     \item[(1)] \sys disguises some user data.
+\vspace{-3pt}
     \item[(2)] The developer invokes \texttt{RecordUpdate} with a reveal-time
         update specification when performing a global update that must hold over
         disguised data when it is revealed (\eg moderations). \sys records the
         update specification in its replay log. 
+\vspace{-3pt}
     \item[(3)] When revealing data, \sys applies, in order, every update
         specification in the replay log added since the time of disguise to the
         disguise's diff records. Update specifications map the original data and
         the placeholder data in diff records to corresponding updated-original
         and updated-placeholder data. In this case, the update specification
         moderates explicit story text.
+\vspace{-3pt}
 \item[(4)] After applying all updates to placeholder data, \sys reveals the
     updated rows in the diff record like normal.
 \end{enumerate}
@@ -395,12 +398,13 @@ scenarios such as decorrelation or modification, \sys would apply the logged
 update to diff placeholder data as well, in order to find the matching version in the
 database and remove it.}
 
+\vspace{-6pt}
 \subsection{Schema Changes}
 \begin{figure}
     \centering
-    \includegraphics[width=.8\textwidth]{figs/update-migration}
+    \includegraphics[width=.78\textwidth]{figs/update-migration}
     \caption[During reveal, \sys applies reveal-time update specifications for
-    schema changes.]{Similar to a moderations update, the
+    schema changes.]{\small The
     application notifies \sys of a schema change to apply to diff records
     prior to reveal. The schema change creates an address table with a foreign
     key to user rows, and removes the address from the user rows. This allows users to have multiple addresses.
@@ -412,6 +416,7 @@ database and remove it.}
 \end{figure}
 
 %
+\vspace{-6pt}
 Applications also undergo database updates to migrate their schema in
 order to reorganize data or add new application features. When these occur, \sys
 must know how to manipulate any disguised data structured in the old database
@@ -434,10 +439,12 @@ foreign key to the users table, and populate \texttt{addrs} using the address
 data in \texttt{users}.  Finally, they remove the \texttt{addr} column
 from \texttt{users}.
 %
-Figure~\ref{f:update:mod} demonstrates how \sys applies such a schema change 
-to disguised data upon reveal.  
+Figure~\ref{f:update:mod} illustrates how \sys applies such a schema change 
+to disguised data upon reveal.
+
 \begin{enumerate}
     \item[(1)] \sys disguises some user data.
+\vspace{-3pt}
     \item[(2)] The developer invokes \texttt{RecordUpdate} with a reveal-time update
         specification when 
 performing the schema change; \sys records the update specification its replay log.
@@ -506,30 +513,6 @@ chance to fix them so a later reveal can pass the checks.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 \section{Shared Data}
 \label{s:design:shared}
-
-\begin{figure}
-    \centering
-    \includegraphics[width=\textwidth]{figs/shared_data}
-    \caption[\sys implements disguising of shared data using
-    pseudoprincipals and diff records.]{(1) When Bea removes their message, \sys
-    creates and stores a fully-decorrelated diff record of the message
-    (modifications to the shared message data are depicted using
-    [owner$\to$pseudoprincipal] notation). Bea's disguised data also stores a
-    speaks-for record to AnonPig.
-    %
-    (2) When Chris later removes their message, \sys stores a fully-decorrelated
-    diff record in Chris' disguised data and a speaks-for record to AnonFox.
-    \sys also deletes the message from the database, since it has no referencing
-    users.
-    %
-    (3) When one user (\eg Bea) reveals, \sys restores the
-    fully-decorrelated message and recorrelates Bea with it.
-    %
-    (4) When Chris later reveals, they find the message already restored and
-    simply recorrelate with their pseudoprincipal, AnonFox.
-    }
-\label{f:shared:data}
-\end{figure}
 
 \sys supports joint ownership semantics for shared data with a modified removal
 design.
@@ -623,6 +606,31 @@ normal.
         recorrelating the data to the owner and restoring ownership.
 %
 \end{enumerate}
+
+\begin{figure}
+    \centering
+    \includegraphics[width=.95\textwidth]{figs/shared_data}
+    \vspace{-6pt}
+    \caption[\sys implements disguising of shared data using
+    pseudoprincipals and diff records.]{\small (1) When Bea removes their message, \sys
+    creates and stores a fully-decorrelated diff record of the message
+    (modifications are depicted using
+    [owner$\to$pseudoprincipal] notation). Bea's disguised data also stores a
+    speaks-for record to AnonPig.
+    %
+    (2) When Chris later removes their message, \sys stores a fully-decorrelated
+    diff record in Chris' disguised data and a speaks-for record to AnonFox.
+    \sys also deletes the message from the database, since it has no referencing
+    users.
+    %
+    (3) When one user (\eg Bea) reveals, \sys restores the
+    fully-decorrelated message and recorrelates Bea with it.
+    %
+    (4) When Chris later reveals, they find the message already restored and
+    simply recorrelate with their pseudoprincipal, AnonFox.
+    }
+\label{f:shared:data}
+\end{figure}
 
 Note that the partially-removed table entry for any shared data object is
 created only once: the first time any owner's disguise removes the shared data

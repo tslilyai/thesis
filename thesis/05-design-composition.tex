@@ -119,9 +119,9 @@ this pseudoprincipal created by multiple decorrelations.
 
 \begin{figure}
 \centering
-    \includegraphics[width=0.83\textwidth]{figs/composition}
+    \includegraphics[width=0.82\textwidth]{figs/composition}
     \caption[Decorrelations can compose and be revealed in any order.]
-    {\sys allows multiple decorrelations to compose, and can reveal them in
+    {\small \sys allows multiple decorrelations to compose, and can reveal them in
     any order such that the data remains decorrelated until the user reveals \emph{all}
     applied decorrelations. The speaks-for chain encoded in
     speaks-for records (shown in blue) allows \sys to handle recorrelation of intermediate
@@ -163,9 +163,8 @@ initially \xxed under the ``bears'' transformation.
 %pseudoprincipals. This again creates pseudoprincipals that can speak-for other
 %pseudoprincipals.
 %
-To support this, \sys again uses the speaks-for chain (\S\ref{s:composition}) that represent
-speaks-for relationships between pseudoprincipals stemming from the revealing
-user.
+To support this, \sys again uses the speaks-for chain (\S\ref{s:composition}) to
+find pseudoprincipals stemming from the revealing user.
 %
 All reveal operations walk the full speaks-for chain to reveal all necessary
 records (cf.\ Figure~\ref{f:revealpseudo}).

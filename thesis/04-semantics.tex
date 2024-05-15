@@ -14,7 +14,7 @@ disguise, by revealing the applied disguise, or by normal application updates.
 %
 
 %
-Disguising already-disguised data can only decrease the amount of information
+Disguising already-disguised data only decreases the amount of information
 retained about the original application data state. If prior disguises have
 transformed the original data, then a future disguise has access only to the
 resulting application database state, and thus can only further remove aspects
@@ -71,7 +71,7 @@ Revealed data will also reflect all global database updates (such as schema
 migrations) registered by the developer since the time of disguise, applied in
 chronological order.
 
-
+\vspace{-6pt}
 \paragraph{\sys without encryption.}
 \label{s:semantics:noencrypt}
 
@@ -136,21 +136,22 @@ API, and \S\ref{s:noencrypt} describes how it would change
 \end{figure}
 %
 
-Developers add disguising and revealing to their application via \sys's API,
-which consists of the functions shown in Figure~\ref{f:api-high}. This section
-describes each function and how developers would use them to support disguising
-and revealing.
+Developers add disguising and revealing to their application via \sys's API
+(Figure~\ref{f:api-high}). This section
+describes each API function and how developers would use them.
 
+\vspace{-6pt}
 \subsection{\texttt{RegisterPrincipal}}
     \texttt{RegisterPrincipal} registers an application user as a principal
-    whose data can be disguised and revealed. Unique users should be
-    registered only once. Once registered, data of an undeleted user that
-    exists in the database can always be disguised and revealed.  Users deleted
-    by a disguise do not need to reregister if revealed.
+    whose data can be disguised and revealed. Unique users should be registered
+    only once. Once registered, an undeleted user's data can always be disguised
+    and revealed. Users deleted by a disguise do not need to reregister if
+    revealed.
 
     \texttt{RegisterPrincipal} returns backup reveal credentials that the
     application should return to the user client.
 
+    \vspace{-6pt}
     \begin{center}
     \begin{longtable}{|m{0.13\textwidth}|m{0.8\textwidth}|}
         \hline
@@ -160,15 +161,15 @@ and revealing.
         \hline
         \texttt{pw} & (Optional) the user's password (later usable as a reveal credential).\\
         \hline
-        \texttt{pubkey} & (Optional) the user's unique public key (used to encrypt the
+        \texttt{pubkey} & (Optional) the user's public key (used to encrypt the
         user's disguised data).\\
         \hline
-        \texttt{privkey} & (Optional) the user's unique private key (later usable as a reveal
+        \texttt{privkey} & (Optional) the user's private key (later usable as a reveal
         credential).\\
         \hline
     \end{longtable}
     \end{center}
-    \vspace{-24pt}
+    \vspace{-30pt}
 
     \texttt{RegisterPrincipal} enables a user to disguise and later reveal their
     data. \sys offers various options: users can use their password
@@ -189,7 +190,7 @@ and revealing.
     password-pro\-tected private key and derive a backup reveal credential
     (\S\ref{s:impl:cred}). \sys returns the private key and backup reveal
     credential to the user. Registration allows the user to provide
-    any of their private key, their password, or their backup credential to
+    their private key, their password, or their backup credential to
     unlock and reveal their disguised data.
     %
 
@@ -236,7 +237,7 @@ and revealing.
         that describes how to create a pseudoprincipal in the application.\\
     %
         \hline
-        \texttt{schema}& A current database schema provided by the developer that
+        \texttt{schema}& A database schema provided by the developer that
         specifies ownership links from data tables to user tables via foreign
         key relationships.\\
 
@@ -308,6 +309,21 @@ this via an optional reveal credential (\texttt{disguise\_over}). If
 \texttt{Some(uid)}, and \texttt{DisguiseData} will use \texttt{cred} and
 \texttt{uid} to disguise decorrelated data.
 
+\begin{figure}
+    \centering
+    \includegraphics[width=.7\textwidth]{figs/ppreveal_policies}
+    \caption[\texttt{RECORRELATE}, \texttt{DELETE}, and
+    \texttt{RETAIN} policies maintain referential integrity for objects added
+    after disguising that refer to a pseudoprincipal during reveal.]{After Bea
+    decorrelates a story (red) to a pseudoprincipal, AnonFox, Bea or the
+    application may add new stories that reference AnonFox (yellow). When Bea
+    reveals and recorrelates to AnonFox, developers can
+    choose to \texttt{RECORRELATE}, \texttt{DELETE}, or \texttt{RETAIN} any new
+    content (\ie the yellow story) referring to AnonFox.}
+\label{f:ppreveal}
+\end{figure}
+
+
 \subsection{\texttt{RevealData}}
 \label{s:semantics:revealdata}
 
@@ -337,7 +353,7 @@ after the first reveal.
         flag specifying whether \sys can restore only some modified columns of a
         disguised row.\\
         \hline
-        \texttt{schema} & A current database schema provided by the developer that specifies
+        \texttt{schema} & A database schema provided by the developer that specifies
     ownership links from data tables to user tables via foreign key
     relationships.  \\
         \hline
@@ -346,20 +362,6 @@ after the first reveal.
     \vspace{-24pt}
     
     %
-\begin{figure}
-    \centering
-    \includegraphics[width=.7\textwidth]{figs/ppreveal_policies}
-    \caption[\texttt{RECORRELATE}, \texttt{DELETE}, and
-    \texttt{RETAIN} policies maintain referential integrity for objects added
-    after disguising that refer to a pseudoprincipal during reveal.]{After Bea
-    decorrelates a story (red) to a pseudoprincipal, AnonFox, Bea or the
-    application may add new stories that reference AnonFox (yellow). When Bea
-    reveals and recorrelates to AnonFox, developers can
-    choose to \texttt{RECORRELATE}, \texttt{DELETE}, or \texttt{RETAIN} any new
-    content (\ie the yellow story) referring to AnonFox.}
-\label{f:ppreveal}
-\end{figure}
-
 %
 \sys identifies and accesses the disguised data to reveal using the user's
 identifier \texttt{u}, their reveal credentials \texttt{cred}, and the disguise
@@ -546,13 +548,13 @@ Some(uid)}).
 If not invoked by a specific user, the disguise applies to all data matching the
 disguise specification's predicate.
 %
-If a disguise is user-specific, then only data that has a foreign key to that
-user's identifier (is ``owned'' by that user) and matches the disguise
-specification's predicate will be disguised. Invoking a disguise with
-\texttt{u\_opt = Some(uid)} will thus add a condition on a disjunction of
+If a disguise is user-specific, then \sys disguises only data that has a foreign key to that
+user's identifier and matches the disguise
+specification's predicate. Invoking a disguise with
+\texttt{u\_opt = Some(uid)} thus adds a condition on a disjunction of
 "\texttt{[fk\_col] = [uid]}" clauses for all foreign keys \texttt{fk\_col} to
 the application's principals table. For example, a predicate of \texttt{WHERE
-true} to disguise all data of a table will turn into \texttt{WHERE true AND
+true} to disguise all data of a table turns into \texttt{WHERE true AND
 (author1 = uid OR author2 = uid)}.
 
 \sys handles each disguise operation type as follows:
@@ -641,12 +643,13 @@ the same pseudoprincipals.
 
 \section{Example}
  \label{s:semantics:example}  
+
 %
 \begin{figure}
     \centering
     \begin{subfigure}[t]{.47\columnwidth}
     \centering
-    \includegraphics[width=.75\textwidth]{figs/composition-hl-inorder}
+    \includegraphics[width=.7\textwidth]{figs/composition-hl-inorder}
   \caption{Bea's reveal of ``Star Wars'' stories keeps ``Ewok'' stories still
         decorrelated under the ``bears'' disguise. Only after revealing
         ``bears'' stories does \sys restore ownership back to Bea.}
@@ -655,7 +658,7 @@ the same pseudoprincipals.
     \hfill
 \begin{subfigure}[t]{.47\columnwidth}
     \centering
-    \includegraphics[width=.75\textwidth]{figs/composition-hl-ooo}
+    \includegraphics[width=.7\textwidth]{figs/composition-hl-ooo}
   \caption{Bea's reveal of ``bears'' stories keeps ``Ewok'' stories still
     decorrelated under the ``Star Wars'' disguise, which was applied after
     disguising ``bears''. Only after revealing ``Star Wars'' stories does \sys
@@ -664,8 +667,7 @@ the same pseudoprincipals.
 \end{subfigure}
     \caption[\sys only reveals the original state of data disguised multiple
     times once all disguises applied to the data have been revealed.]{
-        If Bea decorrelates an ``Ewok'' story twice---once via a ``bears''
-        disguise, and once via a ``Star Wars'' disguise---\sys only recorrelates
+        \small If Bea decorrelates an ``Ewok'' story twice, \sys only recorrelates
         the story back to Bea once Bea reveals \emph{both} disguises,
         regardless of the reveal order. (a) 
         illustrates an in-order reveal, where Bea reveals the most
@@ -860,7 +862,8 @@ remove disguises).
 
 %
 For instance, consider the scenario in Figure~\ref{f:shared:hl} where Bea and
-Chris share a Lobsters message. \sys maps Bea to pseudoprincipal AnonPig and Chris to AnonFox for this shared message.
+Chris share a Lobsters message. \sys associates Bea with AnonPig and Chris
+with AnonFox for this shared message.
 \begin{enumerate}[nosep]
     \item[(1)] When Bea \xxs the message, the message is owned by
 Chris and a pseudoprincipal;

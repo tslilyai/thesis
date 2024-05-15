@@ -1,547 +1,1001 @@
-% $Log: mitthesis.cls,v $
-% Revision 1.9  2012/02/15 15:48:16  jdreed
-% Tweak the "permission" statement per the Libraries' specs
-% retrieved 15-Feb-2012
-%
-% Revision 1.8  2009/07/27 14:23:50  boojum
-% added changing draft mark
-%
-% Revision 1.6  2005/05/13 19:57:40  boojum
-% added leftblank option
-%
-% Revision 1.5  2002/04/18 14:10:08  boojum
-% changed doublespace into setspace for 2e compliance
-%
-% Revision 1.4  2001/02/08 18:57:13  boojum
-% turned two newpages into cleardoublepages
-%
-% Revision 1.3  2000/08/14 14:53:29  boojum
-% commented out footheight, which is relevant for drafthead
-%
-% Revision 1.2  1999/10/21 14:51:33  boojum
-% changed references to documentstyle to documentclass in comments
-%
-% Revision 1.1  1999/10/21 14:39:31  boojum
-% Initial revision
-%
-%Revision 1.7  1998/04/01  20:45:34  othomas
-%removed offending phrase ", and to grant others the right to do so" from copyright notice.
-%
-%Revision 1.6  96/06/26  15:07:29  othomas
-%safety checkin.
-%
-%Revision 1.5  93/06/07  15:38:50  starflt
-%Altered 'vi' option copyright wording to comply with new Institute
-%Archives requirements and MIT lawyers.
-%
-%Revision 1.4  92/08/19  16:51:06  lwvanels
-%Updated Course 6 title page for new permissions.
-%
-%Revision 1.3  92/04/23  10:16:15  epeisach
-%Fixed comment character in rcs file
-%
-%Revision 1.2  92/04/22  13:12:02  epeisach
-%Fixes for 1991 course 6 requirements
-%Phrase "and to grant others the right to do so" has been added to
-%permission clause
-%Second copy of abstract is not counted as separate pages so numbering works
-%out
-%
-%Revision 1.1  90/05/04  11:45:53  lwvanels
-%Initial revision
+% MIT thesis class
 
-%
-% LaTeX format for theses at MIT
-% Based on "Specifications for Thesis Preparation"
-
-% `vi' and `upcase' options by Krishna Sethuraman - krishna@athena.mit.edu
-% Margins and heading types by Peter Nuth  - nuth@ai.mit.edu
-% Title and abstract page by Stephen Gildea - gildea@erl.mit.edu
-% Look in this directory for example file mitthesis.doc
-% Also for propcover.tex - Boilerplate for PHD proposal.
-
-% To use this style - say something like:
-%  for dull, boring thesis format:
-%	\documentclass[12pt]{mitthesis}
-%       \pagestyle{plain}
-% OR for fast drafts:
-%	\documentclass[11pt,singlespace,draft]{mitthesis}
-%	\pagestyle{drafthead}
-% OR for Tech Reports:
-%	\documentclass[12pt,twoside]{mitthesis}
-%	\pagestyle{headings}
-% OR
-%  some other combination...
-%
-%%%% New options:
-%
-% Option `twoside':
-%   Good for producing Tech Reports.
-%   The default is single-sided printing, which is what M.I.T. wants on the
-%   thesis document itself.
-%
-% Option `singlespace':
-%   Good for drafts.
-%   Double-spaced theses are the default.
-%   That is what M.I.T. asks for in the formal specifications.
-%
-% 	Note that MIT does not REQUIRE all theses to be double-spaced anymore.
-% 	Someone in the library system said that it's OK to be single-spaced.
-% 	(Regardless of what the specs. say...)
-%   To get singlespacing in an area - Use  the 'singlespace' environment.
-%
-% Option `draft':
-%   Puts `overfull' boxes at the end of lines that are too long.
-%
-% Pagestyle `drafthead':
-%   Puts the date and the label ``*DRAFT*'' in the footer.
-%
-%%%%%%%%%%
-%
-%%%% Parameters to initialize for boilerplate page:
-%
-%	\title{Mixed Circular Cylindrical Shells}
-% 	\author{J. Casey Salas}
-% 	\prevdegrees{B.S., University of California (1978) \\
-%		     S.M., Massachusetts Institute of Technology (1981)}
-% 	\department{Department of Electrical Engineering and Computer Science}
-% 	\degree{Doctor of Philosophy}
-%% If the thesis is for two degrees simultaneously, list them both
-%% separated by \and like this:
-% 	\degree{Doctor of Philosophy \and Master of Science}
-% 	\degreemonth{February}
-% 	\degreeyear{1987}
-% 	\thesisdate{December 10, 1986}
-%% If the thesis is copyright by the Institute, leave this line out and
-%% the standard copyright line will be used instead.
-% 	\copyrightnotice{J. Casey Salas, 1986}
-%% If there is more than one supervisor, use the \supervisor command
-%% once for each.
-% 	\supervisor{John D. Galli}{Director, Sound Instrument Laboratory}
-%% This is the department committee chairman, not the thesis committee chairman
-% 	\chairman{Arthur C. Smith}
-%		 {Chairman, Departmental Committee on Graduate Students}
-%% Make the titlepage based on the above information.  If you need
-%% something special and can't use the standard form, you can specify
-%% the exact text of the titlepage yourself.  Put it in a titlepage
-%% environment and leave blank lines where you want vertical space.
-%% The spaces will be adjusted to fill the entire page.  The dotted
-%% lines for the signatures are made with the \signature command.
-%
-%% The abstractpage environment sets up everything on the page except
-%% the text itself.  The title and other header material are put at the
-%% top of the page, and the supervisors are listed at the bottom.  A
-%% new page is begun both before and after.  Of course, an abstract may
-%% be more than one page itself.  If you need more control over the
-%% format of the page, you can use the abstract environment, which puts
-%% the word "Abstract" at the beginning and single spaces its text.
-%
-% 	\begin{abstractpage}
-%	    Abstract goes here.
-%	\end{abstractpage}
-%
-%%%%%%%% Newer additions
-%
-% documentclass options -
-% vi		For MIT course VI or VIII thesis - will copyright the thesis to
-% 		you while giving MIT permission to copy and distribute it.
-% upcase	Will put much of the cover page in uppercase, as per the
-% 		example on page 17 of the *Specifications for Thesis
-% 		Preparation*, (revised 1989)
-% Also added ``All Rights Reserved'' to default copyright notice.
-%
-%%%%%%%%%%%
-%
-% Documentclass options (vi and upcase) and changes to copyright notice
-%	Copyright (c) 1990, by Krishna Sethuraman.
-%
-% Pagestyle and header generation
-%	Copyright (c) 1987, 1988 by Peter Nuth
-%
-% Original version
-%	 Copyright (c) 1987 by Stephen Gildea
-% Permission to copy all or part of this work is granted, provided
-% that the copies are not made or distributed for resale, and that
-% the copyright notice and this notice are retained.
-%
-% THIS WORK IS PROVIDED ON AN "AS IS" BASIS.  THE AUTHOR PROVIDES NO
-% WARRANTY WHATSOEVER, EITHER EXPRESS OR IMPLIED, REGARDING THE WORK,
-% INCLUDING WARRANTIES WITH RESPECT TO ITS MERCHANTABILITY OR FITNESS
-% FOR ANY PARTICULAR PURPOSE.
-%%%%%%%%
+% !TEX encoding = UTF-8 Unicode
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%
+%%  This file provides the mitthesis LaTeX class for formatting theses according to 
+%%  MIT Libraries' requirements as of 2023.
+%%
+%%  This file's version and date:
+	\def\versionno{1.11}
+	\def\versiondate{2023/11/02\space}
+%%
+%%  Author: John H. Lienhard, V
+%%          Department of Mechanical Engineering
+%%          Massachusetts Institute of Technology
+%%          Cambridge, MA 02139-4307 USA
+%%
+%%  This class is compatible with either pdfLaTeX or LuaTeX. 
+%%
+%%	Use an up-to-date LaTeX distribution: TeX Live 2023 or later is strongly recommended!
+%%	All packages required by the class are in TeX Live and available from CTAN (https://ctan.org/). 
+%%
+%%
+% =========================================================
+%%
+%% LICENSE:
+%%
+%% Copyright (c) 2023 John H. Lienhard
+%%
+%% Permission is hereby granted, free of charge, to any person obtaining a copy of this software and 
+%% associated documentation files (the "Software"), to deal in the Software without restriction, 
+%% including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, 
+%% and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, 
+%% subject to the following conditions:
+%%
+%% The above copyright notice and this permission notice shall be included in all copies or 
+%% substantial portions of the Software.
+%%
+%% The software is provided "as is", without warranty of any kind, express or implied, including but 
+%% not limited to the warranties of merchantability, fitness for a particular purpose and noninfringement. 
+%% In no event shall the authors or copyright holders be liable for any claim, damages or other liability, 
+%% whether in an action of contract, tort or otherwise, arising from, out of or in connection with the 
+%% software or the use or other dealings in the software.
+%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \NeedsTeXFormat{LaTeX2e}
-\ProvidesClass{mitthesis}[1999/10/20]
+\ProvidesClass{mitthesis}[\versiondate MIT Thesis Template (JHL)]
 
-\def\mystretch{1.5}		% Double spacing hack
-\DeclareOption{doublespace}{}	% This is default
-				% So we do not read this style twice
-\DeclareOption{singlespace}{		% If he explicitly wants single spacing
-    \typeout{Single spaced}
-    \def\mystretch{1}}
+\LoadClass[12pt,openright]{report}% [twoside] option can be issued in the .tex file; point size must be set here.
 
-%% `vi' and `upcase' document style options.  Krishna Sethuraman (1990)
-\newcount\vithesis
-\DeclareOption{vi}{\typeout{Course VI/VIII thesis style.}\advance\vithesis by1}
-\vithesis=0
+\ExplSyntaxOn
+  \str_const:Nn \ClassName {mitthesis}
+\ExplSyntaxOff
 
-\DeclareOption{upcase}{\typeout{Uppercase cover page.}
-	\gdef\choosecase#1{\uppercase\expandafter{#1}}}
-\def\choosecase#1{#1}
+%%%%%%%%%%%%%  Some compatibility for older latex distributions  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% leftblank option by Kevin Fu
-\newif\if@leftblank \@leftblankfalse
+\providecommand\IfFormatAtLeastTF{\@ifl@t@r\fmtversion}% compare version to date; \If... added to latex 2020/10/01
+\providecommand\IfPackageAtLeastTF{\@ifpackagelater}%    compare version to date; \If... added to latex 2020/10/01
+\providecommand\IfPackageLoadedTF{\@ifpackageloaded}%    \If...added to latex 2021/11/15
 
-\DeclareOption{leftblank}{\typeout{Intentionally Leaving Pages Blank}
-\@leftblanktrue}
-
-%  Thesis looks much like report
-\DeclareOption*{\PassOptionsToClass{\CurrentOption}{report}}
-\ProcessOptions
-\LoadClass{report}
-
-% If the user wants single spacing, set baselinestretch=1.
-
-\usepackage{setspace}
-
-% Note - doublespace.sty has some float-related troubles in
-% combination with graphics or color, and is not officially compliant
-% with 2e.  setspace is a replacement which is 2e-compliant.
-
-% Read the doublespace style that we got from Rochester:
-%\input setdoublespace.sty
-
-\def\baselinestretch{\mystretch}	% Double spacing hack
-
-%%%%%%%  Set up margins and formatting params %%%
-
-% Margins.
-%  Note we want 1in top margin assuming no header line, so push header
-%	into 1in margin.
-%  Draft mode brings the header back down.
-
-\setlength{\oddsidemargin}{0.25in}	% 1.25in left margin
-\setlength{\evensidemargin}{0.25in}	% 1.25in left margin (even pages)
-\setlength{\topmargin}{0.0in}		% 1in top margin
-\setlength{\textwidth}{6.0in}		% 6.0in text - 1.25in rt margin
-\setlength{\textheight}{9in}		% Body ht for 1in margins
-\addtolength{\topmargin}{-\headheight}	% No header, so compensate
-\addtolength{\topmargin}{-\headsep}	% for header height and separation
-
-% The next two macros compensate page style for headers and footers
-% We only need them in page styles that USE headers and footers.
-    % If we have a header, it must be 1in from top of page.
-\def\pulldownheader{			% Shift header down 1in from top
-    \addtolength{\topmargin}{\headheight}
-    \addtolength{\topmargin}{\headsep}
-    \addtolength{\textheight}{-\headheight}
-    \addtolength{\textheight}{-\headsep}
-}
-    % If we have a footer, put it 1in up from bottom
-\def\pullupfooter{				% Shift footer up
-    \addtolength{\textheight}{-\footskip}
-%    \addtolength{\textheight}{-\footheight}  %footheight doesn't
-%    						exist in 2e
+\IfFormatAtLeastTF{2020/10/01}{%
+	\typeout{^^JYour LaTeX format is dated \fmtversion. LaTeX distributions from 2022/11/01 or later are strongly recommended for best results^^J}
+	}{%
+	\ClassError{\ClassName}{Your LaTeX format is dated \fmtversion.  Formats dated 2022/11/01 or later are strongly recommended for this class. Older formats may generate errors}{Please UPDATE your LaTeX distribution to obtain best results. TeX Live is available for download at no charge: \string https://www.tug.org/texlive/.  You can try to click past the errors for now...}%
 }
 
-%%%%%%%  End of margins and formatting params %%%
+% check whether pdfmanagement (\DocumentMetadata) has been loaded (if not, fall back to hyperxmp)
+\newif\ifmit@pdfmanagement
+\ExplSyntaxOn
+    \msg_new:nnn { \ClassName } { loading_hyperxmp } { pdfmanagement\ is\ not\ active.\ Will\ load\ hyperxmp\ instead. } 
+	% As of 2021/07/23 we could instead use \IfPDFManagementActiveTF{true code}{false code}
+    \IfFormatAtLeastTF{2020/10/01}{
+        \bool_if:nTF
+          {
+            \bool_lazy_and_p:nn
+              { \cs_if_exist_p:N \pdfmanagement_if_active_p: }
+              { \pdfmanagement_if_active_p: }
+          }
+          { \mit@pdfmanagementtrue  }
+          { \mit@pdfmanagementfalse
+            \msg_warning:nn { \ClassName } { loading_hyperxmp } 
+          }
+    }{ \mit@pdfmanagementfalse
+       \msg_warning:nn { \ClassName } { loading_hyperxmp } 
+    }
+\ExplSyntaxOff
 
-%%%%%%%  Fix various header and footer problems %%%
-
-% Draft mark on the right side of left pages (outside)
-% this mark is also the only one visible on single sided.
-\newcommand{\draftrmark}{**DRAFT**}
-% Draft mark on the left side of right pages (outside)
-\newcommand{\draftlmark}{**DRAFT**} %
-
-% Macros to make changing the Draft easier
-\newcommand{\drmark}[1]{\renewcommand{\draftrmark}{#1}}
-\newcommand{\dlmark}[1]{\renewcommand{\draftlmark}{#1}}
-\newcommand{\dmark}[1]{\drmark{#1}\dlmark{#1}}
-
-% Format for draft of thesis.  Define our own PageStyle -
-% Just like headings, but has foot lines with the date and warning
-
-\if@twoside         % If two-sided printing.
-\def\ps@drafthead{
-    \let\@mkboth\markboth
-    \def\@oddfoot{\rm \today \hfil \sc \draftrmark}
-    \def\@evenfoot{\sc \draftlmark \hfil \rm \today }
-    \def\@evenhead{\rm \thepage\hfil \sl \leftmark}
-    \def\@oddhead{\hbox{}\sl \rightmark \hfil \rm\thepage}
-    \def\chaptermark##1{\markboth {\uppercase{\ifnum \c@secnumdepth >\m@ne
-	\@chapapp\ \thechapter. \ \fi ##1}}{}}
-    \def\sectionmark##1{\markright {\uppercase{\ifnum \c@secnumdepth >\z@
-	\thesection. \ \fi ##1}}}
-    \pulldownheader				% Bring header down from edge
-    \pullupfooter				% Bring footer up
-}
-\else               % If one-sided printing.
-\def\ps@drafthead{
-    \let\@mkboth\markboth
-    \def\@oddfoot{\rm \today \hfil \sc \draftrmark}
-    \def\@oddhead{\hbox{}\sl \rightmark \hfil \rm\thepage}
-    \def\chaptermark##1{\markright {\uppercase{\ifnum \c@secnumdepth >\m@ne
-	\@chapapp\ \thechapter. \ \fi ##1}}}
-    \pulldownheader				% Bring header down from edge
-    \pullupfooter				% Bring footer up
-}
+% Enable pre-2020/10 formats to access essential macros later moved into LaTeX kernel
+\ifdefined\NewDocumentCommand\else
+  \RequirePackage{xparse}
 \fi
 
-% I redefine these formats that were defined in report.sty
-% Definition of 'headings' page style
-%  Note the use of ##1 for parameter of \def\chaptermark inside the
-%  \def\ps@headings.
-%
+% Allow pre 2021/11/15 formats to see the graphicx alt key without causing an error
+\IfFormatAtLeastTF{2021/11/15}{
+	\relax
+}{ 
+	\AtBeginDocument{
+		\IfPackageLoadedTF{graphicx}{\define@key{Gin}{alt}{}}{\relax}
+	}
+}
 
-\if@twoside					% If two-sided printing.
-\def\ps@headings{\let\@mkboth\markboth
-    \def\@oddfoot{}
-    \def\@evenfoot{}		% No feet.
-    \def\@evenhead{\rm \thepage\hfil \sl \leftmark}	% Left heading.
-    \def\@oddhead{\hbox{}\sl \rightmark \hfil \rm\thepage}	% Right heading.
-    \def\chaptermark##1{\markboth {\uppercase{\ifnum \c@secnumdepth >\m@ne
-	\@chapapp\ \thechapter. \ \fi ##1}}{}}
-    \def\sectionmark##1{\markright {\uppercase{\ifnum \c@secnumdepth >\z@
-	\thesection. \ \fi ##1}}}
-    \pulldownheader				% Bring header down from edge
+%%%%%%%%%%%%%% Options for the class %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\IfFormatAtLeastTF{2022/11/01}{%
+%	\typeout{^^JUsing native keyvalue support^^J}% diagnostic info
+    \DeclareKeys{
+    	fontset .store  = \mit@fontset ,
+    	fontset .usage  = load ,
+		lineno  .if     = mit@lineno ,
+		lineno 	.usage	= load ,
+		mydesign .if	= mit@mydesign,
+		mydesign .usage	= load ,
+    } 
+    \SetKeys[\ClassName]{fontset=defaultfonts}%
+	\DeclareUnknownKeyHandler[\ClassName]{\relax}% suppress warning about unused keys
+	\ProcessKeyOptions
+}{% And more compatibility code for distributions pre-2022/11     
+    \RequirePackage{kvoptions}
+    \SetupKeyvalOptions{
+      family=\ClassName,
+      prefix=mit@,
+      setkeys=\kvsetkeys,
+    }
+    % set key [fontset] for font selection
+    \DeclareStringOption[defaultfonts]{fontset}[]
+    %
+    % set key [lineno] to load package lineno
+    \DeclareBoolOption{lineno}
+    %
+    % set key [mydesign] to input file mydesign.tex
+    \DeclareBoolOption{mydesign}
+    %
+    \ProcessKeyvalOptions{\ClassName}
+    %
+    %% Turn off these keys now that we're done with them
+    \NewDocumentCommand\mit@DisableOption{m}{%
+      \DisableKeyvalOption[%
+        action=ignore,%
+        class=\ClassName%
+      ]{#1}{\ClassName}%
+    }
+    \NewDocumentCommand\mit@DisableKeys{>{\SplitList{;}}m}{\ProcessList{#1}{\mit@DisableOption}}
+    %
+    \mit@DisableKeys{fontset;lineno;mydesign}%
+    %
+    %% Suppress warnings about unused global options
+    \DeclareOption*{}  
+    \ProcessOptions \relax
 }
-\else						% If one-sided printing.
-\def\ps@headings{\let\@mkboth\markboth
-    \def\@oddfoot{}
-    \def\@evenfoot{}		%     No feet.
-    \def\@oddhead{\hbox {}\sl \rightmark \hfil \rm\thepage}	% Heading.
-    \def\chaptermark##1{\markright {\uppercase{\ifnum \c@secnumdepth >\m@ne
-	\@chapapp\ \thechapter. \ \fi ##1}}}
-    \pulldownheader				% Bring header down from edge
-}
+
+%%%%%%%%%%%%%  Line numbering (class option)  %%%%%%%%%%%%%%%%%%%%%%%%%
+
+\ifmit@lineno
+    \RequirePackage[mathlines]{lineno} 
+    \AtBeginDocument{\linenumbers}
 \fi
 
-% Redefinition of 'myheadings' page style.
-%
-\def\ps@myheadings{\let\@mkboth\@gobbletwo
-    \def\@oddfoot{}
-    \def\@evenfoot{}
-    \def\sectionmark##1{}
-    \def\subsectionmark##1{}
-    \def\@evenhead{\rm \thepage\hfil\sl\leftmark\hbox {}}	%
-    \def\@oddhead{\hbox{}\sl\rightmark \hfil \rm\thepage}	%
-    \pulldownheader				% Bring header down from edge
-}
+%%% Enable dropping lineno option without trashing .aux file
+\providecommand{\@LN@col}[1]{\relax}
+\providecommand{\@LN}[2]{\relax}
 
-% Redefine '/chapter' to always start on an odd page.
-% Should make no difference in singleside mode.
+
+%%%%%%%%%%%%%  Patch table of contents, list of figures, and list of tables  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\RequirePackage{etoolbox}% provides \patchcmd
+
+% We'd like these sections to have pdf bookmarks and to have the two lists appear in the table of contents
+
+\patchcmd{\tableofcontents}{\@starttoc{toc}}{\pdfbookmark[0]{Table of Contents}{toc}\@starttoc{toc}}{}{}
+\patchcmd{\listoffigures}{\chapter*{\listfigurename}}{\chapter*{\listfigurename}\addcontentsline{toc}{chapter}{\listfigurename}}{}{}
+\patchcmd{\listoftables}{\chapter*{\listtablename}}{\chapter*{\listtablename}\addcontentsline{toc}{chapter}{\listtablename}}{}{}
+
+
+%%%%%%%%%%%%%  Geometry, mathtools, graphics, design, fonts, hyperrefs, bookmarks, footnotes %%%%%%%%%%%%%%%%%%%
+
+%\RequirePackage[letterpaper,top=1in,bottom=0.97136in,left=1in,right=1in,marginparwidth=50pt,headsep=12pt,footskip=0.47136in]{geometry} % bottom margin allows 45\baselineskip in \textheight
+\RequirePackage[letterpaper,top=1in,bottom=1in,left=1in,right=1in,marginparwidth=50pt,headsep=12pt,footskip=0.5in,heightrounded]{geometry} % 44\baselineskip = \texteheight - \topskip = 650.0pt - 12pt with rounded height
+
+\RequirePackage{mathtools}% loads and extends amsmath; must load before hyperref and unicode-math
+
+% To free \eqref from the normal font (i.e., for use in section headings)
+\renewcommand{\eqref}[1]{\textup{\hbox{\m@th{(\ignorespaces\ref{#1}\unskip\@@italiccorr)}}}}
 %
-\if@leftblank
-% Prints "THIS PAGE INTENTIONALLY LEFT BLANK" on blank pages.
-\def\chapter{\clearpage\ifodd\c@page\else
-   \hbox{}\par\vfill\centerline%
-   {THIS PAGE INTENTIONALLY LEFT BLANK}%
-   \vfill\newpage\fi
-   \thispagestyle{plain}	% Page style of chapter page is 'plain'
-   \global\@topnum\z@		% Prevents figures from going at top of page.
-   \@afterindentfalse		% Suppresses indent in first paragraph.  Change
-   \secdef\@chapter\@schapter}	% to \@afterindenttrue to have indent.
+% amsmath def:  \newcommand{\eqref}[1]{\textup{\tagform@{\ref{#1}}}}
+%				\def\tagform@#1{\maketag@@@{(\ignorespaces#1\unskip\@@italiccorr)}}
+%				\def\maketag@@@#1{\hbox{\m@th\normalfont#1}}
+
+\RequirePackage{graphicx}
+
+%%%%%%%%%%%%  Design options %%%%%%%%%%%%%%%%%%%%%%%
+
+% the packages in mydesign should come before babel (which may be loaded by fontset) and before hyperref
+\ifmit@mydesign
+	\IfFileExists{mydesign.tex}{\input{mydesign.tex}}{%
+	\ClassError{\ClassName}{Missing file mydesign.tex. This file is necessary when using the class option [mydesign] }{%
+			You have called the class option mydesign, but the file mydesign.tex is not found.  You can download a copy of that file from
+			https://ctan.org/tex-archive/macros/latex/contrib/mitthesis/MIT-thesis-template.}%  
+	}%
 \else
-\def\chapter{\cleardoublepage	% Starts new page.
-   \thispagestyle{plain}	% Page style of chapter page is 'plain'
-   \global\@topnum\z@		% Prevents figures from going at top of page.
-   \@afterindentfalse		% Suppresses indent in first paragraph.  Change
-   \secdef\@chapter\@schapter}	% to \@afterindenttrue to have indent.
-\fi
-% If using the report style, use - instead of . in the figure number.
-\@ifundefined{thechapter}{}{\def\thefigure{\thechapter-\arabic{figure}}}
-
-
-%%%%%%%%%  End of Style parameters %%%%
-
-% Here's Gildea's Boilerplate Stuff.
-% Copyright (c) 1987 by Stephen Gildea
-% Permission to copy all or part of this work is granted, provided
-% that the copies are not made or distributed for resale, and that
-% the copyright notice and this notice are retained.
-
-%% Define all the pieces that go on the title page and the abstract.
-
-% \title and \author already exist
-
-\def\prevdegrees#1{\gdef\@prevdegrees{#1}}
-\def\@prevdegrees{}
-
-\def\department#1{\gdef\@department{#1}}
-
-% If you are getting two degrees, use \and between the names.
-\def\degree#1{\setbox0\hbox{#1}	 %for side effect of setting \@degreeword
-  \gdef\@degree{#1}}
-
-% \and is used inside the \degree argument to separate two degrees
-\def\and{\gdef\@degreeword{degrees} \par and \par}
-\def\@degreeword{degree}
-
-% The copyright notice stuff is a tremendous mess.
+	\RequirePackage[hyperref,dvipsnames,svgnames,x11names]{xcolor}
 %
-% \@copyrightnotice is used by \maketitle to actually put text on the
-% page; it defaults to ``Copyright MIT 19xx.  All rights reserved.''
-% \copyrightnoticetext takes an argument and defined \@copyrightnotice
-% to that argument.  \copyrightnotice takes an argument, and calls
-% \copyrightnoticetext with that argument, preceeded by a copyright
-% symbol and followed by ``All rights reserved.'' and the standard
-% permission notice.
+	\RequirePackage{caption,subcaption}
 %
-% If you use the 'vi' option, \copyrightnoticetext is used to set the
-% copyright to ``(C) Your Name, Current Year in Roman Numerals.''
-% followed by the permission notice.
-
-% If there is no \copyrightnotice command, it is asssumed that MIT
-% holds the copyright.  This commands adds the copyright symbol to the
-% beginning, and puts the standard permission notice below.
-%% ``All rights reserved'' added.  Krishna Sethuraman (1990)
-\def\copyrightnotice#1{\copyrightnoticetext{\copyright\ #1.  All rights
-reserved.\par\permission}}
-
-% Occacionally you will need to exactly specify the text of the
-% copyright notice.  The \copyrightnoticetext command is then useful.
-\long\def\copyrightnoticetext#1{\gdef\@copyrightnotice{#1}}
-\def\@copyrightnotice{\copyright\ \Mit\ \@degreeyear.  All rights reserved.}
-
-%% `vi' documentclass option: Specifying this option automatically
-%% copyrights the thesis to the author and gives MIT permission to copy and
-%% distribute the document.  If you want, you can still specify
-%% \copyrightnotice{stuff} to copyright to someone else, or
-%% \copyrightnoticetext{stuff} to specify the exact text of the copyright
-%% notice.
-\ifodd\vithesis \copyrightnoticetext{\copyright\ \@author,
-\uppercase\expandafter{\romannumeral\@degreeyear}.  All rights reserved.\par\permission}
-%% or just
-%%\@degreeyear}}
-\typeout{Copyright given to author,
-	permission to copy/distribute given to MIT.}
-\else \typeout{Thesis document copyright MIT unless otherwise (manually) specified}
+    \RequirePackage{titlesec}    
+    % these titlesec commands just automate the bold math in some headings (rest follows default styles)
+    % NOT every font includes a bold math version, so you may need to use other math macros in the headings to get bold math <== 
+    \titleformat{\section}{\mathversion{bold}\normalfont\Large\bfseries}{\thesection }{1em}{}
+    \titleformat{\subsection}{\mathversion{bold}\normalfont\large\bfseries}{\thesubsection}{1em}{}
+    \titleformat{\subsubsection}{\mathversion{bold}\normalfont\normalsize\bfseries}{\thesubsubsection}{1em}{}    
+%
+	\AtBeginDocument{
+		\hypersetup{
+		linkcolor=Blue3,% color names from xcolor package
+		citecolor=Blue3,
+		urlcolor=violet,
+		filecolor=red, 
+		}
+		\ifmit@lineno
+			\renewcommand{\linenumberfont}{\sffamily\mdseries\tiny\color{violet}}% add mdseries 2023/10/11
+		\fi
+	}	  	
 \fi
 
-\def\thesisdate#1{\gdef\@thesisdate{#1}}
+%%%%%%%%%%%%  Font loading  %%%%%%%%%%%%%%%%%%%%%%%%
 
-% typically just a month and year
-\def\degreemonth#1{\gdef\@degreemonth{#1}}
-\def\degreeyear#1{\gdef\@degreeyear{#1}}
+\RequirePackage{iftex}[2019/11/07]% provides \ifpdftex, etc.
 
-% Usage: \supervisor{name}{title}
-%        \chairman{name}{title}
+\typeout{^^JFontset key is \mit@fontset.^^J}
+\IfFileExists{fontsets/\ClassName-\mit@fontset.tex}{% 2023/07/03
+	\input{fontsets/\ClassName-\mit@fontset.tex}
+}{%
+	\ClassWarning{\ClassName}{^^JFontset file \ClassName-\mit@fontset.tex or subdirectory fontsets not found, will look for \mit@fontset.tex in your working directory.}
+	\IfFileExists{\mit@fontset.tex}{% 2023/08/30
+		\input{\mit@fontset.tex}
+		}{
+    	\ClassWarning{\ClassName}{^^JFontset file \mit@fontset.tex not found, using default fonts. You may need to place the fontset file into your working directory.}
+    	\ifpdftex
+        	\typeout{^^JLoading Computer Modern text and math fonts (default for pdftex).^^J}
+        	\RequirePackage[T1]{fontenc}
+        	\RequirePackage{bm}
+        \else
+        	\typeout{^^JLoading Latin Modern text and math fonts (default for unicode engines).^^J}
+            \RequirePackage[warnings-off={mathtools-colon,mathtools-overbracket}]{unicode-math}
+            % suppress tiresome warnings about lack of integration between mathtools and unicode-math.
+            % Unicode-math loads fontspec package, but default fonts are not selected by fontspec in this case.
+        \fi
+       }
+}
 
-% since there can be more than one supervisor,
-% we build the appropriate boxes for the titlepage and
-% the abstractpage as the user makes multiple calls
-% to \supervisor
-\newbox\@titlesupervisor 	\newbox\@abstractsupervisor
+%%%%%%%%%%%%  Hyperref %%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\def\supervisor#1#2{\setbox\@titlesupervisor\vbox
-  {\unvbox\@titlesupervisor
-  % Austin Clements: Use \vfill so multiple supervisor lines are
-  % evenly spaced with other signature lines
-  % \vskip 10pt% plus 1fil minus 1fil
-  \vfill
-  \def\baselinestretch{1}\large
-  \signature{Certified by}{#1 \\ #2 \\ Thesis Supervisor}}
-  \setbox\@abstractsupervisor\vbox{\unvbox\@abstractsupervisor
-  \vskip\baselineskip \def\baselinestretch{1}\@normalsize
-  \par\noindent Thesis Supervisor: #1 \\ Title: #2}}
+\RequirePackage[psdextra]{hyperref}
+% the new pdf-management scheme loads the bookmarks package internally.
+% authors should use hypersetup to set details, in root .tex file
 
-\def\cosupervisor#1#2{\setbox\@titlesupervisor\vbox
-  {\unvbox\@titlesupervisor
-  \vfill
-  \def\baselinestretch{1}\large
-  \signature{Co-Certified by}{#1 \\ #2 \\ Thesis Co-Supervisor}}
-  \setbox\@abstractsupervisor\vbox{\unvbox\@abstractsupervisor
-  \vskip\baselineskip \def\baselinestretch{1}\@normalsize
-  \par\noindent Thesis Co-Supervisor: #1 \\ Title: #2}}
+\urlstyle{same} 		% this changes font for \url to the current text font
+\providecommand\hrefurl[2]{\href{#1}{#2}}% in case \DocumentMetadata has not been loaded
+\RequirePackage{doi} 	% create macro for hyperlinking doi numbers
 
-% department chairman, not thesis committee chairman
-\def\chairman#1#2{\gdef\@chairmanname{#1}\gdef\@chairmantitle{#2}}
+\ifmit@pdfmanagement\else
+    \RequirePackage{hyperxmp}
+\fi
 
-%% `upcase' documentclass option: \choosecase is defined either as a dummy or
-%% a macro to change the (expanded) argument to uppercase.
-\def\maketitle{\begin{titlepage}
-\large
-{\def\baselinestretch{1.2}\Large\bf \choosecase{\@title} \par}
-by\par
-{\Large  \choosecase{\@author}}
-\par
-\@prevdegrees
-\par
-\choosecase{Submitted to the} \choosecase{\@department} \\
-\choosecase{in partial fulfillment of the requirements for the}
-\choosecase{\@degreeword}
-\choosecase{of}
-\par
-\choosecase{\@degree}
-\par
-at the
-\par\MIT\par
-\@degreemonth\ \@degreeyear
-\par
-\@copyrightnotice
-\par
-\vskip 3\baselineskip
-\signature{Author}{\@department \\ \@thesisdate}
-\par
-\vfill
-\unvbox\@titlesupervisor
-\par
-\vfill
-\signature{Accepted by}{\@chairmanname \\ \@chairmantitle}
-\vfill
-\end{titlepage}}
+% the user can alter these choices in the preamble, or by 
+% using \AtBeginDocument{ \hypersetup{..} } in mydesign.tex 
+\hypersetup{
+    colorlinks=true,
+ 	pdfborder={0 0 0},
+	bookmarksnumbered=true,
+	bookmarksopen=true,
+	bookmarksopenlevel=1,
+	pdfpagelayout=SinglePage,
+	pdfdisplaydoctitle=true,
+	pdfstartview=Fit,
+	pdfnewwindow=true,
+%
+	pdfcontactaddress={Massachusetts Institute of Technology, 77 Massachusetts Avenue},
+    pdfcontactcity={Cambridge, MA},
+    pdfcontactpostcode={02139-4307},
+    pdfcontactcountry={USA},
+    pdfcontacturl={https://dspace.mit.edu/handle/1721.1/7582},% DSPACE@MIT theses page
+}
+ 		
+%%%%%%%%%%%%  PDF bookmark strings  %%%%%%%%%%%%%%%%
 
-% this environment should probably be called abstract,
-% but we want people to also be able to get at the more
-% basic abstract environment
-\def\abstractpage{\cleardoublepage
-\begin{center}{\large{\bf \@title} \\
-by \\
-\@author \\[\baselineskip]}
-\par
-\def\baselinestretch{1}\@normalsize
-Submitted to the \@department \\
-on \@thesisdate, in partial fulfillment of the \\
-requirements for the \@degreeword\ of \\
-\@degree
-\end{center}
-\par
-\begin{abstract}}
+%%% Since \bm may be useful in headings, use this fix to reduce frequency with which alternate 
+%%%   bookmark strings must be given with commands such as \section{ \texorpdfstring{texstring}{pdfstring} }
+\pdfstringdefDisableCommands{%
+    \def\bm#1#{\relax}%
+}
+%%% Let's disable \( and \) in pdf bookmarks
+\pdfstringdefDisableCommands{%
+    \def\({\relax}%
+    \def\){\relax}%
+}
+%%% Let's also make sure \NoCaseChange in section headings won't break pdf bookmarks
+\pdfstringdefDisableCommands{%
+    \let\NoCaseChange\relax%
+}
+%%% Let's just remove citations from pdf bookmarks
+\pdfstringdefDisableCommands{%
+    \def\cite{\@gobble}%
+}
+%%% Let's fix \eqref in pdf bookmarks
+\pdfstringdefDisableCommands{%
+    \def\eqref#1{(\ref{#1})}%
+}
+%%% Let's make sure footnotes in section headings don't break pdf bookmarks. (Note: \footnote, as redefined below, is protected)
+% \patchcmd{\section}{\sectionmark}{\let\footnote\@gobble\sectionmark}{}{}% <== not needed unless you implement running headers
+\pdfstringdefDisableCommands{%
+  \def\footnote#1{}%
+}
 
-%% Changed from \unvbox to \unvcopy for use with multiple copies of abstract
-%% page.
-%% Krishna Sethuraman (1990)
-\def\endabstractpage{\end{abstract}\noindent
- \unvcopy\@abstractsupervisor \newpage}
 
-%% This counter is used to save the page number for the second copy of
-%% the abstract.
-\newcounter{savepage}
+\ExplSyntaxOn
+%\debug_on:n {all}
 
-% You can use the titlepage environment to do it all yourself if you
-% don't want to use \maketitle.  If the titlepage environment, the
-% paragraph skip is infinitely stretchable, so if you leave a blank line
-% between lines that you want space between, the space will stretch so
-% that the title page fills up the entire page.
-\def\titlepage{\cleardoublepage\centering
-  \thispagestyle{empty}
-  \parindent 0pt \parskip 10pt plus 1fil minus 1fil
-  \def\baselinestretch{1}\@normalsize\vbox to \vsize\bgroup\vbox to 9in\bgroup}
-% The \kern0pt pushes any depth into the height.  Thanks to Richard Stone.
-\def\endtitlepage{\par\kern 0pt\egroup\vss\egroup\newpage}
+%%%%%%%%%%  Commas between successive footnotes %%%
 
-\def\MIT{MASSACHUSETTS INSTITUTE OF TECHNOLOGY}
-\def\Mit{Massachusetts Institute of Technology}
+\cs_new:Npn   \__mitthesis_NoteComma:n { \peek_meaning:NT \footnote {\textsuperscript{\mdseries,}} }
+\cs_new_eq:NN \__savefootnote \footnote
+\cs_gset_protected:Npn \footnote #1    { \__savefootnote{#1}\__mitthesis_NoteComma:n } 
 
-\def\permission{\par\noindent{\centering
-   The author hereby grants to MIT permission to reproduce and to
-   distribute publicly paper and electronic copies of this thesis
-   document in whole or in part in any medium now known or hereafter
-   created.}\par}
 
-\def\signature#1#2{\par\noindent#1\dotfill\null\\*
-  {\raggedleft #2\par}}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%  MACROS FOR HANDLING TITLE AND ABSTRACT PAGES  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-\def\abstract{\subsection*{Abstract}\small\def\baselinestretch{1}\@normalsize}
-\def\endabstract{\par}
+%%%%%%%%%%  Degree Date Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\tl_new:N \g__dd_month_tl	
+\tl_new:N \g__dd_year_tl
+%\cs_generate_variant:Nn \str_casefold:n {e} % not def'd until 2022/10/16, omit for backward compatibility
+\cs_generate_variant:Nn \tl_gremove_all:Nn {No}
+\cs_new_protected:Nn \__dd_setdates:nn {
+	\tl_gset:Nn \g__dd_month_tl {#1}
+	\tl_gset:Nn \g__dd_year_tl  {#2}
+	\tl_gremove_all:No \g__dd_month_tl { \space }
+	\tl_gremove_all:No \g__dd_year_tl { \space }
+ 	\str_case_e:nnF 
+%		{ \str_casefold:e { \tl_to_str:N  \g__dd_month_tl } } % not def'd until 2022/10/16
+		{ \str_lowercase:f { \tl_to_str:N  \g__dd_month_tl } }
+	 	{ {february}{} {may}{} {june}{} {september}{}}
+		{ \msg_error:nnn { \ClassName } { wrong_month } {#1} } 
+}
+\msg_new:nnnn { \ClassName } { wrong_month } {The\ degree\ month\ must\ be\ one\ of\ February,\ May,\ June,\ or\ September.} {You\ cannot\ use\ #1\ as\ the\ degree\ month.}
+
+\cs_generate_variant:Nn \text_titlecase:n {o,V}
+\NewDocumentCommand\DegreeDate{mm}{%   {month}{year}	
+	\__dd_setdates:nn {#1}{#2}
+	\cs_new:Npn \DegreeMonth { \text_titlecase:V { \g__dd_month_tl } }
+	\cs_new:Npn \DegreeYear  { \text_titlecase:V { \g__dd_year_tl  } }
+}
+\msg_new:nnnn { \ClassName } { no_degree_date } {Missing\ degree\ date!}{
+			You\ MUST\ issue\ the\ \DegreeDate{month}{year}\ command\ between\ \string\begin{document}\ and\ \string\maketitle.}
+		
+\NewDocumentCommand\ThesisDate{m}{
+	\tl_if_exist:NTF \g_dd_thesisdate_tl { \g_dd_thesisdate_tl } { \__dd_thesisdate:n {#1} }% will use only value given first
+}
+\cs_new_protected:Nn \__dd_thesisdate:n {
+	\tl_new:N  \g_dd_thesisdate_tl
+	\tl_gset:Nx \g_dd_thesisdate_tl { \tl_trim_spaces:n {#1} }
+}
+
+% If for some reason you don't want a warning when you supply the wrong month
+\NewDocumentCommand\SuppressMonthError{}
+  {
+  	\msg_redirect_name:nnn { \ClassName } { wrong_month } { none }
+  }
+
+%%%%%%%%%%  End Degree Date Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%  Author Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\seq_new:N \g_author_name_seq
+\seq_new:N \g_author_department_seq
+\seq_new:N \g_author_prevdegree_seq
+\seq_new:N \g_author_secondprevdegree_seq
+\seq_new:N \g_author_thirdprevdegree_seq
+\seq_new:N \g_author_fourthprevdegree_seq
+\int_gzero_new:N \g_author_authorcnt_int
+
+\NewDocumentCommand\Author{mm O{}O{}O{}O{} }
+ {
+ 	\tl_if_blank:nTF{#1}{
+		\msg_error:nn { \ClassName } { blank_author }
+		}{
+		  \__author_data_add:nnnnnn { #1 } { #2 } { #3 } { #4 } { #5 } { #6 }
+		}
+	\tl_if_blank:nT{#2}{\msg_error:nn {\ClassName} {blank_author_dep}}
+ }
+\cs_new_protected:Nn \__author_data_add:nnnnnn
+ {
+	\int_gincr:N \g_author_authorcnt_int
+	\seq_gput_right:cx  { g_author_name_seq }        { \tl_trim_spaces:n {#1} } 
+	\seq_gput_right:cx  { g_author_department_seq }  { \tl_trim_spaces:n {#2} }
+	\seq_gput_right:cx  { g_author_prevdegree_seq }  { \tl_trim_spaces:n {#3} }
+	\seq_gput_right:cx  { g_author_secondprevdegree_seq } { \tl_trim_spaces:n {#4} }
+	\seq_gput_right:cx  { g_author_thirdprevdegree_seq }  { \tl_trim_spaces:n {#5} }
+	\seq_gput_right:cx  { g_author_fourthprevdegree_seq } { \tl_trim_spaces:n {#6} }
+ }
+\msg_new:nnnn { \ClassName } { blank_author } {Missing\ author\ name,\ check\ for\ blank\ in\ \Author\ command.}{%
+			You\ MUST\ provide\ an\ author\ name\ using\ the\ \Author{name}{department}\ command.}
+\msg_new:nnnn { \ClassName } { blank_author_dep } {Missing\ author\ department,\ check\ for\ blank\ in\ \Author\ command.}{%
+			You\ MUST\ provide\ the\ author's\ department\ using\ the\ \Author{name}{department}\ command.}
+
+\NewExpandableDocumentCommand\CopyrightAuthor{}{
+	\tl_if_exist:NTF \g__author_ca_tl
+		{ \g__author_ca_tl }
+		{ \__author_copyrightauthor: \g__author_ca_tl }
+}
+
+\cs_new_protected:Nn \__author_copyrightauthor: {
+	\tl_new:N       \g__author_ca_tl
+	\int_zero_new:N \l__author_autcrcnt_int
+	\int_incr:N     \l__author_autcrcnt_int
+    \tl_gset:Nx     \g__author_ca_tl  { \seq_item:cn { g_author_name_seq } { \l__author_autcrcnt_int } }
+	\int_incr:N     \l__author_autcrcnt_int
+	\int_while_do:nNnn { \l__author_autcrcnt_int } < { \g_author_authorcnt_int }
+		{
+			\tl_gput_right:Nx \g__author_ca_tl {,\ \seq_item:cn { g_author_name_seq } { \l__author_autcrcnt_int } }
+			\int_incr:N \l__author_autcrcnt_int   
+		}
+	\int_compare:nNnT { \l__author_autcrcnt_int } = { \g_author_authorcnt_int } {
+  	    \tl_gput_right:Nx \g__author_ca_tl {\ and\ \seq_item:cn { g_author_name_seq } { \l__author_autcrcnt_int } }
+	}
+	\tl_set:Nn \l_tmpa_tl {\tl_item:Nn \g__author_ca_tl {-1} }% get last token
+ 	\str_case_e:nnT 
+		{ \l_tmpa_tl  }
+	 	{ {.}{} }
+		{ \__copyright_remove_period:N { \g__author_ca_tl } }% remove last token if it is a period 
+	\__author_pdfcopyrightauthor:
+}
+\cs_new:Nn \__copyright_remove_period:N
+	{
+		\tl_gset:Nx #1 { \tl_range:Nnn #1 { 1 } { \tl_count:N #1 - 1 } }
+	}
+\cs_new_protected:Nn \__author_pdfcopyrightauthor: {
+	\tl_new:N       \g__author_pdfca_tl
+	\int_set:Nn     \l_tmpa_int {1}
+    \tl_gset:Nx     \g__author_pdfca_tl  { { \seq_item:cn { g_author_name_seq } { \l_tmpa_int } } }
+	\int_until_do:nNnn { \l_tmpa_int } = { \g_author_authorcnt_int }
+		{
+			\int_incr:N \l_tmpa_int   
+			\tl_gput_right:Nx \g__author_pdfca_tl {,\ { \seq_item:cn { g_author_name_seq } { \l_tmpa_int } } }
+		}	
+}
+
+
+\tl_new:N   \g__author_namesize_tl
+\tl_gset:Nn \g__author_namesize_tl { \large }
+\cs_new:Nn \__author_block: {
+	\int_zero_new:N \l__author_authorno_int
+	\int_incr:N     \l__author_authorno_int
+	\int_compare:nNnTF { \g_author_authorcnt_int } = {0} {
+		\msg_error:nn { \ClassName } { no_author }
+	}	
+	{by\par
+		{ \g__author_namesize_tl \seq_item:cn { g_author_name_seq } {
+            \l__author_authorno_int } } \par\par
+        {A.B.,\ Harvard\ University\ (2017)}
+        \linebreak\normalsize
+        {S.M.,\ Harvard\ University\ (2017)}
+    	\par 
+    }
+}
+\msg_new:nnnn { \ClassName } { no_author }
+		{ Missing\ author!\ You\ must\ issue\ the\ \Author{name}{department}\ command. }{
+		You\ MUST\ issue\ the\ \Author{name}{department}\ command\ after\ \string\begin{document}\ and\ before\ \string\maketitle. }
+\NewDocumentCommand\AuthorNameSize{m}{
+		\tl_gset:Nn \g__author_namesize_tl {#1}
+}
+
+
+\cs_new:Nn \__author_abstractblock: {
+	\int_zero_new:N \l__author_authorno_int
+	\int_incr:N     \l__author_authorno_int
+	\int_compare:nNnTF { \g_author_authorcnt_int } = {0} {
+		\msg_error:nn { \ClassName } { no_author }
+		}	
+		{by\par
+		\int_until_do:nNnn { \l__author_authorno_int } = { \g_author_authorcnt_int } {
+			\seq_item:cn { g_author_name_seq } { \l__author_authorno_int }
+			\par and\par
+			\int_incr:N \l__author_authorno_int
+		}%
+		\seq_item:cn { g_author_name_seq } { \l__author_authorno_int } 
+    }%
+}
+
+%%%%%%%%%%  End Author Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%  Supervisor Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\seq_new:N \g_supervisor_name_seq
+\seq_new:N \g_supervisor_title_seq
+\int_gzero_new:N \g_supervisor_supervisorcnt_int
+
+
+\NewDocumentCommand\Supervisor{mm}{
+	\tl_if_blank:nTF{#1}{
+		\msg_error:nn { \ClassName } { blank_supervisor }
+		}{
+		\__supervisor_data_add:nn {#1} {#2}
+	}
+	\tl_if_blank:nT{#2}{\msg_error:nn { \ClassName } { blank_supervisor_title } }
+}
+\msg_new:nnnn { \ClassName } { blank_supervisor }
+		{ Missing\ supervisor\ name, check\ for\ blank\ in\ \Supervisor{name}{title}\ command.}{
+			You\ MUST\ provide\ the\ supervisor's\ name\ using\ the\ \Supervisor{name}{title}\ command.}
+\msg_new:nnnn { \ClassName } { blank_supervisor_title }
+		{ Missing\ supervisor\ title, check\ for\ blank\ in\ \Supervisor{name}{title}\ command. }{
+			You\ MUST\ provide\ the\ supervisor's\ title\ using\ the\ \Supervisor{name}{title}\ command.}
+
+\cs_new_protected:Nn \__supervisor_data_add:nn
+ {
+	\int_gincr:N \g_supervisor_supervisorcnt_int
+	\seq_gput_right:cx  { g_supervisor_name_seq }       { \tl_trim_spaces:n {#1} } 
+	\seq_gput_right:cx  { g_supervisor_title_seq } { \tl_trim_spaces:n {#2} }
+ }
+
+
+\cs_new:Nn \__supervisor_abstractblock: {
+	\int_zero_new:N \l__supervisor_supervisorno_int
+	\int_incr:N     \l__supervisor_supervisorno_int
+	\setlength{\parindent}{0pt}
+	\par\bigskip
+	\int_compare:nNnTF { \g_supervisor_supervisorcnt_int } = {0} {
+		\msg_error:nn { \ClassName } { no_supervisor }
+		}	
+		{\int_until_do:nNnn { \l__supervisor_supervisorno_int } = { \g_supervisor_supervisorcnt_int } {
+			Thesis\ supervisor:\space \seq_item:cn { g_supervisor_name_seq } { \l__supervisor_supervisorno_int }\par
+			Title:\space              \seq_item:cn { g_supervisor_title_seq } { \l__supervisor_supervisorno_int }\par\medskip
+			\int_incr:N \l__supervisor_supervisorno_int
+		}
+			Thesis\ supervisor:\space  \seq_item:cn { g_supervisor_name_seq } { \l__supervisor_supervisorno_int }\par
+			Title:\space  \seq_item:cn { g_supervisor_title_seq } { \l__supervisor_supervisorno_int }\ignorespaces
+    }
+}
+\msg_new:nnnn { \ClassName } { no_supervisor }
+		{ Missing\ supervisor!\ You\ must\ issue\ the\ \Supervisor{name}{title}\ command. }{
+		You\ MUST\ issue\ the\ \Supervisor{name}{title}\ command\ after\ \string\begin{document}\ and\ before\ \string\maketitle. }
+
+
+%%%%%%%%%%  End Supervisor Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%  Acceptor Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\seq_new:N \g_acceptor_name_seq
+\seq_new:N \g_acceptor_department_seq
+\seq_new:N \g_acceptor_title_seq
+\int_gzero_new:N \g_acceptor_acceptorcnt_int
+
+\bool_new:N \g__acceptor_title_tf_bool
+\bool_gset_false:N \g__acceptor_title_tf_bool
+
+\NewDocumentCommand\Acceptor{mmm}{
+	\tl_if_blank:nTF{#1}{
+		\msg_error:nn { \ClassName } { blank_acceptor }
+		}{
+		\__acceptor_data_add:nnn {#1} {#2} {#3}
+	}
+	\tl_if_blank:nT{#2}{\msg_error:nn {\ClassName} {blank_acceptor_dep}}
+	\tl_if_blank:nTF{#3}{
+		\bool_gset_true:N \g__acceptor_title_tf_bool
+		\msg_warning:nn { \ClassName } { blank_acceptor_title }}{}
+}
+\msg_new:nnnn { \ClassName } { blank_acceptor }
+		{ Missing\ acceptor\ name, check\ for\ blank\ in\ \Acceptor{name}{department}{title}\ command.}{
+			You\ MUST\ provide\ the\ acceptor's\ name\ using\ the\ \Acceptor{name}{department}{title}\ command.}
+\msg_new:nnnn { \ClassName } { blank_acceptor_dep }
+		{ Missing\ acceptor\ department,\ check\ for\ blank\ in\ \Acceptor{name}{department}{title}\ command. }{
+			You\ MUST\ provide\ the\ acceptor's\ department\ using\ the\ \Acceptor{name}{department}{title}\ command.}
+\msg_new:nnn { \ClassName } { blank_acceptor_title }
+		{ Missing\ acceptor\ title\ (blank\ in\ \Acceptor{name}{department}{title}\ command).\ Perhaps\ you\ are\ trying\ to\ save\ vertical\ space?\ 
+			You\ can\ put\ the\ acceptor\ title\ into\ department\ field\ instead.\ For\ consistency,\ I\ will\ omit\ titles\ of\ ALL\ acceptors.}
+
+\cs_new_protected:Nn \__acceptor_data_add:nnn
+ {
+	\int_gincr:N \g_acceptor_acceptorcnt_int
+	\seq_gput_right:cx  { g_acceptor_name_seq }       { \tl_trim_spaces:n {#1} } 
+	\seq_gput_right:cx  { g_acceptor_department_seq } { \tl_trim_spaces:n {#2} }
+	\seq_gput_right:cx  { g_acceptor_title_seq }      { \tl_trim_spaces:n {#3} }
+ }
+
+%%%%%%%%%%  End Acceptor Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%  Degree Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\seq_new:N \g_degree_name_seq
+\seq_new:N \g_degree_department_seq
+\int_gzero_new:N \g_degree_degreecnt_int
+\int_gzero_new:N \g__degree_degreeflag_int
+
+\NewDocumentCommand\Degree{mm}
+ {
+	\tl_if_blank:nTF {#1} {
+		\msg_error:nn { \ClassName } { blank_degree }
+		}{
+		  \__degree_data_add:nn { #1 } { #2 } 
+		}
+	\tl_if_blank:nT {#2} {
+		\int_gset_eq:NN \g__degree_degreeflag_int \g_degree_degreecnt_int
+		\msg_warning:nnx { \ClassName } { blank_degree_dep } { \int_to_arabic:n { \g__degree_degreeflag_int } }
+		\tl_if_blank:nT {#1} { \int_gincr:N \g__degree_degreeflag_int }% in case both are blank
+		}
+ }
+\cs_new_protected:Nn \__degree_data_add:nn
+ {
+	\int_gincr:N \g_degree_degreecnt_int
+	\seq_gput_right:cx  { g_degree_name_seq }        { \tl_trim_spaces:n {#1} } 
+	\seq_gput_right:cx  { g_degree_department_seq }  { \tl_trim_spaces:n {#2} }
+ }
+\msg_new:nnnn { \ClassName } { blank_degree } {Missing\ degree\ name,\ check\ for\ blank\ in\ \Degree\ command.} 
+			{You\ MUST\ provide\ a\ degree\ name\ using\ the\ \Degree{name}{department}\ command.}
+\msg_new:nnnn { \ClassName } { blank_degree_dep } {Missing\ degree\ department\ for\ Degree\ command\ number\ 
+			#1.\ Will\ treat\ as\ a\ duplicate\ of\ previous\ department.}{}
+		
+\int_zero_new:N \l__degree_degreeno_int
+\int_zero_new:N \l__degree_departmentno_int
+
+\cs_new:Nn \__degree_block: {
+	\int_compare:nNnTF { \g_degree_degreecnt_int } = {0} {
+		\msg_error:nn { \ClassName } { no_degree }
+	}	
+	\int_zero_new:N \l__degree_degreeno_int
+	\int_incr:N     \l__degree_degreeno_int
+	\int_zero_new:N \l__degree_departmentno_int
+	\int_incr:N     \l__degree_departmentno_int
+	\cs_new:Nx \__degree_prevdept: {\seq_item:cn { g_degree_department_seq } { \l__degree_departmentno_int } }
+	\cs_new:Nn \__degree_currdept: {}
+	\mbox {Submitted\ to\ the\ } \mbox {\__degree_prevdept:}
+	\int_until_do:nNnn { \l__degree_departmentno_int } = { \g_degree_degreecnt_int } {
+		\int_incr:N      \l__degree_departmentno_int
+		\cs_set:Nx \__degree_currdept: {\seq_item:cn { g_degree_department_seq } { \l__degree_departmentno_int } }
+		\int_compare:nNnTF { \l__degree_departmentno_int } = {\g__degree_degreeflag_int } { \scan_stop: } 
+			{
+				\mbox {\ and\ the}\linebreak
+				\mbox {\__degree_currdept: }
+			}
+		}
+    \linebreak \mbox {in\ partial\ fulfillment\ of\ the\ requirements\ for\ the\ 
+		\int_compare:nNnTF { \g_degree_degreecnt_int } > {1} {degrees} {degree}
+	\ of}
+	\par%\medskip, removed 2023/10/25 to work better with four block layout of title page
+	\int_until_do:nNnn { \l__degree_degreeno_int } = { \g_degree_degreecnt_int } {
+    	\text_uppercase:n {\seq_item:cn { g_degree_name_seq } { \l__degree_degreeno_int }}\par and\par
+		\int_incr:N     \l__degree_degreeno_int
+		}
+    \text_uppercase:n {\seq_item:cn { g_degree_name_seq } { \l__degree_degreeno_int }}\par
+}
+\msg_new:nnnn { \ClassName } { no_degree }
+		{ Missing\ degree!\ You\ must\ issue\ the\ \Degree{name}{department}\ command. }{
+		You\ MUST\ issue\ the\ \Degree{name}{department}\ command\ after\ \string\begin{document}\ and\ before\ \string\maketitle.\  You\ do\ want\ the\ degree,\ don't\ you?}
+
+
+\cs_new:Nn \__degree_abstractblock: {
+	\int_set:Nn  \l__degree_degreeno_int {1}
+	\int_set:Nn  \l__degree_departmentno_int {1}
+	\cs_set:Nx \__degree_prevdept: {\seq_item:cn { g_degree_department_seq } { \l__degree_departmentno_int } }
+	\cs_set:Nn \__degree_currdept: {}
+	\mbox {Submitted\ to\ the\ }\mbox{\__degree_prevdept:}
+	\int_until_do:nNnn { \l__degree_departmentno_int } = { \g_degree_degreecnt_int } {
+		\int_incr:N     \l__degree_departmentno_int
+		\cs_set:Nx \__degree_currdept: {\seq_item:cn { g_degree_department_seq } { \l__degree_departmentno_int } }
+		\int_compare:nNnTF { \g__degree_degreeflag_int } = { \g_degree_degreecnt_int } { \scan_stop: } 
+			{
+				\mbox {\ and\ the}\linebreak
+				\mbox { \__degree_currdept: }
+			}
+		}
+    \linebreak \mbox{on\ \g_dd_thesisdate_tl\ in\ partial\ fulfillment\ of\ the\ requirements\ for\ the\ 
+		\int_compare:nNnTF { \g_degree_degreecnt_int } > {1} {degrees} {degree}
+	\ of}
+	\par\medskip
+	\int_until_do:nNnn { \l__degree_degreeno_int } = { \g_degree_degreecnt_int } {
+    	\text_uppercase:n {\seq_item:cn { g_degree_name_seq } { \l__degree_degreeno_int }}\par and\par
+		\int_incr:N     \l__degree_degreeno_int
+		}
+    \text_uppercase:n {\seq_item:cn { g_degree_name_seq } { \l__degree_degreeno_int }}\par\medskip
+}
+
+%%%%%%%%%%  End Degree Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%  Signature Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\NewDocumentCommand\SignatureBlockSize{m}{
+	\__signature_sigsize:n {#1}
+}
+\tl_new:N \g__signature_sigsize_tl
+\cs_new_protected:Nn \__signature_sigsize:n 
+  {
+	\tl_gset:Nf \g__signature_sigsize_tl { \tl_trim_spaces:n {#1} }
+	\token_case_meaning:NnF \g__signature_sigsize_tl
+	{ 
+		\normalsize {} \small {} \footnotesize{} \scriptsize{} \tiny{}
+	} {
+		\msg_error:nn { \ClassName } { weird_sigsize }
+	}
+  }
+
+\cs_new:Nn \__signature_block: {
+	\int_compare:nNnT { \g_supervisor_supervisorcnt_int } = {0} {
+		\msg_error:nn { \ClassName } { no_supervisor }% this message is def'd in Abstract supervisor block
+	}	
+	\int_compare:nNnT { \g_acceptor_acceptorcnt_int } = {0} {
+		\msg_error:nn { \ClassName } { no_acceptor }
+	}	
+	\tl_if_exist:NF \g_dd_thesisdate_tl { 
+		\msg_error:nn { \ClassName } { no_thesis_date }
+	}
+	\int_gzero_new:N \g__signature_autno_int
+	\int_gzero_new:N \g__signature_supno_int
+	\int_gzero_new:N \g__signature_accno_int
+    \g__signature_sigsize_tl
+    \dim_set:Nn \topsep {0pt}
+    \dim_set:Nn \partopsep {0pt}
+    \begin{tabbing}
+    \hspace{1.35in} \= \hspace{1in} \kill
+	\int_do_while:nNnn { \g__signature_autno_int } < { \g_author_authorcnt_int } {
+		\int_gincr:N  \g__signature_autno_int
+		Authored\ by: \> \seq_item:cn { g_author_name_seq } { \g__signature_autno_int } \\  
+		\> \seq_item:cn { g_author_department_seq } { \g__signature_autno_int } \\
+		\> \g_dd_thesisdate_tl \\[1em]
+	}
+	\int_do_while:nNnn { \g__signature_supno_int } < { \g_supervisor_supervisorcnt_int } {
+		\int_gincr:N  \g__signature_supno_int
+		Certified\ by: \> \seq_item:cn { g_supervisor_name_seq } { \g__signature_supno_int } \\
+		\> \seq_item:cn { g_supervisor_title_seq } { \g__signature_supno_int }
+        \\ \> Thesis\ Supervisor\\[1em]
+	}
+	\int_compare:nNnF { \g_acceptor_acceptorcnt_int } = {0} {
+    	\int_do_while:nNnn { \g__signature_accno_int } < { \g_acceptor_acceptorcnt_int } {
+    		\int_gincr:N  \g__signature_accno_int
+    		Accepted\ by: \> \seq_item:cn { g_acceptor_name_seq } { \g__signature_accno_int } \\
+    		\> \seq_item:cn { g_acceptor_department_seq } { \g__signature_accno_int }
+    			\bool_if:NF \g__acceptor_title_tf_bool
+    			{
+    				\\
+    				\> \seq_item:cn { g_acceptor_title_seq } { \g__signature_accno_int }
+    			}
+			\int_compare:nNnTF { \g__signature_accno_int } = { \g_acceptor_acceptorcnt_int } 
+			{ \\ }{ \\[1em]}
+     	}
+	}
+	\end{tabbing}
+}
+\msg_new:nnnn { \ClassName } { weird_sigsize }
+		{ \SignatureBlockSize\ expects\ a\ font-sizing\ command,\ such\ as\ \small,\ \footnotesize,\ etc.}{You\ used\ a\ weird\ input\ value\ here.\ If\ you\ did\ so\ deliberately,\ try\ continuing.}	
+\msg_new:nnnn { \ClassName } { no_acceptor }
+		{ Missing\ acceptor!\ You\ must\ issue\ the\ \Acceptor{name}{department}{title}\ command. }{
+		You\ MUST\ issue\ the\ \Acceptor{name}{department}{title}\ command\ after\ \string\begin{document}\ and\ before\ \string\maketitle.}
+\msg_new:nnnn { \ClassName } { no_thesis_date }
+		{ Missing\ thesis\ date!\ You\ must\ issue\ the\ \ThesisDate{Date\ thesis\ is\ submitted}\ command.}{
+		You\ MUST\ issue\ the\ \ThesisDate{Date thesis is submitted}\ command\ after\ \string\begin{document}\ and\ before\ \string\maketitle.}
+
+% If for some reason you don't want a warning when you omit \Acceptor
+\NewDocumentCommand\SuppressAcceptorError{}
+  {
+  	\msg_redirect_name:nnn { \ClassName } { no_acceptor } { none }
+  }
+
+%%%%%%%%%%  End Signature Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%  Copyright Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% Directly add the xmp property that shows work is copyrighted. See l3pdfmeta.pdf. 
+% This is not automatic with \DocumentMetadata. "True" must be capitalized.
+%
+\cs_if_exist:NT \pdfmeta_xmp_add:n {\pdfmeta_xmp_add:n{<xmpRights:Marked>True</xmpRights:Marked>}}
+
+\tl_new:N \g_copyright_ccname_tl
+\tl_new:N \g_copyright_cclicensetext_tl
+\tl_new:N \g_copyright_copyrightlicencse_tl
+\tl_new:N \g_copyright_pdfrightstext_tl
+\tl_new:N \g__copyright_crwords_tl_
+\tl_new:N \g__copyright_mitpermissionlast_tl
+
+\tl_new:N \g_copyright_mitpermission_tl
+\tl_gset:Nn \g__copyright_mitpermissionlast_tl {to\ MIT\ a\ nonexclusive,\ worldwide,\ irrevocable,\ royalty-free\ license\ to\ exercise\ any\ and\ all\ rights\ under\ copyright,\ including\ to\ reproduce,\ preserve,\ distribute\ and\ publicly\ display\ copies\ of\ the\ thesis,\ or\ release\ the\  thesis\ under\ an\ open-access\ license.}
+
+\bool_new:N \g__cclicense_tf_bool
+\bool_gset_false:N \g__cclicense_tf_bool
+
+\NewDocumentCommand\CClicense{mm}{
+	\__copyright_licensedata:nn {#1}{#2}
+}
+\cs_new_protected:Nn \__copyright_licensedata:nn 
+  {
+	\tl_gset:Nf \g_copyright_cclicensetext_tl {\hrefurl{ \tl_trim_spaces:n {#2} }{ \tl_trim_spaces:n {#1} } }% #1 - text, #2 - url  
+	\tl_gset:Nx \g_copyright_ccname_tl        { \tl_trim_spaces:n {#1} } 
+	\bool_gset_true:N \g__cclicense_tf_bool
+	\cs_if_exist:NT \pdfmeta_xmp_add:n {
+			\pdfmeta_xmp_add:n {<xmpRights:WebStatement>#2</xmpRights:WebStatement>}
+	}
+	\cs_if_exist:NTF \msg_note:nnn % command was added to expl3 2021/05/18
+	  {
+		\msg_note:nnn { \ClassName } { cclicense} {#1}
+	  }
+	  {
+		\msg_log:nnn  { \ClassName } { cclicense} {#1}
+	  } 
+  }
+\msg_new:nnn { \ClassName } { cclicense } { Using\ Creative\ Commons\ License\ #1.}
+
+
+%%%%%%%%%%  End Copyright Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%  Title page Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\RenewDocumentCommand{\title}{m}
+	{
+		\__mitthesis_title:n { #1 }
+		\hypersetup{
+			pdftitle={\g_mitthesis_title_tl},
+		}
+	}
+%
+\tl_new:N \g_mitthesis_title_tl
+%
+\cs_new_protected:Nn \__mitthesis_title:n
+	{
+		\tl_gset:Nn \g_mitthesis_title_tl { \tl_trim_spaces:n {#1} }
+	}
+
+\tl_new:N \g_titlepage_institution_name_tl
+\tl_gset:Nn \g_titlepage_institution_name_tl {Massachusetts\ Institute\ of\ Technology} 
+\cs_new:Npn \Institution #1 { \tl_gset:Nn \g_titlepage_institution_name_tl {\tl_trim_spaces:n #1} }
+
+
+%%%%%%% Adjust vertical skips between the major blocks of the title page
+
+\bool_new:N \g_titlepage_squashglue_bool
+\cs_new_protected:Nn \__titlepage_bottomskip: {
+	\if_bool:N \g_titlepage_squashglue_bool 
+		{ 	\skip_vertical:n { 0pt plus 1filll  } }
+	\else:
+		{   \skip_vertical:n { 0pt plus 12fill } }
+	\fi:
+}
+\NewDocumentCommand\Squash{}{ \bool_set_true:N \g_titlepage_squashglue_bool }% Squashes all glue from bottom upward
+
+\bool_new:N \g_titlepage_tighten_bool
+\cs_new_protected:Nn \__titlepage_blockskip:nn {
+	\if_bool:N \g_titlepage_tighten_bool 
+		{ 	\skip_vertical:n { 6pt plus #2fill    } }
+	\else:
+		{   \skip_vertical:n { #1pt plus #2fill } }
+	\fi:
+}
+\NewDocumentCommand\Tighten{}{ \bool_set_true:N \g_titlepage_tighten_bool }% Reduces 12pt and 18pt skips to 6pt
+
+%%%%%%%%%%%%
+
+\RenewDocumentCommand\maketitle{s}{
+	\cs_if_exist:NTF \DegreeMonth { \scan_stop: } { \msg_error:nn { \ClassName } { no_degree_date } }% msg def'd in degree-date section
+%	
+	\bool_if:NTF \g__cclicense_tf_bool { 
+		\tl_gset:Nn \g_copyright_copyrightlicencse_tl 
+			{This\ work\ is\ licensed\ under\ a\ \mbox{\g_copyright_cclicensetext_tl}\ license.\par\g_copyright_mitpermission_tl}
+		\tl_gset:Nn \g_copyright_pdfrightstext_tl 	 
+			{This\ work\ is\ licensed\ under\ a\ \g_copyright_ccname_tl\ license.\ \g_copyright_mitpermission_tl}
+	}{
+		\tl_gset:Nn \g_copyright_copyrightlicencse_tl 
+			{All\ rights\ reserved. \par\g_copyright_mitpermission_tl}
+		\tl_gset:Nn \g_copyright_pdfrightstext_tl 	 
+			{All\ rights\ reserved.\ \g_copyright_mitpermission_tl}
+   }
+   \int_compare:nNnTF {\g_author_authorcnt_int} > {1} 
+   		{   
+			\tl_gset:Nn \g__copyright_crwords_tl_ {The\ authors\ hereby\ grant} 
+		}
+		{
+			\tl_gset:Nn \g__copyright_crwords_tl_ {The\ author\ hereby\ grants} 
+		}
+    \IfBooleanTF{#1}{
+	    \tl_gset:Nn \g_copyright_mitpermission_tl {\scan_stop:}
+    }{
+	    \tl_gset:Nn \g_copyright_mitpermission_tl {\g__copyright_crwords_tl_\ \g__copyright_mitpermissionlast_tl}
+    }
+% 
+	%\clearpage
+	\thispagestyle{empty}
+ 	{\centering \vbox_to_ht:nn { \vsize }% to prevent signature block from breaking across page
+        {
+            \setlength{\parskip}{7.5pt plus 1pt minus 1pt}% edited all vertical space on this page 2023/10/25
+            \setlength{\parindent}{0pt}
+            {\Large\textbf{\g_mitthesis_title_tl}\phantomsection\addcontentsline{toc}{chapter}{Title\ page}\par} % revise for tagging in future
+			\__titlepage_blockskip:nn {12}{1.5}% new idea
+            \__author_block:
+			\__titlepage_blockskip:nn {12}{1.5}
+            \__degree_block:
+            at\ the\par
+            \text_uppercase:n { \g_titlepage_institution_name_tl }\par
+            \DegreeMonth\ \DegreeYear\par
+			\__titlepage_blockskip:nn {12}{2}
+            \copyright\space\DegreeYear\space\CopyrightAuthor\@.\c_space_token \g_copyright_copyrightlicencse_tl % \@. in case name ends with III, IV, V,...
+			\__titlepage_blockskip:nn {18}{2}
+            \vbox:n {\__signature_block:}
+			\__titlepage_bottomskip:
+		}
+	}
+    	\hypersetup{
+    		pdfcopyright={Copyright\ \DegreeYear\ by\ \CopyrightAuthor.\ \g_copyright_pdfrightstext_tl},
+    		pdfauthor={\g__author_pdfca_tl},
+    		pdfcaptionwriter = {\g__author_pdfca_tl},
+    	}
+	\cleardoublepage
+}
+
+%%%%%%%%%%  End title page module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%  Abstract page Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+% to change abstract name, follow either of these approaches in your preamble:
+%	\RenewExpandableDocumentCommand\abstractname{}{Summary}
+%	\renewcommand\abstractname{Summary}
+
+\RenewDocumentEnvironment{abstract}{+b}{
+	\newpage
+    \begin{center}
+        {\large{\textbf{\g_mitthesis_title_tl}}\phantomsection\addcontentsline{toc}{chapter}{\abstractname}\par} % revise for tagging as LaTeX evolves further
+        \setlength{\parskip}{0.5\baselineskip plus 2pt minus 2pt}
+        \__author_abstractblock:
+        \par
+        \__degree_abstractblock:
+	\end{center}
+    \skip_vertical:n {\baselineskip}
+	\textbf{ \text_uppercase:n {\abstractname} }\par
+	\skip_vertical:n { 0.5em }
+	\tl_trim_spaces:n {#1}
+	\tl_if_blank:nT {#1} { MISSING\ ABSTRACT!  \msg_error:nn { \ClassName } { missing_abstract } }
+}{
+	\__supervisor_abstractblock:
+	\cleardoublepage
+}
+\msg_new:nnnn { \ClassName } { missing_abstract } {Missing\ Abstract!! } { No\ file\ was\ input\ for\ the\ abstract.\  You\ need\ to\ do\ \string\input{abstract.tex}.}
+
+%%%%%%%%%%  End abstract page Module  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+%\debug_off:n {all}
+\ExplSyntaxOff
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%% End title and abstract page codes  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+%%%%%%%%%%  A nomenclature environment  %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\providecommand{\nomname}{Nomenclature}  
+\newlength\nomenwidth
+\newlength\savitemsep
+
+% nomenclature entries
+\NewDocumentCommand\entry{m m}{%
+    \item[#1\hfill]#2%
+    \@itempenalty=-\@lowpenalty
+}
+% nomenclature subheadings 
+\NewDocumentCommand\EntryHeading{m}{%
+	\itemsep3\p@ plus 1\p@ minus 1\p@
+    \goodbreak\item[\itshape#1\hfill]\mbox{}% mbox added for tagged pdf 2023/10/11
+    \setlength{\itemsep}{\savitemsep}\@itempenalty=1000
+}
+%
+%   Increase first optional argument to a dimension > 2em if wide entries cause undesired misalignment of columns. 
+%   Second optional argument can be used to rename the environment, e.g., to List of Symbols.
+%   Third optional argument selects section-level or chapter-level style for the nomenclature list.
+\NewDocumentEnvironment{nomenclature}{O{2em} O{\nomname} O{section}}{%
+    \setlength\columnsep{2em} 
+    \setlength{\nomenwidth}{#1}
+    \csname #3\endcsname *{#2}% this level will vary amongst users!
+	\phantomsection\addcontentsline{toc}{#3}{#2}% tagged pdf may not capture both of these ... 2023/10/18
+    \raggedright
+    \begin{list}{}{%
+         \setlength{\itemsep}{0pt}%
+         \setlength{\parsep}{\itemsep}%
+         \setlength{\labelsep}{1em}%
+         \setlength{\labelwidth}{\nomenwidth}%
+         \setlength{\leftmargin}{\labelwidth}%
+         \addtolength{\leftmargin}{\labelsep}%
+		 \setlength{\savitemsep}{\itemsep}%
+    }%
+}{\end{list}\ignorespacesafterend}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\endinput
+%%
+%% End of file `mitthesis.cls'.

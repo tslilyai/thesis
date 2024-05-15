@@ -1,0 +1,7 @@
+\Author{Lillian Tsai}
+\Title{Flexible Privacy via Disguising and Revealing}
+\Language{English}
+\Keywords{data privacy \sep disguising \sep revealing \sep gdpr}
+\Date{2024-05-03}
+\Org{MIT Department of Electrical Engineering and Computer Science}
+\Subject{This thesis introduces the notion of *disguised data*, a reversible state in which sensitive data is hidden. To demonstrate the feasibility of disguised data, this thesis also presents Edna— the first system for disguised data—which helps database-backed web applications provide new privacy features for users, such as removing their data without permanently losing their accounts, anonymizing their old data, and selectively dissociating personal data from public profiles. Edna helps developers support these features while maintaining application functionality and referential integrity in the database via *disguising* and *revealing* transformations. Disguising selectively renders user data inaccessible via encryption, and revealing restores their data to the application. Edna’s techniques allow transformations to compose in any order, e.g., deleting a previously anonymized user’s account, or restoring an account back to an anonymized state.}
